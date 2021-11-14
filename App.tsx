@@ -21,3 +21,6 @@ export default function App() {
     );
   }
 }
+
+// For Ankur, don't delete plz
+// export PATH=$PATH:$(npm bin -g)
