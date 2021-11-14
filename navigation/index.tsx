@@ -20,7 +20,7 @@
  import TabTwoScreen from '../screens/TabTwoScreen';
  import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
  import LinkingConfiguration from './LinkingConfiguration';
- import { Camera } from 'expo-camera'
+ import CameraScreen from '../screens/CameraScreen';
  
  export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
    return (
@@ -59,38 +59,39 @@
  function BottomTabNavigator({ navigation }: any) {
    const colorScheme = useColorScheme();
  
-   const [startCamera, setStartCamera] = React.useState(false)
+  //  const [startCamera, setStartCamera] = React.useState(false)
  
-   const __startCamera = async () => {
-     const { status } = await Camera.requestCameraPermissionsAsync()
-     if (status === 'granted') {
-       setStartCamera(true)
-     } else {
-       alert("Access denied")
-     }
-   }
+  //  const __startCamera = async () => {
+  //    const { status } = await Camera.requestCameraPermissionsAsync()
+  //    if (status === 'granted') {
+  //      setStartCamera(true)
+  //    } else {
+  //      alert("Access denied")
+  //    }
+  //  }
  
-   let camera: Camera
+  //  let camera: Camera
  
-   const CameraScreen = () => {
-     return (
-       startCamera ? (
-         <Camera
-           style={{ flex: 1, width: "100%" }}
-           ref={(r) => {
-             camera = r as Camera
-           }}
-         ></Camera >
-       ) : <></>
-     )
-   }
+  //  const CameraScreen = () => {
+  //    return (
+  //      startCamera ? (
+  //        <Camera
+  //          style={{ flex: 1, width: "100%" }}
+  //          ref={(r) => {
+  //            camera = r as Camera
+  //          }}
+  //        ></Camera >
+  //      ) : <></>
+  //    )
+  //  }
  
    return (
      <BottomTab.Navigator
-       initialRouteName="TabOne"
+       initialRouteName="Home"
        screenOptions={{
          tabBarActiveTintColor: Colors[colorScheme].tint,
          tabBarShowLabel: false,
+         headerShown: false,
        }}
      >
        <BottomTab.Screen
@@ -131,7 +132,7 @@
              />,
  
            tabBarButton: (props) =>
-             <TouchableOpacity onPress={()=>{__startCamera; navigation.navigate( 'Pic' )}}
+             <TouchableOpacity onPress={()=>{navigation.navigate( 'Pic' )}}
                style={{
                  top: -30,
                }}
