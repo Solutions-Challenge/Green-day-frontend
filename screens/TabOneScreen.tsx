@@ -11,7 +11,6 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const [height, setHeight] = useContext(ImageContext).height
   const [uri, setUri] = useContext(ImageContext).uri
   const [width, setWidth] = useContext(ImageContext).width
-  console.log(uri)
 
   return (
     <View style={styles.container}>
@@ -20,7 +19,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       { uri === "" ? (
         <></>
       ): (
-        <Image source={{uri: uri}} style={{width: "100%", height: '100%', position: 'absolute', top: 30, left: 30}} />
+        <Image source={{uri: uri}} style={{height: 250, width: 250}} />
       )}
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="/screens/TabOneScreen.tsx" />

@@ -4,6 +4,15 @@ import { Camera } from 'expo-camera';
 import { osName } from 'expo-device';
 import { MaterialIcons, Entypo } from '@expo/vector-icons';
 import ImageContext from '../hooks/imageContext';
+import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
+import { Dimensions } from 'react-native';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
+const aspectRatio = 200
+const originX = Math.round(windowWidth / 2 - aspectRatio / 2)
+const originY = Math.round(windowHeight / 2 - aspectRatio / 2)
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight : 30
 
@@ -12,17 +21,26 @@ export default function CameraScreen() {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   
-  const [height, setHeight] = useContext(ImageContext).height
+  const [h, setH] = useContext(ImageContext).height
   const [uri, setUri] = useContext(ImageContext).uri
-  const [width, setWidth] = useContext(ImageContext).width
+  const [w, setW] = useContext(ImageContext).width
 
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
     const photo = await camera.takePictureAsync()
-    setHeight(photo.height)
-    setUri(photo.uri)
-    setWidth(photo.width)
+
+
+    const manipImage = await manipulateAsync(
+      photo.uri,
+      [
+        {crop: {height: aspectRatio, width: aspectRatio, originX: originX, originY: originY}}
+      ]
+    )
+
+    setUri(manipImage.uri)
+    setH(manipImage.height)
+    setW(manipImage.width)
   }
 
   useEffect(() => {
@@ -48,6 +66,12 @@ export default function CameraScreen() {
           camera = r as Camera
         }}
       >
+        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY, left: originX }} />
+        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY + aspectRatio, left: originX }} />
+        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY, left: originX + aspectRatio }} />
+        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY + aspectRatio, left: originX + aspectRatio }} />
+        
+
         <View style={{ top: flipPosition + 20, left: 20 }}>
           <TouchableOpacity
             style={{ position: 'absolute' }}
