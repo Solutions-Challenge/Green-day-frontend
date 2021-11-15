@@ -58,108 +58,84 @@
  
  function BottomTabNavigator({ navigation }: any) {
    const colorScheme = useColorScheme();
- 
-  //  const [startCamera, setStartCamera] = React.useState(false)
- 
-  //  const __startCamera = async () => {
-  //    const { status } = await Camera.requestCameraPermissionsAsync()
-  //    if (status === 'granted') {
-  //      setStartCamera(true)
-  //    } else {
-  //      alert("Access denied")
-  //    }
-  //  }
- 
-  //  let camera: Camera
- 
-  //  const CameraScreen = () => {
-  //    return (
-  //      startCamera ? (
-  //        <Camera
-  //          style={{ flex: 1, width: "100%" }}
-  //          ref={(r) => {
-  //            camera = r as Camera
-  //          }}
-  //        ></Camera >
-  //      ) : <></>
-  //    )
-  //  }
- 
    return (
-     <BottomTab.Navigator
-       initialRouteName="Home"
-       screenOptions={{
-         tabBarActiveTintColor: Colors[colorScheme].tint,
-         tabBarShowLabel: false,
-         headerShown: false,
-       }}
-     >
-       <BottomTab.Screen
-         name="Home"
-         component={TabOneScreen}
-         options={({ navigation }: RootTabScreenProps<'Home'>) => ({
-           title: 'Home',
-           tabBarIcon: ({ color }) => <AntDesign name="home" size={24} color={color} />,
-           headerRight: () => (
-             <Pressable
-               style={({ pressed }) => ({
-                 opacity: pressed ? 0.5 : 1,
-               })}>
-               <FontAwesome
-                 name="info-circle"
-                 size={25}
-                 color={Colors[colorScheme].text}
-                 style={{ marginRight: 15 }}
-               />
-             </Pressable>
-           ),
-         })}
-       />
-       <BottomTab.Screen
-         name="Pic"
-         component={CameraScreen}
-         options={{
-           title: 'Pic',
-           tabBarIcon: () =>
-             <Feather
-               name="camera"
-               size={44}
-               color="white"
-               style={{
-                 position: 'absolute',
-                 top: 11,
-               }}
-             />,
- 
-           tabBarButton: (props) =>
-             <TouchableOpacity onPress={()=>{navigation.navigate( 'Pic' )}}
-               style={{
-                 top: -30,
-               }}
-             >
-               <View
-                 style={{
-                   width: 70,
-                   height: 70,
-                   borderRadius: 35,
-                   backgroundColor: "#246EE9",
-                 }}
-               >
-                 {props.children}
-               </View>
-             </TouchableOpacity>
- 
-         }}
-       />
-       <BottomTab.Screen
-         name="TabTwo"
-         component={TabTwoScreen}
-         options={{
-           title: 'Tab Two',
-           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-         }}
-       />
-     </BottomTab.Navigator>
+
+    <BottomTab.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme].tint,
+        tabBarShowLabel: false,
+        headerShown: false,
+      }}
+    >
+      <BottomTab.Screen
+        name="Home"
+        component={TabOneScreen}
+        options={({ navigation }: RootTabScreenProps<'Home'>) => ({
+          title: 'Home',
+          tabBarIcon: ({ color }) => <AntDesign name="home" size={24} color={color} />,
+          headerRight: () => (
+            <Pressable
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+              })}>
+              <FontAwesome
+                name="info-circle"
+                size={25}
+                color={Colors[colorScheme].text}
+                style={{ marginRight: 15 }}
+              />
+            </Pressable>
+          ),
+        })}
+      />
+      <BottomTab.Screen
+        name="Pic"
+        component={CameraScreen}
+        options={{
+          title: 'Pic',
+          tabBarIcon: () =>
+            <Feather
+              name="camera"
+              size={44}
+              color="white"
+              style={{
+                position: 'absolute',
+                top: 11,
+              }}
+            />,
+
+          tabBarButton: (props) =>
+            <TouchableOpacity onPress={()=>{navigation.navigate( 'Pic' )}}
+              style={{
+                top: -30,
+              }}
+            >
+              <View
+                style={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: 35,
+                  backgroundColor: "#246EE9",
+                }}
+              >
+                {props.children}
+              </View>
+            </TouchableOpacity>
+
+        }}
+      />
+      <BottomTab.Screen
+        name="TabTwo"
+        component={TabTwoScreen}
+        options={{
+          title: 'Tab Two',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+    </BottomTab.Navigator>
+    
+     
    );
  }
  
@@ -172,48 +148,6 @@
  }) {
    return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
  }
- 
- 
- {/* <BottomTab.Screen
-         name="Pic"
-         component={TabOneScreen}
-         options={{
-           tabBarIcon: ({ color }) => 
-           <TouchableOpacity
-               style={{
-                 top: -30,
-                 flex: 1,
-                 alignItems: "center",
-               
-               }}
-             >
-               <View
-                 style={{
-                   width: 70,
-                   height: 70,
-                   borderRadius: 35,
-                   backgroundColor: "#e22f45",
-                 }}
-               >
-                 <Feather 
-                   name="camera" 
-                   size={45} 
-                   color={ color }
-                   style={{
-                     position: 'absolute',
-                     left: 12,
-                     top: 12,
-                   }}
-                 />
-               </View>
-             </TouchableOpacity>
-           ,
-         }}
-       /> */}
- 
 
-function StackNavigator(arg0: { Screen1: { screen: any; navigationOptions: { header: null; }; }; Home: { screen: any; navigationOptions: ({ navigation }: { navigation: any; }) => { title: string; headerStyle: any; headerTitle: JSX.Element; headerLeft: null; headerRight: null; }; }; }, arg1: { headerMode: string; }) {
-  throw new Error('Function not implemented.');
-}
  // #03C04A (emerald Green)
  // #246EE9 (royal Blue)
