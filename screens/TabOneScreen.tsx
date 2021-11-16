@@ -1,11 +1,13 @@
 import { useState, useContext } from 'react';
 import * as React from 'react'
-import { Image, StyleSheet } from 'react-native';
+import { Dimensions, Image, StyleSheet } from 'react-native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import ImageContext from '../hooks/imageContext';
+
+const windowWidth = Dimensions.get('window').width;
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
   const [height, setHeight] = useContext(ImageContext).height
@@ -19,7 +21,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       { uri === "" ? (
         <></>
       ): (
-        <Image source={{uri: uri}} style={{height: 250, width: 250}} />
+        <Image source={{uri: uri}} style={{height: height, width: width}} />
       )}
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="/screens/TabOneScreen.tsx" />

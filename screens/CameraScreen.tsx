@@ -6,13 +6,7 @@ import { MaterialIcons, Entypo } from '@expo/vector-icons';
 import ImageContext from '../hooks/imageContext';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
 import { Dimensions } from 'react-native';
-
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
-
-const aspectRatio = 200
-const originX = Math.round(windowWidth / 2 - aspectRatio / 2)
-const originY = Math.round(windowHeight / 2 - aspectRatio / 2)
+import { useIsFocused } from '@react-navigation/native';
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight : 30
 
@@ -25,6 +19,12 @@ export default function CameraScreen() {
   const [uri, setUri] = useContext(ImageContext).uri
   const [w, setW] = useContext(ImageContext).width
 
+  const windowWidth = Dimensions.get('window').width;
+  const windowHeight = Dimensions.get('window').height;
+
+  const isFocused = useIsFocused();
+
+
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
@@ -33,9 +33,8 @@ export default function CameraScreen() {
 
     const manipImage = await manipulateAsync(
       photo.uri,
-      [
-        {crop: {height: aspectRatio, width: aspectRatio, originX: originX, originY: originY}}
-      ]
+      [{ crop: { width: windowWidth*2, height: windowHeight*2, originX: windowWidth/4, originY: windowHeight/2 } },
+      { resize: { width: 300 } },]
     )
 
     setUri(manipImage.uri)
@@ -58,7 +57,7 @@ export default function CameraScreen() {
   }
   return (
     <View>
-      <Camera
+      {isFocused &&  <Camera
         type={type}
         flashMode={flash}
         style={{ height: '100%' }}
@@ -66,12 +65,7 @@ export default function CameraScreen() {
           camera = r as Camera
         }}
       >
-        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY, left: originX }} />
-        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY + aspectRatio, left: originX }} />
-        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY, left: originX + aspectRatio }} />
-        <View style={{ backgroundColor: 'white', width: 35, height: 35, borderRadius: 50, position: 'absolute', top: originY + aspectRatio, left: originX + aspectRatio }} />
         
-
         <View style={{ top: flipPosition + 20, left: 20 }}>
           <TouchableOpacity
             style={{ position: 'absolute' }}
@@ -107,7 +101,7 @@ export default function CameraScreen() {
           </TouchableOpacity>
 
         </View>
-      </Camera>
+      </Camera>}
     </View>
   );
 }

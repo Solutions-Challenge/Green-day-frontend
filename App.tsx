@@ -7,6 +7,7 @@ import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import ImageContext from './hooks/imageContext';
 
+
 const Pic = {
   height: 0,
   uri: '',
