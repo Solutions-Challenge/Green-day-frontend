@@ -4,10 +4,10 @@
     "slug": "greenday-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "privacy": "public",
+    "icon": "./assets/images/ecopal.png",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -20,7 +20,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true   
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {

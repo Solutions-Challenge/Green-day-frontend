@@ -9,9 +9,10 @@ import ImageContext from './hooks/imageContext';
 
 
 const Pic = {
-  height: 0,
+  material: 0,
   uri: '',
-  width: 0
+  width: 0,
+  height: 0
 }
 
 
@@ -19,14 +20,17 @@ const Pic = {
 export default function App() {
   const isLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
-  const [height, setHeight] = useState(Pic.height)
+  const [material, setMaterial] = useState(Pic.material)
   const [uri, setUri] = useState(Pic.uri)
   const [width, setWidth] = useState(Pic.width)
+  const [height, setHeight] = useState(Pic.height)
 
   const store = {
     height: [height, setHeight],
+    width: [width, setWidth],
     uri: [uri, setUri],
-    width: [width, setWidth]
+    material: [material, setMaterial]
+
   }
 
   if (!isLoadingComplete) {

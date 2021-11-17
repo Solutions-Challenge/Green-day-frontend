@@ -10,14 +10,14 @@ import ImageContext from '../hooks/imageContext';
 const windowWidth = Dimensions.get('window').width;
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
-  const [height, setHeight] = useContext(ImageContext).height
+  const [material, setMaterial] = useContext(ImageContext).material
   const [uri, setUri] = useContext(ImageContext).uri
   const [width, setWidth] = useContext(ImageContext).width
+  const [height, setHeight] = useContext(ImageContext).height
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{height}</Text>
-      <Text style={styles.title}>{width}</Text>
+      <Text style={styles.title}>{material}</Text>
       { uri === "" ? (
         <></>
       ): (

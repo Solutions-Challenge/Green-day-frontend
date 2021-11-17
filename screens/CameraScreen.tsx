@@ -15,9 +15,10 @@ export default function CameraScreen() {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   
-  const [h, setH] = useContext(ImageContext).height
+  const [material, setMaterial] = useContext(ImageContext).material
   const [uri, setUri] = useContext(ImageContext).uri
   const [w, setW] = useContext(ImageContext).width
+  const [h, setH] = useContext(ImageContext).height
 
   const windowWidth = Dimensions.get('window').width;
   const windowHeight = Dimensions.get('window').height;
@@ -30,16 +31,36 @@ export default function CameraScreen() {
     if (!camera) return
     const photo = await camera.takePictureAsync()
 
-
     const manipImage = await manipulateAsync(
       photo.uri,
-      [{ crop: { width: windowWidth*2, height: windowHeight*2, originX: windowWidth/4, originY: windowHeight/2 } },
-      { resize: { width: 300 } },]
+      [{ resize: { width: 300 } }]
     )
 
+    let localUri = manipImage.uri;
+    let filename = localUri.split('/').pop();
+
+    let match = /\.(\w+)$/.exec(filename as string);
+    let type = match ? `image/${match[1]}` : `image`;
+
+    let formData = new FormData();
+
+    // @ts-ignore
+    formData.append('file', { uri: localUri, name: filename, type });
+
+    const res = await fetch('http://100.64.57.231:5000/predict', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+    })
+
+    const data = await res.json()
+
+    setMaterial(data.material)
     setUri(manipImage.uri)
-    setH(manipImage.height)
     setW(manipImage.width)
+    setH(manipImage.height)
   }
 
   useEffect(() => {
