@@ -36,7 +36,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
  * A root stack navigator is often used for displaying modals on top of all other content.
  * https://reactnavigation.org/docs/modal
  */
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<any>();
 
 function RootNavigator() {
   return (
@@ -142,13 +142,15 @@ function BottomTabNavigator({navigation}:any) {
   
   return (
 
-    <Stack.Navigator>
-      {/* @ts-ignore */}
-      <Stack.Screen name="Home" component={HomeTabs} />
-      {/* @ts-ignore */}
-      <Stack.Screen name="Pic" component={CameraScreen} navigation={navigation} />
-      {/* @ts-ignore */}
-      <Stack.Screen name="Settings" component={HomeTabs} />
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+    
+      <Stack.Screen name="Start" component={HomeTabs} />
+      
+      <Stack.Screen name="Pic" component={CameraScreen} />
     </Stack.Navigator>
 
     

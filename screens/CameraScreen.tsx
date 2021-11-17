@@ -2,20 +2,19 @@ import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TouchableWithoutFeedback } from 'react-native';
 import { Camera } from 'expo-camera';
 import { osName } from 'expo-device';
-import { MaterialIcons, Entypo } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import ImageContext from '../hooks/imageContext';
 import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
 import { Dimensions } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Col, Row, Grid } from "react-native-easy-grid";
-import { WhiteBalance } from 'expo-camera/build/Camera.types';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-let flipPosition: any = osName === "Android" ? StatusBar.currentHeight : 30
+let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
-export default function CameraScreen({navigation}:any) {
+export default function CameraScreen({ navigation }: any) {
   const [hasPermission, setHasPermission]: any = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
@@ -67,6 +66,10 @@ export default function CameraScreen({navigation}:any) {
     navigation.navigate('Home')
   }
 
+  const goBack = () => {
+    navigation.navigate('Home')
+  }
+
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -93,15 +96,22 @@ export default function CameraScreen({navigation}:any) {
         <Grid style={styles.bottomToolbar}>
           <Row>
             <Col style={styles.alignCenter}>
+
               <TouchableOpacity
                 onPress={() => {
-                  setType(
-                    type === Camera.Constants.Type.back
-                      ? Camera.Constants.Type.front
-                      : Camera.Constants.Type.back
+                  setFlash(
+                    flash === Camera.Constants.FlashMode.off
+                      ? Camera.Constants.FlashMode.on
+                      : Camera.Constants.FlashMode.off
                   );
                 }}>
-                <MaterialIcons name="flip-camera-ios" size={30} color="white" />
+                {
+                  flash === Camera.Constants.FlashMode.off ? (
+                    <Ionicons name="flash-off" size={30} color="white" />
+                  ) : (
+                    <Ionicons name="flash" size={30} color="white" />
+                  )
+                }
               </TouchableOpacity>
             </Col>
             <Col size={2} style={styles.alignCenter}>
@@ -115,17 +125,22 @@ export default function CameraScreen({navigation}:any) {
             <Col style={styles.alignCenter}>
               <TouchableOpacity
                 onPress={() => {
-                  setFlash(
-                    flash === Camera.Constants.FlashMode.off
-                      ? Camera.Constants.FlashMode.on
-                      : Camera.Constants.FlashMode.off
+                  setType(
+                    type === Camera.Constants.Type.back
+                      ? Camera.Constants.Type.front
+                      : Camera.Constants.Type.back
                   );
                 }}>
-                <Entypo name="flash" size={30} color="white" />
+                <MaterialIcons name="flip-camera-ios" size={30} color="white" />
               </TouchableOpacity>
             </Col>
           </Row>
         </Grid>
+        <View style={{ position: 'absolute', top: flipPosition + 30, left: 10 }}>
+          <TouchableOpacity onPress={goBack}>
+            <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
+          </TouchableOpacity>
+        </View>
       </Camera>}
     </View>
   );
@@ -142,13 +157,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: 100,
     bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
   captureBtn: {
     width: 60,
     height: 60,
     borderWidth: 2,
     borderRadius: 60,
-    backgroundColor: 'white'
+    borderColor: 'white',
+    borderStyle: 'solid',
+    backgroundColor: 'white',
   },
   captureBtnActive: {
     width: 80,
