@@ -15,7 +15,6 @@ const windowHeight = Dimensions.get('window').height;
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
 export default function CameraScreen({ navigation }: any) {
-  const [hasPermission, setHasPermission]: any = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
 
@@ -73,16 +72,13 @@ export default function CameraScreen({ navigation }: any) {
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
+      if (status !== 'granted') {
+        navigation.navigate('Home')
+      }
+      
     })();
   }, []);
 
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
   return (
     <View>
       {isFocused && <Camera

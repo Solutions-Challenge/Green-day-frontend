@@ -20,13 +20,22 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyCahOh-nPatxeZgHRclTv9PaFq-OB0VVJ4"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyB7HQGk4eBBO9fpUdm8X6g8HmWHFwkL4Qs"
+        }
+      },
+      "package": "com.aankur01.greendayfrontend"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
