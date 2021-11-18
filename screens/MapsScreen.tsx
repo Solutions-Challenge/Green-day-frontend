@@ -5,11 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useState } from 'react';
+import useColorScheme from '../hooks/useColorScheme';
+import data from '../mapStyle.json'
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
 export default function App({ navigation }: any) {
-
+  const colorScheme = useColorScheme();
   const [latitude, setLatitude] = useState(0)
   const [longitude, setLongitude] = useState(0)
 
@@ -36,6 +38,7 @@ export default function App({ navigation }: any) {
     <MapView style={StyleSheet.absoluteFill}
       provider={PROVIDER_GOOGLE}
       showsUserLocation={true}
+      customMapStyle={colorScheme === 'dark' ? data: []}
       region={{
         latitude: latitude,
         longitude: longitude,
@@ -45,27 +48,10 @@ export default function App({ navigation }: any) {
     >
     </MapView>
 
-    <View style={{ position: 'absolute', top: flipPosition + 30, left: 10 }}>
+    <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
       <TouchableOpacity onPress={goBack}>
         <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
       </TouchableOpacity>
     </View>
   </>);
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-  },
-});
-
-function componentWillMount() {
-  throw new Error('Function not implemented.');
 }

@@ -22,7 +22,6 @@ import LinkingConfiguration from './LinkingConfiguration';
 import CameraScreen from '../screens/CameraScreen';
 import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { osName } from 'expo-device';
 const windowWidth = Dimensions.get('window').width;
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {

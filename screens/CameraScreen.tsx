@@ -132,7 +132,7 @@ export default function CameraScreen({ navigation }: any) {
             </Col>
           </Row>
         </Grid>
-        <View style={{ position: 'absolute', top: flipPosition + 30, left: 10 }}>
+        <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
           <TouchableOpacity onPress={goBack}>
             <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
           </TouchableOpacity>
