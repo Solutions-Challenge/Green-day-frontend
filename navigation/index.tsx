@@ -78,23 +78,10 @@ const HomeTabs = ({ navigation }: any) => {
           component={TabOneScreen}
           options={() => ({
             title: 'Home',
-            tabBarIcon: ({ color }) => 
+            tabBarButton: () => 
               <View style={{position: 'absolute', top: 10, left: windowWidth / 6}}>
-                <AntDesign name="home" size={24} color={color} />
+                <AntDesign name="home" size={24} color="white" />
               </View>,
-            headerRight: () => (
-              <Pressable
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.5 : 1,
-                })}>
-                <FontAwesome
-                  name="info-circle"
-                  size={25}
-                  color={Colors[colorScheme].text}
-                  style={{ marginRight: 15 }}
-                />
-              </Pressable>
-            ),
           })}
         />
         <BottomTab.Screen
