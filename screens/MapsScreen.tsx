@@ -1,27 +1,63 @@
 import * as React from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated } from 'react-native';
 import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
 import data from '../mapStyle.json'
 import { markers } from './tempMapData'
 import { Platform } from 'expo-modules-core';
 import { setStatusBarHidden } from 'expo-status-bar';
+import { Image } from 'react-native'
+import StarRating from '../components/StarRating';
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 220;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
-
+const latitudeDelta = 0.0922
+const longitudeDelta = 0.0421
 
 export default function App({ navigation }: any) {
   const colorScheme = useColorScheme();
   const [latitude, setLatitude] = useState(0)
   const [longitude, setLongitude] = useState(0)
+  const _map = useRef(null as any)
+
+  let mapIndex = 0;
+  let mapAnimation = new Animated.Value(0);
+
+  useEffect(() => {
+    mapAnimation.addListener(({ value }) => {
+      let index = Math.floor(value / CARD_WIDTH + 0.3); // animate 30% away from landing on the next item
+      if (index >= markers.length) {
+        index = markers.length - 1;
+      }
+      if (index <= 0) {
+        index = 0;
+      }
+
+      // @ts-ignore
+      clearTimeout(regionTimeout);
+      const regionTimeout = setTimeout(() => {
+        if( mapIndex !== index ) {
+          mapIndex = index;
+          const { coordinate } = markers[index];
+          _map.current.animateToRegion(
+            {
+              ...coordinate,
+              latitudeDelta: latitudeDelta,
+              longitudeDelta: longitudeDelta
+            },
+            550
+          );
+        }
+      }, 10);
+    });
+  });
 
   const categories = [
     {
@@ -42,7 +78,7 @@ export default function App({ navigation }: any) {
     },
   ]
 
-  if (osName === 'Android'){
+  if (Platform.OS === 'android'){
     setStatusBarHidden(true, 'none')
   }
 
@@ -65,16 +101,17 @@ export default function App({ navigation }: any) {
   }, []);
 
   return (<>
-    <StatusBar></StatusBar>
+
     <MapView style={StyleSheet.absoluteFill}
+      ref={_map}
       provider={PROVIDER_GOOGLE}
       showsUserLocation={true}
       customMapStyle={colorScheme === 'dark' ? data: []}
       region={{
         latitude: latitude,
         longitude: longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421
+        latitudeDelta: latitudeDelta,
+        longitudeDelta: longitudeDelta
       }}
     >
       {markers.map((e, index)=>{
@@ -109,6 +146,9 @@ export default function App({ navigation }: any) {
       scrollEventThrottle={1}
       showsHorizontalScrollIndicator={false}
       style={styles.chipsScrollView}
+      contentContainerStyle={{
+        paddingRight: 20
+      }}
     >
       {categories.map((e, index)=>{
         return (<TouchableOpacity key={index} style={styles.chipsItem}>
@@ -118,6 +158,71 @@ export default function App({ navigation }: any) {
       })}
 
     </ScrollView>
+
+    <Animated.ScrollView
+      horizontal
+      disableScrollViewPanResponder={true}
+      scrollEventThrottle={1}
+      showsHorizontalScrollIndicator={false}
+      style={styles.scrollView}
+      pagingEnabled
+      snapToInterval={CARD_WIDTH+20}
+      snapToAlignment="center"
+      decelerationRate="fast"
+      contentInset={{
+        top: 0,
+        left: SPACING_FOR_CARD_INSET,
+        bottom: 0,
+        right: SPACING_FOR_CARD_INSET
+      }}
+      contentContainerStyle={{
+        paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET: 0
+      }}
+      onScroll={Animated.event(
+        [
+          {
+            nativeEvent: {
+              contentOffset: {
+                x: mapAnimation
+              }
+            }
+          }
+        ],
+        {useNativeDriver: true}
+      )}
+    >
+      {markers.map((e, index)=>{
+        return(<View style={styles.card} key={index}>
+          <Image 
+            source={e.image}
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
+          <View style={styles.textContent}>
+            <Text numberOfLines={1} style={styles.cardtitle}>{e.title}</Text>
+            <StarRating ratings={e.ratings} reviews={e.reviews} />
+            <Text numberOfLines={1} style={styles.cardDescription}>{e.description}</Text>
+            <View style={styles.button}>
+              <TouchableOpacity
+              onPress={()=>{}}
+              style={[styles.signIn, {
+                borderColor: '#FF6347',
+                borderWidth: 1,
+              }]}
+              >
+                <Text style={[styles.textSign, {
+                  color: '#FF6347',
+                }]}>
+                  Order Now
+                </Text>
+
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>)
+        
+      })}
+    </Animated.ScrollView>
 
     <View style={{ position: 'absolute', top: flipPosition + 100, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
       <TouchableOpacity onPress={goBack}>
@@ -164,14 +269,15 @@ const styles = StyleSheet.create({
   chipsScrollView: {
     position:'absolute', 
     top:Platform.OS === 'ios' ? 80 : 70, 
-    paddingHorizontal:10
+    paddingHorizontal:10,
+    width: '100%',
   },
   chipsIcon: {
     marginRight: 5,
   },
   scrollView: {
     position: "absolute",
-    bottom: 0,
+    bottom: 20,
     left: 0,
     right: 0,
     paddingVertical: 10,
