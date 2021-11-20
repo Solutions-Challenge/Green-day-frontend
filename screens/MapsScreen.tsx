@@ -12,6 +12,7 @@ import { Platform } from 'expo-modules-core';
 import { setStatusBarHidden } from 'expo-status-bar';
 import { Image } from 'react-native'
 import StarRating from '../components/StarRating';
+import { transform } from '@babel/core';
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 const { width, height } = Dimensions.get("window");
@@ -26,6 +27,7 @@ export default function App({ navigation }: any) {
   const [latitude, setLatitude] = useState(0)
   const [longitude, setLongitude] = useState(0)
   const _map = useRef(null as any)
+  const _scrollView = useRef(null as any)
 
   let mapIndex = 0;
   let mapAnimation = new Animated.Value(0);
@@ -43,7 +45,7 @@ export default function App({ navigation }: any) {
       // @ts-ignore
       clearTimeout(regionTimeout);
       const regionTimeout = setTimeout(() => {
-        if( mapIndex !== index ) {
+        if (mapIndex !== index) {
           mapIndex = index;
           const { coordinate } = markers[index];
           _map.current.animateToRegion(
@@ -52,7 +54,7 @@ export default function App({ navigation }: any) {
               latitudeDelta: latitudeDelta,
               longitudeDelta: longitudeDelta
             },
-            550
+            300
           );
         }
       }, 10);
@@ -61,24 +63,24 @@ export default function App({ navigation }: any) {
 
   const categories = [
     {
-        name: "Wood",
-        icon: <MaterialCommunityIcons name="food" style={styles.chipsIcon} size={18} />
+      name: "Wood",
+      icon: <MaterialCommunityIcons name="food" style={styles.chipsIcon} size={18} />
     },
     {
-        name: "Metal",
-        icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
+      name: "Metal",
+      icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
     },
     {
-        name: "Plastic",
-        icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
+      name: "Plastic",
+      icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
     },
     {
-        name: "Food",
-        icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
+      name: "Food",
+      icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
     },
   ]
 
-  if (Platform.OS === 'android'){
+  if (Platform.OS === 'android') {
     setStatusBarHidden(true, 'none')
   }
 
@@ -100,13 +102,29 @@ export default function App({ navigation }: any) {
     })();
   }, []);
 
+  const interpolations = markers.map((marker, index) => {
+    const inputRange = [
+      (index - 1) * CARD_WIDTH,
+      index * CARD_WIDTH,
+      (index + 1) * CARD_WIDTH,
+    ];
+
+    const scale = mapAnimation.interpolate({
+      inputRange,
+      outputRange: [0.5, 1, 0.5],
+      extrapolate: "clamp"
+    });
+
+    return { scale };
+  });
+
   return (<>
 
     <MapView style={StyleSheet.absoluteFill}
       ref={_map}
       provider={PROVIDER_GOOGLE}
       showsUserLocation={true}
-      customMapStyle={colorScheme === 'dark' ? data: []}
+      customMapStyle={colorScheme === 'dark' ? data : []}
       region={{
         latitude: latitude,
         longitude: longitude,
@@ -114,7 +132,8 @@ export default function App({ navigation }: any) {
         longitudeDelta: longitudeDelta
       }}
     >
-      {markers.map((e, index)=>{
+      {markers.map((e, index) => {
+        const scale = (interpolations[index].scale)
         return (
           <Marker
             key={index}
@@ -122,10 +141,28 @@ export default function App({ navigation }: any) {
               latitude: e.coordinate.latitude,
               longitude: e.coordinate.longitude
             }}
-            title={e.title}
-            description={e.description} 
+            onPress={(mapEventData) => {
+              // @ts-ignore
+              const markerId = mapEventData._targetInst.return.key;
+              let x = (markerId * CARD_WIDTH)
+              _scrollView.current.scrollTo({ x: x, y: 0, animated: true })
+            }}
           >
-            <FontAwesome name="map-marker" size={50} color={colorScheme === "dark" ? 'white': 'red'} />
+            <Animated.View style={[
+              {
+                height: '150%',
+                width: '150%',
+              },
+              {
+                transform: [
+                  {
+                    scale: scale
+                  },
+                ],
+              },
+            ]}>
+              <FontAwesome name="map-marker" size={50} color={colorScheme === "dark" ? "white" : "red"} />
+            </Animated.View>
           </Marker>
         )
       })}
@@ -136,7 +173,7 @@ export default function App({ navigation }: any) {
         placeholder="Search Here"
         placeholderTextColor="#000"
         autoCapitalize="none"
-        style={{flex:1, padding:0}}
+        style={{ flex: 1, padding: 0 }}
       />
       <Ionicons name="ios-search" size={20} />
     </View>
@@ -150,7 +187,7 @@ export default function App({ navigation }: any) {
         paddingRight: 20
       }}
     >
-      {categories.map((e, index)=>{
+      {categories.map((e, index) => {
         return (<TouchableOpacity key={index} style={styles.chipsItem}>
           {e.icon}
           <Text>{e.name}</Text>
@@ -160,13 +197,14 @@ export default function App({ navigation }: any) {
     </ScrollView>
 
     <Animated.ScrollView
+      ref={_scrollView}
       horizontal
       disableScrollViewPanResponder={true}
       scrollEventThrottle={1}
       showsHorizontalScrollIndicator={false}
       style={styles.scrollView}
       pagingEnabled
-      snapToInterval={CARD_WIDTH+20}
+      snapToInterval={CARD_WIDTH + 20}
       snapToAlignment="center"
       decelerationRate="fast"
       contentInset={{
@@ -176,7 +214,7 @@ export default function App({ navigation }: any) {
         right: SPACING_FOR_CARD_INSET
       }}
       contentContainerStyle={{
-        paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET: 0
+        paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
       }}
       onScroll={Animated.event(
         [
@@ -188,12 +226,12 @@ export default function App({ navigation }: any) {
             }
           }
         ],
-        {useNativeDriver: true}
+        { useNativeDriver: true }
       )}
     >
-      {markers.map((e, index)=>{
-        return(<View style={styles.card} key={index}>
-          <Image 
+      {markers.map((e, index) => {
+        return (<View style={styles.card} key={index}>
+          <Image
             source={e.image}
             style={styles.cardImage}
             resizeMode="cover"
@@ -204,11 +242,11 @@ export default function App({ navigation }: any) {
             <Text numberOfLines={1} style={styles.cardDescription}>{e.description}</Text>
             <View style={styles.button}>
               <TouchableOpacity
-              onPress={()=>{}}
-              style={[styles.signIn, {
-                borderColor: '#FF6347',
-                borderWidth: 1,
-              }]}
+                onPress={() => { }}
+                style={[styles.signIn, {
+                  borderColor: '#FF6347',
+                  borderWidth: 1,
+                }]}
               >
                 <Text style={[styles.textSign, {
                   color: '#FF6347',
@@ -220,11 +258,11 @@ export default function App({ navigation }: any) {
             </View>
           </View>
         </View>)
-        
+
       })}
     </Animated.ScrollView>
 
-    <View style={{ position: 'absolute', top: flipPosition + 100, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
+    <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 100, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
       <TouchableOpacity onPress={goBack}>
         <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
       </TouchableOpacity>
@@ -238,12 +276,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchBox: {
-    position:'absolute', 
-    marginTop: Platform.OS === 'ios' ? 20 : 12, 
-    flexDirection:"row",
+    position: 'absolute',
+    marginTop: Platform.OS === 'ios' ? 40 : 12,
+    flexDirection: "row",
     backgroundColor: '#fff',
     width: '70%',
-    alignSelf:'center',
+    alignSelf: 'center',
     borderRadius: 5,
     padding: 10,
     shadowColor: '#ccc',
@@ -253,13 +291,13 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   chipsItem: {
-    flexDirection:"row",
-    backgroundColor:'#fff', 
-    borderRadius:20,
-    padding:8,
-    paddingHorizontal:20, 
-    marginHorizontal:10,
-    height:35,
+    flexDirection: "row",
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 8,
+    paddingHorizontal: 20,
+    marginHorizontal: 10,
+    height: 35,
     shadowColor: '#ccc',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.5,
@@ -267,9 +305,9 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   chipsScrollView: {
-    position:'absolute', 
-    top:Platform.OS === 'ios' ? 80 : 70, 
-    paddingHorizontal:10,
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 100 : 70,
+    paddingHorizontal: 10,
     width: '100%',
   },
   chipsIcon: {
@@ -322,8 +360,8 @@ const styles = StyleSheet.create({
   markerWrap: {
     alignItems: "center",
     justifyContent: "center",
-    width:50,
-    height:50,
+    width: 50,
+    height: 50,
   },
   marker: {
     width: 30,
@@ -334,14 +372,14 @@ const styles = StyleSheet.create({
     marginTop: 5
   },
   signIn: {
-      width: '100%',
-      padding:5,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: 3
+    width: '100%',
+    padding: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 3
   },
   textSign: {
-      fontSize: 14,
-      fontWeight: 'bold'
+    fontSize: 14,
+    fontWeight: 'bold'
   }
 });
