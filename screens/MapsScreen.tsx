@@ -1,6 +1,6 @@
 import * as React from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated, Button, Linking } from 'react-native';
 import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
@@ -12,15 +12,25 @@ import { Platform } from 'expo-modules-core';
 import { setStatusBarHidden } from 'expo-status-bar';
 import { Image } from 'react-native'
 import StarRating from '../components/StarRating';
-import { transform } from '@babel/core';
+import fetchData from '../api/googleMaps'
+import {categories} from '../components/categories'
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 const { width, height } = Dimensions.get("window");
-const CARD_HEIGHT = 220;
+const CARD_HEIGHT = 150;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 const latitudeDelta = 0.0922
-const longitudeDelta = 0.0421
+const longitudeDelta = 0.121
+
+const getFullText = (address:string) => {
+  let texts = address.split(' ')
+  let ans = ""
+  for (let i = 0; i < texts.length-1; i++) {
+    ans += texts[i] + "%20"
+  }
+  return ans
+}
 
 export default function App({ navigation }: any) {
   const colorScheme = useColorScheme();
@@ -32,53 +42,47 @@ export default function App({ navigation }: any) {
   let mapIndex = 0;
   let mapAnimation = new Animated.Value(0);
 
+  const findLink = (href:string) => {
+    let temp = href.split('"')
+    href = temp[1]
+
+    return href
+  }
+
   useEffect(() => {
     mapAnimation.addListener(({ value }) => {
-      let index = Math.floor(value / CARD_WIDTH + 0.3); // animate 30% away from landing on the next item
-      if (index >= markers.length) {
-        index = markers.length - 1;
-      }
-      if (index <= 0) {
-        index = 0;
-      }
-
-      // @ts-ignore
-      clearTimeout(regionTimeout);
-      const regionTimeout = setTimeout(() => {
-        if (mapIndex !== index) {
-          mapIndex = index;
-          const { coordinate } = markers[index];
-          _map.current.animateToRegion(
-            {
-              ...coordinate,
-              latitudeDelta: latitudeDelta,
-              longitudeDelta: longitudeDelta
-            },
-            300
-          );
+      if (JSON.stringify(mapData) !== '{}') {
+        let index = Math.floor(value / CARD_WIDTH + 0.3); // animate 30% away from landing on the next item
+        if (index >= mapData.results.length) {
+          index = mapData.results.length - 1;
         }
-      }, 10);
+        if (index <= 0) {
+          index = 0;
+        }
+  
+        // @ts-ignore
+        clearTimeout(regionTimeout);
+        const regionTimeout = setTimeout(() => {
+          if (mapIndex !== index && JSON.stringify(mapData) !== '{}') {
+            mapIndex = index;
+            
+            let lat = mapData.results[index].geometry.location.lat
+            let lng = mapData.results[index].geometry.location.lng
+  
+            _map.current.animateToRegion(
+              {
+                latitude: lat,
+                longitude: lng,
+                latitudeDelta: latitudeDelta,
+                longitudeDelta: longitudeDelta
+              },
+              300
+            );
+          }
+        }, 10);
+      }
     });
   });
-
-  const categories = [
-    {
-      name: "Wood",
-      icon: <MaterialCommunityIcons name="food" style={styles.chipsIcon} size={18} />
-    },
-    {
-      name: "Metal",
-      icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
-    },
-    {
-      name: "Plastic",
-      icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
-    },
-    {
-      name: "Food",
-      icon: <MaterialCommunityIcons name="food-fork-drink" style={styles.chipsIcon} size={18} />
-    },
-  ]
 
   if (Platform.OS === 'android') {
     setStatusBarHidden(true, 'none')
@@ -87,6 +91,8 @@ export default function App({ navigation }: any) {
   const goBack = () => {
     navigation.navigate('Home')
   }
+
+  const [mapData, setmapData] = useState({} as any)
 
   useEffect(() => {
     (async () => {
@@ -102,7 +108,14 @@ export default function App({ navigation }: any) {
     })();
   }, []);
 
-  const interpolations = markers.map((marker, index) => {
+  useEffect(() => { 
+    if (latitude !== 0 && longitude !== 0) {
+      fetchData(latitude, longitude, setmapData) 
+    } 
+  }, [longitude])
+  
+  let interpolations = {}
+  {JSON.stringify(mapData) !== '{}' ? interpolations = mapData.results.map((marker:any, index:any) => {
     const inputRange = [
       (index - 1) * CARD_WIDTH,
       index * CARD_WIDTH,
@@ -116,7 +129,7 @@ export default function App({ navigation }: any) {
     });
 
     return { scale };
-  });
+  }):interpolations={}};
 
   return (<>
 
@@ -132,14 +145,15 @@ export default function App({ navigation }: any) {
         longitudeDelta: longitudeDelta
       }}
     >
-      {markers.map((e, index) => {
+      { JSON.stringify(mapData) !== '{}' ? mapData.results.map((e:any, index:any) => {
+        // @ts-ignore
         const scale = (interpolations[index].scale)
         return (
           <Marker
             key={index}
             coordinate={{
-              latitude: e.coordinate.latitude,
-              longitude: e.coordinate.longitude
+              latitude: e.geometry.location.lat,
+              longitude: e.geometry.location.lng
             }}
             onPress={(mapEventData) => {
               // @ts-ignore
@@ -150,6 +164,7 @@ export default function App({ navigation }: any) {
           >
             <Animated.View style={[
               {
+             
                 height: '150%',
                 width: '150%',
               },
@@ -165,7 +180,7 @@ export default function App({ navigation }: any) {
             </Animated.View>
           </Marker>
         )
-      })}
+        }):<></>}
     </MapView>
 
     <View style={styles.searchBox}>
@@ -189,7 +204,7 @@ export default function App({ navigation }: any) {
     >
       {categories.map((e, index) => {
         return (<TouchableOpacity key={index} style={styles.chipsItem}>
-          {e.icon}
+          <Image source={e.icon} style={{width: 20, height:20, marginRight: 5}} />
           <Text>{e.name}</Text>
         </TouchableOpacity>)
       })}
@@ -229,37 +244,35 @@ export default function App({ navigation }: any) {
         { useNativeDriver: true }
       )}
     >
-      {markers.map((e, index) => {
+      {JSON.stringify(mapData) !== '{}' ? mapData.results.map((e:any, index:any) => {
         return (<View style={styles.card} key={index}>
-          <Image
-            source={e.image}
-            style={styles.cardImage}
-            resizeMode="cover"
-          />
           <View style={styles.textContent}>
-            <Text numberOfLines={1} style={styles.cardtitle}>{e.title}</Text>
-            <StarRating ratings={e.ratings} reviews={e.reviews} />
-            <Text numberOfLines={1} style={styles.cardDescription}>{e.description}</Text>
+            <Image
+              source={{uri: e.icon}}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+              <View>
+                <Text numberOfLines={1} style={styles.cardtitle}>{e.name}</Text>
+                <StarRating ratings={Math.round(e.rating)} reviews={e.user_ratings_total} />
+              </View>
+              <Text numberOfLines={1} style={styles.cardDescription}>{e.description}</Text>
+              {"photos" in e ? <Button title="Details" onPress={()=>{ Linking.openURL(findLink(e.photos[0].html_attributions[0]))}}>
+              </Button>: <></>}
+            </View>
             <View style={styles.button}>
               <TouchableOpacity
-                onPress={() => { }}
-                style={[styles.signIn, {
-                  borderColor: '#FF6347',
-                  borderWidth: 1,
-                }]}
+                onPress={() => {Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${e.vicinity}`)}}
+                style={styles.signIn}
               >
-                <Text style={[styles.textSign, {
-                  color: '#FF6347',
-                }]}>
-                  Order Now
-                </Text>
-
+                <Text style={{color: 'blue', textDecorationLine: 'underline'}}>{e.vicinity}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>)
 
-      })}
+      }):<></>}
     </Animated.ScrollView>
 
     <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 100, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
@@ -324,12 +337,12 @@ const styles = StyleSheet.create({
     paddingRight: width - CARD_WIDTH,
   },
   card: {
-    // padding: 10,
+    padding: 10,
     elevation: 2,
     backgroundColor: "#FFF",
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
+    borderRadius: 5,
     marginHorizontal: 10,
+    marginBottom: Platform.OS === "android" ? 40: 20,
     shadowColor: "#000",
     shadowRadius: 5,
     shadowOpacity: 0.3,
@@ -339,10 +352,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   cardImage: {
-    flex: 3,
-    width: "100%",
-    height: "100%",
-    alignSelf: "center",
+    width: 32,
+    height: 32,
   },
   textContent: {
     flex: 2,
@@ -380,6 +391,7 @@ const styles = StyleSheet.create({
   },
   textSign: {
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    marginBottom: 5
   }
 });
