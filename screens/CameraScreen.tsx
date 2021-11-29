@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import { Camera } from 'expo-camera';
 import { osName } from 'expo-device';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
@@ -8,28 +8,51 @@ import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
 import { Dimensions } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Col, Row, Grid } from "react-native-easy-grid";
+import { PinchGestureHandler } from 'react-native-gesture-handler';
+import Loading from '../components/Loading'
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
+function getBaseLog(x:any, y:any) {
+  return Math.log(y) / Math.log(x);
+}
+
 export default function CameraScreen({ navigation }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
+  const [zoom, setZoom] = useState(0)
 
   const [material, setMaterial] = useContext(ImageContext).material
   const [uri, setUri] = useContext(ImageContext).uri
   const [w, setW] = useContext(ImageContext).width
   const [h, setH] = useContext(ImageContext).height
+  const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
 
   const isFocused = useIsFocused();
+
+  const handleEvent = (e:any) => {
+    let newZoom =
+     e.nativeEvent.velocity > 0
+       ? zoom + e.nativeEvent.scale * e.nativeEvent.velocity * (Platform.OS === "ios" ? 0.001 : 5)
+       : zoom -
+       e.nativeEvent.scale * Math.abs(e.nativeEvent.velocity) * (Platform.OS === "ios" ? 0.002 : 5);
+
+    if (newZoom < 0) newZoom = 0;
+    else if (newZoom > 0.5) newZoom = 0.5;
+
+    setZoom(newZoom);
+  }
 
 
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
     const photo = await camera.takePictureAsync()
+
+    setIsLoading(true)
 
     const manipImage = await manipulateAsync(
       photo.uri,
@@ -47,7 +70,7 @@ export default function CameraScreen({ navigation }: any) {
     // @ts-ignore
     formData.append('file', { uri: localUri, name: filename, type });
 
-    const res = await fetch('http://100.64.57.231:5000/predict', {
+    const res = await fetch('http://10.0.0.222:5000/predict', {
       method: 'POST',
       body: formData,
       headers: {
@@ -62,6 +85,8 @@ export default function CameraScreen({ navigation }: any) {
     setW(manipImage.width)
     setH(manipImage.height)
 
+    setIsLoading(false)
+
     navigation.navigate('Home')
   }
 
@@ -75,70 +100,78 @@ export default function CameraScreen({ navigation }: any) {
       if (status !== 'granted') {
         navigation.navigate('Home')
       }
-      
     })();
   }, []);
 
   return (
-    <View>
-      {isFocused && <Camera
-        type={type}
-        flashMode={flash}
-        style={{ height: '100%' }}
-        ref={(r) => {
-          camera = r as Camera
-        }}
-      >
-        <Grid style={styles.bottomToolbar}>
-          <Row>
-            <Col style={styles.alignCenter}>
+    <PinchGestureHandler
+      onGestureEvent={handleEvent}
+    >
+      <View>
+        {isFocused && <Camera
+          type={type}
+          flashMode={flash}
+          ratio={"16:9"}
+          zoom={zoom}
+          style={{ height: '100%' }}
+          ref={(r) => {
+            camera = r as Camera
+          }}
+        >
+          <Loading />
+          
+          
+          <Grid style={styles.bottomToolbar}>
+            <Row>
+              <Col style={styles.alignCenter}>
 
-              <TouchableOpacity
-                onPress={() => {
-                  setFlash(
-                    flash === Camera.Constants.FlashMode.off
-                      ? Camera.Constants.FlashMode.on
-                      : Camera.Constants.FlashMode.off
-                  );
-                }}>
-                {
-                  flash === Camera.Constants.FlashMode.off ? (
-                    <Ionicons name="flash-off" size={30} color="white" />
-                  ) : (
-                    <Ionicons name="flash" size={30} color="white" />
-                  )
-                }
-              </TouchableOpacity>
-            </Col>
-            <Col size={2} style={styles.alignCenter}>
-              <TouchableOpacity
-                onPress={() => {
-                  __takePicture();
-                }}>
-                <View style={[styles.captureBtn]} />
-              </TouchableOpacity>
-            </Col>
-            <Col style={styles.alignCenter}>
-              <TouchableOpacity
-                onPress={() => {
-                  setType(
-                    type === Camera.Constants.Type.back
-                      ? Camera.Constants.Type.front
-                      : Camera.Constants.Type.back
-                  );
-                }}>
-                <MaterialIcons name="flip-camera-ios" size={30} color="white" />
-              </TouchableOpacity>
-            </Col>
-          </Row>
-        </Grid>
-        <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
-          <TouchableOpacity onPress={goBack}>
-            <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
-          </TouchableOpacity>
-        </View>
-      </Camera>}
-    </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    setFlash(
+                      flash === Camera.Constants.FlashMode.off
+                        ? Camera.Constants.FlashMode.on
+                        : Camera.Constants.FlashMode.off
+                    );
+                  }}>
+                  {
+                    flash === Camera.Constants.FlashMode.off ? (
+                      <Ionicons name="flash-off" size={30} color="white" />
+                    ) : (
+                      <Ionicons name="flash" size={30} color="white" />
+                    )
+                  }
+                </TouchableOpacity>
+              </Col>
+              <Col size={2} style={styles.alignCenter}>
+                <TouchableOpacity
+                  onPress={() => {
+                    __takePicture();
+                  }}>
+                  <View style={[styles.captureBtn]} />
+                </TouchableOpacity>
+              </Col>
+              <Col style={styles.alignCenter}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setType(
+                      type === Camera.Constants.Type.back
+                        ? Camera.Constants.Type.front
+                        : Camera.Constants.Type.back
+                    );
+                  }}>
+                  <MaterialIcons name="flip-camera-ios" size={30} color="white" />
+                </TouchableOpacity>
+              </Col>
+            </Row>
+          </Grid>
+          <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
+            <TouchableOpacity onPress={goBack}>
+              <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
+            </TouchableOpacity>
+          </View>
+        </Camera>}
+      </View>
+    </PinchGestureHandler>
   );
 }
 

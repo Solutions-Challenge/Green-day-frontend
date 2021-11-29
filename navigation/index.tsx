@@ -10,14 +10,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
-import { ColorSchemeName, Dimensions, Pressable, TouchableOpacity, View } from 'react-native';
+import { ColorSchemeName, Dimensions, TouchableOpacity, View } from 'react-native';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import TabOneScreen from '../screens/TabOneScreen';
-import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import { RootTabParamList } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 import CameraScreen from '../screens/CameraScreen';
 import MapsScreen from '../screens/MapsScreen';
@@ -68,7 +68,9 @@ const HomeTabs = ({ navigation }: any) => {
           tabBarShowLabel: false,
           headerShown: false,
           tabBarStyle: {
-            height: 60
+            height: 70,
+            borderRadius: 15,
+            position: 'absolute',
           }
         }}
        
@@ -79,8 +81,8 @@ const HomeTabs = ({ navigation }: any) => {
           options={() => ({
             title: 'Home',
             tabBarButton: () => 
-              <View style={{position: 'absolute', top: 10, left: windowWidth / 6}}>
-                <AntDesign name="home" size={24} color={colorScheme === 'dark' ? 'white': 'black'} />
+              <View style={{position: 'absolute', top: 20, left: windowWidth / 6}}>
+                <AntDesign name="home" size={30} color={colorScheme === 'dark' ? 'white': 'black'} />
               </View>,
           })}
         />
@@ -95,8 +97,8 @@ const HomeTabs = ({ navigation }: any) => {
                 size={44}
                 color="white"
                 style={{
-                  position: 'absolute',
-                  top: 11,
+                  position: 'absolute', 
+                  top: 11,      
                 }}
               />,
 
@@ -105,6 +107,10 @@ const HomeTabs = ({ navigation }: any) => {
                 <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
                   style={{
                     top: -30,
+                    shadowColor: colorScheme === 'dark' ? 'white' : 'black',
+                    shadowOffset: {width: 0, height: 4},
+                    shadowOpacity: 0.3,
+                    shadowRadius: 3,
                   }}
                 >
                   <View
@@ -128,9 +134,9 @@ const HomeTabs = ({ navigation }: any) => {
           options={() => ({
             title: 'Maps',
             tabBarButton: (props) =>
-            <View style={{position: 'absolute', top: 10, left: windowWidth * (5/6)}}>
+            <View style={{position: 'absolute', top: 20, left: windowWidth * (5/6)}}>
               <TouchableOpacity onPress={() => { navigation.navigate('Maps') }}>
-                <MaterialCommunityIcons name="google-maps" size={24} color={colorScheme === 'dark' ? 'white': 'black'} />
+                <MaterialCommunityIcons name="google-maps" size={30} color={colorScheme === 'dark' ? 'white': 'black'} />
               </TouchableOpacity>
             </View>
 
@@ -173,6 +179,3 @@ function TabBarIcon(props: {
 }) {
   return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
 }
-
- // #03C04A (emerald Green)
- // #246EE9 (royal Blue)

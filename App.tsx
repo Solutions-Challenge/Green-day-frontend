@@ -12,7 +12,8 @@ const Pic = {
   material: 0,
   uri: '',
   width: 0,
-  height: 0
+  height: 0,
+  isLoading: false,
 }
 
 
@@ -24,13 +25,14 @@ export default function App() {
   const [uri, setUri] = useState(Pic.uri)
   const [width, setWidth] = useState(Pic.width)
   const [height, setHeight] = useState(Pic.height)
+  const [isLoading, setIsLoading] = useState(Pic.isLoading)
 
   const store = {
     height: [height, setHeight],
     width: [width, setWidth],
     uri: [uri, setUri],
-    material: [material, setMaterial]
-
+    material: [material, setMaterial],
+    isLoading: [isLoading, setIsLoading]
   }
 
   if (!isLoadingComplete) {
