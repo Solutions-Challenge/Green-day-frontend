@@ -81,7 +81,7 @@ const HomeTabs = ({ navigation }: any) => {
           options={() => ({
             title: 'Home',
             tabBarButton: () => 
-              <View style={{position: 'absolute', top: 20, left: windowWidth / 6}}>
+              <View style={{position: 'absolute', top: 20, left: windowWidth / 6 -15}}>
                 <AntDesign name="home" size={30} color={colorScheme === 'dark' ? 'white': 'black'} />
               </View>,
           })}
@@ -134,7 +134,7 @@ const HomeTabs = ({ navigation }: any) => {
           options={() => ({
             title: 'Maps',
             tabBarButton: (props) =>
-            <View style={{position: 'absolute', top: 20, left: windowWidth * (5/6)}}>
+            <View style={{position: 'absolute', top: 20, left: windowWidth * (5/6) - 15}}>
               <TouchableOpacity onPress={() => { navigation.navigate('Maps') }}>
                 <MaterialCommunityIcons name="google-maps" size={30} color={colorScheme === 'dark' ? 'white': 'black'} />
               </TouchableOpacity>

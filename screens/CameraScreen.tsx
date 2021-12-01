@@ -50,7 +50,7 @@ export default function CameraScreen({ navigation }: any) {
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
-    const photo = await camera.takePictureAsync()
+    const photo = await camera.takePictureAsync({ skipProcessing: true })
 
     setIsLoading(true)
 
@@ -70,7 +70,7 @@ export default function CameraScreen({ navigation }: any) {
     // @ts-ignore
     formData.append('file', { uri: localUri, name: filename, type });
 
-    const res = await fetch('http://10.0.0.222:5000/predict', {
+    const res = await fetch('http://100.64.57.223:5000/predict', {
       method: 'POST',
       body: formData,
       headers: {
@@ -84,7 +84,6 @@ export default function CameraScreen({ navigation }: any) {
     setUri(manipImage.uri)
     setW(manipImage.width)
     setH(manipImage.height)
-
     setIsLoading(false)
 
     navigation.navigate('Home')
@@ -164,7 +163,7 @@ export default function CameraScreen({ navigation }: any) {
               </Col>
             </Row>
           </Grid>
-          <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 60 }}>
+          <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>
             <TouchableOpacity onPress={goBack}>
               <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
             </TouchableOpacity>

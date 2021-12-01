@@ -116,7 +116,6 @@ export default function App({ navigation }: any) {
 
   return (<SafeAreaView style={{flex: 1}}>
     <Loading />
-
     <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill: {flex: 1}}
       ref={_map}
       provider={PROVIDER_GOOGLE}
@@ -154,7 +153,7 @@ export default function App({ navigation }: any) {
                 width: '100%',
               }
             ]}>
-              <FontAwesome name="map-marker" size={50} color={colorScheme === "dark" ? "white" : "red"} />
+              <FontAwesome name="map-marker" size={30} color={colorScheme === "dark" ? "white" : "red"} />
             </Animated.View>
           </Marker>
         )
@@ -255,7 +254,7 @@ export default function App({ navigation }: any) {
       }):<></>}
     </Animated.ScrollView>
 
-    <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 23, left: 12, backgroundColor: "black", borderRadius: 60 }}>
+    <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 12, left: 12, backgroundColor: "black", borderRadius: 60 }}>
       <TouchableOpacity onPress={goBack}>
         <Ionicons name="ios-arrow-back-sharp" size={35} color="white" />
       </TouchableOpacity>
@@ -270,7 +269,7 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     position: 'absolute',
-    marginTop: Platform.OS === 'ios' ? 40 : flipPosition + 20,
+    marginTop: Platform.OS === 'ios' ? 40 : flipPosition + 11,
     flexDirection: "row",
     backgroundColor: '#fff',
     width: '70%',
@@ -308,7 +307,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     position: "absolute",
-    bottom: 20,
+    bottom: Platform.OS === 'android' ? 20: 40,
     left: 0,
     right: 0,
     paddingVertical: 10,
