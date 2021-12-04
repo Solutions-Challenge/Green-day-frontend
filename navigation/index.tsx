@@ -16,12 +16,14 @@ import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
-import TabOneScreen from '../screens/TabOneScreen';
+import TabOneScreen from '../screens/HomeScreen';
 import { RootTabParamList } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 import CameraScreen from '../screens/CameraScreen';
 import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import GalleryScreen from '../screens/GalleryScreen';
+import HomeScreen from '../screens/HomeScreen';
 const windowWidth = Dimensions.get('window').width;
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -60,90 +62,108 @@ const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 const HomeTabs = ({ navigation }: any) => {
   const colorScheme = useColorScheme();
-  return ( 
-      <BottomTab.Navigator
-        initialRouteName="Home"
-        screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme].tint,
-          tabBarShowLabel: false,
-          headerShown: false,
-          tabBarStyle: {
-            height: 70,
-            borderRadius: 15,
-            position: 'absolute',
-          }
-        }}
-       
-      >
-        <BottomTab.Screen
-          name="Home"
-          component={TabOneScreen}
-          options={() => ({
-            title: 'Home',
-            tabBarButton: () => 
-              <View style={{position: 'absolute', top: 20, left: windowWidth / 6 -15}}>
-                <AntDesign name="home" size={30} color={colorScheme === 'dark' ? 'white': 'black'} />
-              </View>,
-          })}
-        />
-        <BottomTab.Screen
-          name="Pic"
-          component={CameraScreen}
-          options={() => ({
-            title: 'Pic',
-            tabBarIcon: () =>
-              <Feather
-                name="camera"
-                size={44}
-                color="white"
-                style={{
-                  position: 'absolute', 
-                  top: 11,      
-                }}
-              />,
+  return (
+    <BottomTab.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme].tint,
+        tabBarShowLabel: false,
+        headerShown: false,
+        tabBarStyle: {
+          height: 70,
+          borderRadius: 15,
+          position: 'absolute',
+        }
+      }}
 
-            tabBarButton: (props) =>
-              <View style={{position: 'absolute', top: -5, left: windowWidth / 2 - 35}}>
-                <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
-                  style={{
-                    top: -30,
-                    shadowColor: colorScheme === 'dark' ? 'white' : 'black',
-                    shadowOffset: {width: 0, height: 4},
-                    shadowOpacity: 0.3,
-                    shadowRadius: 3,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 70,
-                      height: 70,
-                      borderRadius: 35,
-                      backgroundColor: "#246EE9",
-                    }}
-                  >
-                    {props.children}
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-          })}
-        />
-        <BottomTab.Screen
-          name="Maps"
-          component={MapsScreen}
-          options={() => ({
-            title: 'Maps',
-            tabBarButton: (props) =>
-            <View style={{position: 'absolute', top: 20, left: windowWidth * (5/6) - 15}}>
-              <TouchableOpacity onPress={() => { navigation.navigate('Maps') }}>
-                <MaterialCommunityIcons name="google-maps" size={30} color={colorScheme === 'dark' ? 'white': 'black'} />
+    >
+      <BottomTab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={() => ({
+          title: 'Home',
+          tabBarButton: (props) =>
+            <View style={{ position: 'absolute', top: 20, left: windowWidth * (1 / 6) - 15 }}>
+              <TouchableOpacity onPress={() => { navigation.navigate('Home') }}>
+                <AntDesign name="home" size={30} color={colorScheme === 'dark' ? 'white' : 'black'} />
               </TouchableOpacity>
             </View>
 
-          })}
-        />
-      </BottomTab.Navigator>
-   
+        })}
+      />
+
+      <BottomTab.Screen
+        name="Gallery"
+        component={GalleryScreen}
+        options={() => ({
+          title: 'Gallery',
+          tabBarButton: (props) =>
+            <View style={{ position: 'absolute', top: 20, left: windowWidth / 6 + 20 }}>
+              <TouchableOpacity onPress={() => { navigation.navigate('Gallery') }}>
+                <FontAwesome name="photo" size={30} color={colorScheme === 'dark' ? 'white' : 'black'} />
+              </TouchableOpacity>
+            </View>
+
+        })}
+      />
+      <BottomTab.Screen
+        name="Pic"
+        component={CameraScreen}
+        options={() => ({
+          title: 'Pic',
+          tabBarIcon: () =>
+            <Feather
+              name="camera"
+              size={44}
+              color="white"
+              style={{
+                position: 'absolute',
+                top: 11,
+              }}
+            />,
+
+          tabBarButton: (props) =>
+            <View style={{ position: 'absolute', top: -5, left: windowWidth / 2 - 35 }}>
+              <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
+                style={{
+                  top: -30,
+                  shadowColor: colorScheme === 'dark' ? 'white' : 'black',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 3,
+                }}
+              >
+                <View
+                  style={{
+                    width: 70,
+                    height: 70,
+                    borderRadius: 35,
+                    backgroundColor: "#246EE9",
+                  }}
+                >
+                  {props.children}
+                </View>
+              </TouchableOpacity>
+            </View>
+
+        })}
+      />
+      <BottomTab.Screen
+        name="Maps"
+        component={MapsScreen}
+        options={() => ({
+          title: 'Maps',
+          tabBarButton: (props) =>
+            <View style={{ position: 'absolute', top: 20, left: windowWidth * (5 / 6) - 15 }}>
+              <TouchableOpacity onPress={() => { navigation.navigate('Maps') }}>
+                <MaterialCommunityIcons name="google-maps" size={30} color={colorScheme === 'dark' ? 'white' : 'black'} />
+              </TouchableOpacity>
+            </View>
+
+        })}
+      />
+    </BottomTab.Navigator>
+
   )
 }
 

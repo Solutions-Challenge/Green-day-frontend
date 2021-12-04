@@ -1,6 +1,8 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-let categories = [
+const categories = [
+  {
+    name: 'empty',
+    icon: require('../assets/images/Materials/empty.png')
+  },
   {
     name: 'Wood',
     icon: require('../assets/images/Materials/Wood.png')

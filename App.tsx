@@ -6,6 +6,7 @@ import useCachedResources from './hooks/useCachedResources';
 import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import ImageContext from './hooks/imageContext';
+import Loading from './components/Loading';
 
 
 const Pic = {
@@ -41,6 +42,7 @@ export default function App() {
     return ( 
       <ImageContext.Provider value={store}>
         <SafeAreaProvider>
+          <Loading />
           <Navigation colorScheme={colorScheme} />
           <StatusBar />
         </SafeAreaProvider>

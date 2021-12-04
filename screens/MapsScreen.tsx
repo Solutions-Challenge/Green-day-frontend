@@ -13,7 +13,6 @@ import StarRating from '../components/StarRating';
 import fetchData from '../api/googleMaps'
 import categories from '../components/categories'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Loading from '../components/Loading'
 import ImageContext from '../hooks/imageContext';
 
 
@@ -115,7 +114,6 @@ export default function App({ navigation }: any) {
   }, [longitude])
 
   return (<SafeAreaView style={{flex: 1}}>
-    <Loading />
     <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill: {flex: 1}}
       ref={_map}
       provider={PROVIDER_GOOGLE}
