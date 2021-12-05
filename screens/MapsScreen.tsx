@@ -14,6 +14,7 @@ import fetchData from '../api/googleMaps'
 import categories from '../components/categories'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageContext from '../hooks/imageContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 let flipPosition = Platform.OS === "android" ? StatusBar.currentHeight as number : 30
@@ -108,9 +109,23 @@ export default function App({ navigation }: any) {
   }, []);
 
   useEffect(() => { 
-    if (latitude !== 0 && longitude !== 0) {
-      fetchData(latitude, longitude, setmapData) 
-    } 
+    (async () => {
+      if (latitude !== 0 && longitude !== 0) {
+        let mapCache = await AsyncStorage.getItem("MapCache")
+        if (mapCache === null) {
+          let item = await fetchData(latitude, longitude)
+          await AsyncStorage.setItem("MapCache", JSON.stringify(item))
+        }
+        
+        await AsyncStorage.getItem("MapCache")
+        .then((res)=>{
+          let item = JSON.parse(res as string)
+          setmapData(item)
+        })
+        
+        
+      } 
+    })();
   }, [longitude])
 
   return (<SafeAreaView style={{flex: 1}}>
