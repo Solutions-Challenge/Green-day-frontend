@@ -6,7 +6,7 @@ import { Dimensions, Image, Platform, StatusBar, StyleSheet, Button } from 'reac
 import categories from '../components/categories';
 
 
-const imageClassification = ({material, uri, width}:any) => {
+const ImageClassification = ({material, uri, width}:any) => {
 
     // allows the home page to handle categories without icons
     let index = 0
@@ -46,4 +46,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default imageClassification
+export default ImageClassification

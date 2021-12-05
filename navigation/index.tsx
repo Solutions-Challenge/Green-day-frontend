@@ -16,13 +16,11 @@ import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
-import TabOneScreen from '../screens/HomeScreen';
 import { RootTabParamList } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 import CameraScreen from '../screens/CameraScreen';
 import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import GalleryScreen from '../screens/GalleryScreen';
 import HomeScreen from '../screens/HomeScreen';
 const windowWidth = Dimensions.get('window').width;
 
@@ -92,20 +90,6 @@ const HomeTabs = ({ navigation }: any) => {
         })}
       />
 
-      <BottomTab.Screen
-        name="Gallery"
-        component={GalleryScreen}
-        options={() => ({
-          title: 'Gallery',
-          tabBarButton: (props) =>
-            <View style={{ position: 'absolute', top: 20, left: windowWidth / 6 + 20 }}>
-              <TouchableOpacity onPress={() => { navigation.navigate('Gallery') }}>
-                <FontAwesome name="photo" size={30} color={colorScheme === 'dark' ? 'white' : 'black'} />
-              </TouchableOpacity>
-            </View>
-
-        })}
-      />
       <BottomTab.Screen
         name="Pic"
         component={CameraScreen}

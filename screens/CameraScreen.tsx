@@ -21,42 +21,42 @@ export default function CameraScreen({ navigation }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0)
-
-  const [material, setMaterial] = useContext(ImageContext).material
-  const [uri, setUri] = useContext(ImageContext).uri
-  const [w, setW] = useContext(ImageContext).width
-  const [h, setH] = useContext(ImageContext).height
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
 
   const isFocused = useIsFocused();
 
-  const save = async(material:string, uri:string, width:number) => {
+  const save = async (material: string, uri: string, width: number) => {
 
-      let ImageClassify = await AsyncStorage.getItem("ImageClassify")
-      if (ImageClassify == null) {
-        await AsyncStorage.setItem("ImageClassify", JSON.stringify([{}]))
-      }
-      else {
-        let items = JSON.parse(ImageClassify)
+    let ImageClassify = await AsyncStorage.getItem("ImageClassify")
+    let items:any = []
 
-        if (items.length > 10) {
-          items.pop(0)
-        }
-
-        items.push({
-          material: material,
-          uri: uri,
-          width: width
-        })
-        await AsyncStorage.setItem("ImageClassify", JSON.stringify(items))
-      }
+    if (ImageClassify === null) {
+      await AsyncStorage.setItem("ImageClassify", JSON.stringify([]))
     }
 
-  const handleEvent = (e:any) => {
+    await AsyncStorage.getItem("ImageClassify")
+    .then((res)=>{
+      items = JSON.parse(res as string)
+
+      if (items.length > 10) {
+        items.pop()
+      }
+
+      items.push({
+        material: material,
+        uri: uri,
+        width: width
+      })
+
+    })
+    await AsyncStorage.setItem("ImageClassify", JSON.stringify(items))
+  }
+
+  const handleEvent = (e: any) => {
     let newZoom =
-     e.nativeEvent.velocity > 0
-       ? zoom + e.nativeEvent.scale * e.nativeEvent.velocity * (Platform.OS === "ios" ? 0.001 : 5)
-       : zoom - e.nativeEvent.scale * Math.abs(e.nativeEvent.velocity) * (Platform.OS === "ios" ? 0.002 : 5);
+      e.nativeEvent.velocity > 0
+        ? zoom + e.nativeEvent.scale * e.nativeEvent.velocity * (Platform.OS === "ios" ? 0.001 : 5)
+        : zoom - e.nativeEvent.scale * Math.abs(e.nativeEvent.velocity) * (Platform.OS === "ios" ? 0.002 : 5);
 
     if (newZoom < 0) newZoom = 0;
     else if (newZoom > 0.5) newZoom = 0.5;
@@ -79,15 +79,15 @@ export default function CameraScreen({ navigation }: any) {
           width: photo.width,
           height: photo.height
         }
-        },
-        {
-          crop: {
-            originX: 0,
-            originY: (photo.height - photo.width) / 2,
-            width: photo.width,
-            height: photo.width
-          }
+      },
+      {
+        crop: {
+          originX: 0,
+          originY: (photo.height - photo.width) / 2,
+          width: photo.width,
+          height: photo.width
         }
+      }
       ],
       {
         format: 'jpeg' as SaveFormat,
@@ -116,14 +116,10 @@ export default function CameraScreen({ navigation }: any) {
 
     const data = await res.json()
 
-    setMaterial(data.material)
-    setUri(manipImage.uri)
-    setW(windowWidth)
-    setH(windowHeight)
     setIsLoading(false)
 
     save(data.material, manipImage.uri, windowWidth)
-  
+
     navigation.navigate('Home')
   }
 
@@ -154,7 +150,7 @@ export default function CameraScreen({ navigation }: any) {
           ref={(r) => {
             camera = r as Camera
           }}
-        > 
+        >
           <Grid style={styles.bottomToolbar}>
             <Row>
               <Col style={styles.alignCenter}>
@@ -203,18 +199,18 @@ export default function CameraScreen({ navigation }: any) {
               <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
             </TouchableOpacity>
           </View>
-         
-              <Svg
-                width={windowWidth}
-                height={windowHeight}
-              >
-                <Rect x={0} y={(windowHeight - windowWidth) / 2} width={windowWidth} height={windowWidth} stroke="white" strokeWidth="5" />
-              </Svg>
-               
+
+          <Svg
+            width={windowWidth}
+            height={windowHeight}
+          >
+            <Rect x={0} y={(windowHeight - windowWidth) / 2} width={windowWidth} height={windowWidth} stroke="white" strokeWidth="5" />
+          </Svg>
+
         </Camera>}
       </View>
     </PinchGestureHandler>
-    
+
   </>);
 }
 
