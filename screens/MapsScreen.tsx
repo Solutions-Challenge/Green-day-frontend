@@ -25,6 +25,24 @@ const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 const latitudeDelta = 0.0922
 const longitudeDelta = 0.121
 
+function getDistanceFromLatLonInKm(lat1:number,lon1:number,lat2:number,lon2:number) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg:number) {
+  return deg * (Math.PI/180)
+}
+
 export default function App({ navigation }: any) {
   const colorScheme = useColorScheme();
   const [latitude, setLatitude] = useState(0)
@@ -110,11 +128,29 @@ export default function App({ navigation }: any) {
 
   useEffect(() => { 
     (async () => {
+      
       if (latitude !== 0 && longitude !== 0) {
         let mapCache = await AsyncStorage.getItem("MapCache")
         if (mapCache === null) {
           let item = await fetchData(latitude, longitude)
           await AsyncStorage.setItem("MapCache", JSON.stringify(item))
+          await AsyncStorage.setItem("CurrentLocation", JSON.stringify({latitude: latitude, longitude: longitude}))
+        }
+        
+        let check = false
+        await AsyncStorage.getItem("CurrentLocation")
+        .then((res)=>{
+          let item = JSON.parse(res as string)
+          let distance = getDistanceFromLatLonInKm(latitude, longitude, item.latitude, item.longitude)
+          if (distance > 16.0934) {
+            check = true
+          }
+        })
+
+        if (check) {
+          let item = await fetchData(latitude, longitude)
+          await AsyncStorage.setItem("MapCache", JSON.stringify(item))
+          await AsyncStorage.setItem("CurrentLocation", JSON.stringify({latitude: latitude, longitude: longitude}))
         }
         
         await AsyncStorage.getItem("MapCache")
