@@ -9,28 +9,33 @@ import { useFocusEffect } from '@react-navigation/core';
 
 export default function HomeScreen() {
     const colorScheme = useColorScheme()
-    const [data, setData] = useState([{ material: '', width: 0, uri: '' }])
+    const [lenImage, setLenImage] = useState(0)
+    const [data, setData] = useState([])
 
     const load = async () => {
-        try {
-            let ImageClassify = await AsyncStorage.getItem("ImageClassify")
-            if (ImageClassify != null) {
-                setData(JSON.parse(ImageClassify).reverse())
+
+        let ImageClassify = await AsyncStorage.getItem("ImageClassify")
+        if (ImageClassify === null) {
+            await AsyncStorage.setItem("ImageClassify", JSON.stringify(data))
+        }
+        await AsyncStorage.getItem("ImageClassify")
+        .then((res)=>{
+            let item = JSON.parse(res as string).reverse()
+            if (item != []) {
+                setData(item)
+                setLenImage(lenImage+1)
             }
-        }
-        catch (err) {
-            alert(err)
-        }
+        })
     }
 
-    useFocusEffect(() => {
+    useEffect(() => {
         (async () => {
             load()
         })();
-    });
+    }), [lenImage];
 
     return (<>
-        {data[0].uri === "" ? (
+        {data.length === 0 ? (
             <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black'  }}>No Picture Taken</Text>
                 <Image source={require("../assets/images/empty.png")} />
@@ -45,6 +50,7 @@ export default function HomeScreen() {
             >
                 {data.map((e, index) => {
                     return (
+                        // @ts-ignore
                         <ImageClassification key={index} material={e.material} uri={e.uri} width={e.width} />
                     )
                 })}

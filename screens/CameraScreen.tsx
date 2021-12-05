@@ -27,12 +27,7 @@ export default function CameraScreen({ navigation }: any) {
 
   const save = async (material: string, uri: string, width: number) => {
 
-    let ImageClassify = await AsyncStorage.getItem("ImageClassify")
     let items:any = []
-
-    if (ImageClassify === null) {
-      await AsyncStorage.setItem("ImageClassify", JSON.stringify([]))
-    }
 
     await AsyncStorage.getItem("ImageClassify")
     .then((res)=>{
