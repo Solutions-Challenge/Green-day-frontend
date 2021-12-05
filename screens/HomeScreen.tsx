@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import * as React from 'react'
 import { Animated, Image, StyleSheet, View, Text } from 'react-native';
 
@@ -6,15 +6,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImageClassification from '../components/imageClassification';
 import useColorScheme from '../hooks/useColorScheme';
 import { useFocusEffect } from '@react-navigation/core';
+import ImageContext from '../hooks/imageContext';
 
 export default function HomeScreen() {
     const colorScheme = useColorScheme()
     const [lenImage, setLenImage] = useState(0)
     const [data, setData] = useState([])
+    const [uri, setUri] = useContext(ImageContext).uri
 
     const load = async () => {
 
         let ImageClassify = await AsyncStorage.getItem("ImageClassify")
+        console.log('test')
         if (ImageClassify === null) {
             await AsyncStorage.setItem("ImageClassify", JSON.stringify(data))
         }
@@ -23,7 +26,6 @@ export default function HomeScreen() {
             let item = JSON.parse(res as string).reverse()
             if (item != []) {
                 setData(item)
-                setLenImage(lenImage+1)
             }
         })
     }
@@ -32,7 +34,7 @@ export default function HomeScreen() {
         (async () => {
             load()
         })();
-    }), [lenImage];
+    }, [uri]);
 
     return (<>
         {data.length === 0 ? (

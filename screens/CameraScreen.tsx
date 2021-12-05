@@ -22,6 +22,7 @@ export default function CameraScreen({ navigation }: any) {
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0)
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
+  const [uri, setUri] = useContext(ImageContext).uri
 
   const isFocused = useIsFocused();
 
@@ -114,6 +115,7 @@ export default function CameraScreen({ navigation }: any) {
     setIsLoading(false)
 
     save(data.material, manipImage.uri, windowWidth)
+    setUri(manipImage.uri)
 
     navigation.navigate('Home')
   }
