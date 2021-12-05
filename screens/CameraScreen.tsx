@@ -24,6 +24,7 @@ export default function CameraScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
   const [uri, setUri] = useContext(ImageContext).uri
 
+
   const isFocused = useIsFocused();
 
   const save = async (material: string, uri: string, width: number) => {
@@ -39,9 +40,14 @@ export default function CameraScreen({ navigation }: any) {
       }
 
       items.push({
+        key: 0,
         material: material,
         uri: uri,
         width: width
+      })
+
+      items.map((e:any, index:number)=>{
+        e.key = index
       })
 
     })
