@@ -13,6 +13,7 @@ const windowWidth = Dimensions.get('window').width;
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
+
 export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [lenImage, setLenImage] = useState(0)
@@ -138,11 +139,6 @@ export default function HomeScreen({ navigation }: any) {
 
     return (<>
         {data.length === 0 ? (<>
-            <View style={{ position: 'absolute', top: flipPosition + 30, right: 20}}>
-                <TouchableOpacity onPress={go_to_feedback}>
-                    <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white": "black"} />
-                </TouchableOpacity>
-            </View>
             <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>
                 <Image source={require("../assets/images/empty.png")} />
@@ -164,6 +160,11 @@ export default function HomeScreen({ navigation }: any) {
             >
             </SwipeListView>
         </>)}
+        <View style={{position: 'absolute', top: flipPosition + 10, right: 20}}>
+            <TouchableOpacity onPress={go_to_feedback}>
+                <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white": "black"} />
+            </TouchableOpacity>
+        </View>
     </>);
 }
 

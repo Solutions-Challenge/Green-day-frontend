@@ -60,16 +60,10 @@ const FeedbackScreen = ({ navigation }: any) => {
 
 
     return (<>
-        <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>
-            <TouchableOpacity onPress={goBack}>
-                <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
-            </TouchableOpacity>
-        </View>
-
         {submitted ?
-            
+
             <View style={styles.container}>
-                <Image source={require('../assets/images/checkMark.gif')} resizeMode={"cover"} style={{width: 160, height: 160, borderRadius: 80, overflow: "hidden", overlayColor: colorScheme === "dark" ? "black" : "white"}}/>
+                <Image source={require('../assets/images/checkMark.gif')} resizeMode={"cover"} style={{ width: 160, height: 160, borderRadius: 80, overflow: "hidden", overlayColor: colorScheme === "dark" ? "black" : "white" }} />
                 <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 30 }}>Thanks for the feedback!</Text>
             </View>
 
@@ -77,12 +71,12 @@ const FeedbackScreen = ({ navigation }: any) => {
 
             <View style={styles.container}>
 
-                <Text style={{fontSize: 20, color: colorScheme === "dark" ? "white" : "black", paddingBottom: 10}}>Send us a message!</Text>
-                <View style={{ backgroundColor: colorScheme === "dark" ? "#2a2a2a": '#EEEEEE', padding: 20, borderRadius: 3 }}>
-                    <TextInput placeholder="Name" autoCompleteType={'name'} style={styles.inputStyle} onChangeText={(res) => setName(res)} />
-                    <TextInput placeholder="Email" autoCompleteType={'email'} keyboardType={'email-address'} textContentType={'emailAddress'} style={styles.inputStyle} onChangeText={(res) => setEmail(res)} />
-                    <TextInput placeholder="Subject Line" spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setSubject(res)} />
-                    <TextInput placeholder="Message" spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setMessage(res)} />
+                <Text style={{ fontSize: 20, color: colorScheme === "dark" ? "white" : "black", paddingBottom: 10 }}>Send us some feedback of our product!</Text>
+                <View style={{ backgroundColor: colorScheme === "dark" ? "#2a2a2a" : '#EEEEEE', padding: 20, borderRadius: 3 }}>
+                    <TextInput placeholder="Name" placeholderTextColor={'black'} autoCompleteType={'name'} style={styles.inputStyle} onChangeText={(res) => setName(res)} />
+                    <TextInput placeholder="Email" placeholderTextColor={'black'} autoCompleteType={'email'} keyboardType={'email-address'} textContentType={'emailAddress'} style={styles.inputStyle} onChangeText={(res) => setEmail(res)} />
+                    <TextInput placeholder="Subject Line" placeholderTextColor={'black'} spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setSubject(res)} />
+                    <TextInput placeholder="Message" placeholderTextColor={'black'} spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setMessage(res)} />
                     <TouchableOpacity style={styles.ButtonContainer} onPress={handleSubmit}>
                         <Text style={styles.ButtonText}>Submit</Text>
                     </TouchableOpacity>
@@ -90,6 +84,12 @@ const FeedbackScreen = ({ navigation }: any) => {
             </View>
 
         }
+        <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>
+            <TouchableOpacity onPress={goBack}>
+                <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
+            </TouchableOpacity>
+        </View>
+
     </>)
 }
 
