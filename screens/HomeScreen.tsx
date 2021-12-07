@@ -8,7 +8,6 @@ import useColorScheme from '../hooks/useColorScheme';
 import ImageContext from '../hooks/imageContext';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import Navigation from '../navigation';
 import { osName } from 'expo-device';
 const windowWidth = Dimensions.get('window').width;
 
@@ -139,7 +138,7 @@ export default function HomeScreen({ navigation }: any) {
 
     return (<>
         {data.length === 0 ? (<>
-            <View style={{ position: 'absolute', top: flipPosition + 30, right: 20, backgroundColor: 'black', borderRadius: 60 }}>
+            <View style={{ position: 'absolute', top: flipPosition + 30, right: 20}}>
                 <TouchableOpacity onPress={go_to_feedback}>
                     <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white": "black"} />
                 </TouchableOpacity>

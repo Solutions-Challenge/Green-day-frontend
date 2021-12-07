@@ -1,7 +1,10 @@
 import { Ionicons } from "@expo/vector-icons"
 import { osName } from "expo-device"
-import React, { useState } from "react"
-import { StatusBar, TouchableOpacity, View, StyleSheet, TextInput, Text } from "react-native"
+import React, { useContext, useState } from "react"
+import { StatusBar, TouchableOpacity, View, StyleSheet, TextInput, Text, Image } from "react-native"
+import ImageContext from "../hooks/imageContext"
+import useColorScheme from '../hooks/useColorScheme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
@@ -15,8 +18,10 @@ const FeedbackScreen = ({ navigation }: any) => {
     const [subject, setSubject] = useState('')
     const [message, setMessage] = useState('')
     const [submitted, setSubmitted] = useState(false)
+    const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
+    const colorScheme = useColorScheme()
 
-    const handleSubmit = async() => {
+    const handleSubmit = async () => {
 
         let data = {
             name,
@@ -25,6 +30,8 @@ const FeedbackScreen = ({ navigation }: any) => {
             message
         }
 
+        setIsLoading(true)
+
 
         const res = await fetch('http://100.64.56.31:4000/send_mail', {
             method: 'POST',
@@ -32,9 +39,23 @@ const FeedbackScreen = ({ navigation }: any) => {
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
-              },
+            },
         })
-        
+
+        setIsLoading(false)
+
+        setName('')
+        setEmail('')
+        setSubject('')
+        setMessage('')
+
+        setSubmitted(true)
+
+        setTimeout(() => {
+            setSubmitted(false)
+            goBack()
+        }, 4400)
+
     }
 
 
@@ -44,18 +65,31 @@ const FeedbackScreen = ({ navigation }: any) => {
                 <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
             </TouchableOpacity>
         </View>
-        <View style={styles.container}>
 
-            <View style={{ backgroundColor: '#EEEEEE', padding: 20, borderRadius: 3 }}>
-                <TextInput placeholder="Name" style={styles.inputStyle} onChangeText={(res)=>setName(res)} />
-                <TextInput placeholder="Email" style={styles.inputStyle} onChangeText={(res)=>setEmail(res)}  />
-                <TextInput placeholder="Subject Line" style={styles.inputStyle} onChangeText={(res)=>setSubject(res)}  />
-                <TextInput placeholder="Message" style={styles.inputStyle} onChangeText={(res)=>setMessage(res)}  />
-                <TouchableOpacity style={styles.ButtonContainer} onPress={handleSubmit}>
-                    <Text style={styles.ButtonText}>Submit</Text>
-                </TouchableOpacity>
+        {submitted ?
+            
+            <View style={styles.container}>
+                <Image source={require('../assets/images/checkMark.gif')} resizeMode={"cover"} style={{width: 160, height: 160, borderRadius: 80, overflow: "hidden", overlayColor: colorScheme === "dark" ? "black" : "white"}}/>
+                <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 30 }}>Thanks for the feedback!</Text>
             </View>
-        </View>
+
+            :
+
+            <View style={styles.container}>
+
+                <Text style={{fontSize: 20, color: colorScheme === "dark" ? "white" : "black", paddingBottom: 10}}>Send us a message!</Text>
+                <View style={{ backgroundColor: colorScheme === "dark" ? "#2a2a2a": '#EEEEEE', padding: 20, borderRadius: 3 }}>
+                    <TextInput placeholder="Name" autoCompleteType={'name'} style={styles.inputStyle} onChangeText={(res) => setName(res)} />
+                    <TextInput placeholder="Email" autoCompleteType={'email'} keyboardType={'email-address'} textContentType={'emailAddress'} style={styles.inputStyle} onChangeText={(res) => setEmail(res)} />
+                    <TextInput placeholder="Subject Line" spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setSubject(res)} />
+                    <TextInput placeholder="Message" spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setMessage(res)} />
+                    <TouchableOpacity style={styles.ButtonContainer} onPress={handleSubmit}>
+                        <Text style={styles.ButtonText}>Submit</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+        }
     </>)
 }
 
@@ -103,6 +137,9 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         alignSelf: "center",
         textTransform: "uppercase"
+    },
+    diagonalBox: {
+        transform: [{ skewY: '-30deg' }]
     }
 });
 
