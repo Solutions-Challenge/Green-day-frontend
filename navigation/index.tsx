@@ -22,6 +22,7 @@ import CameraScreen from '../screens/CameraScreen';
 import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
+import FeedbackScreen from '../screens/FeedbackScreen';
 const windowWidth = Dimensions.get('window').width;
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -165,6 +166,7 @@ function BottomTabNavigator() {
       <Stack.Screen name="Start" component={HomeTabs} />
       <Stack.Screen name="Pic" component={CameraScreen} />
       <Stack.Screen name="Maps" component={MapsScreen} />
+      <Stack.Screen name="FeedBack" component={FeedbackScreen} />
 
     </Stack.Navigator>
 

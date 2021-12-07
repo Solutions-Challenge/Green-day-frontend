@@ -1,6 +1,6 @@
 const categories = [
   {
-    name: 'empty',
+    name: 'Unknown',
     icon: require('../assets/images/Materials/empty.png')
   },
   {

@@ -39,7 +39,7 @@ export default function CameraScreen({ navigation }: any) {
         items.pop()
       }
 
-      items.push({
+      items.unshift({
         key: 0,
         material: material,
         uri: uri,
@@ -108,7 +108,7 @@ export default function CameraScreen({ navigation }: any) {
     // @ts-ignore
     formData.append('file', { uri: localUri, name: filename, type });
 
-    const res = await fetch('http://100.64.57.223:5000/predict', {
+    const res = await fetch('http://100.64.56.31:5000/predict', {
       method: 'POST',
       body: formData,
       headers: {

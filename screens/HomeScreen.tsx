@@ -1,17 +1,20 @@
 import { useState, useEffect, useContext } from 'react';
 import * as React from 'react'
-import { Animated, Image, StyleSheet, View, Text, Dimensions, Button, TouchableOpacity, TouchableHighlight } from 'react-native';
+import { Animated, Image, StyleSheet, View, Text, Dimensions, Button, TouchableOpacity, TouchableHighlight, StatusBar } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImageClassification from '../components/imageClassification';
 import useColorScheme from '../hooks/useColorScheme';
 import ImageContext from '../hooks/imageContext';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { AnyIfEmpty } from 'react-redux';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import Navigation from '../navigation';
+import { osName } from 'expo-device';
 const windowWidth = Dimensions.get('window').width;
 
-export default function HomeScreen() {
+let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
+
+export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [lenImage, setLenImage] = useState(0)
     const [data, setData] = useState([])
@@ -20,17 +23,17 @@ export default function HomeScreen() {
 
     const VisibleItem = (props: any) => {
         const { data, rowHeightAnimatedValue, removeRow, leftActionState, rightActionState } = props
-        
+
         if (rightActionState) {
             Animated.timing(rowHeightAnimatedValue, {
                 toValue: 0,
-                duration: 200,
+                duration: 100,
                 useNativeDriver: false
-            }).start(()=>{
+            }).start(() => {
                 removeRow()
             })
         }
-        
+
         return (
             <TouchableHighlight
                 underlayColor={'#aaa'}
@@ -44,88 +47,60 @@ export default function HomeScreen() {
 
     const HiddenItemWithActions = (props: any) => {
         const { onClose, onDelete, swipeAnimatedValue, leftActionActivated, rightActionActivated, rowActionAnimatedValue, rowHeightAnimatedValue } = props
-        
+
         if (rightActionActivated) {
             Animated.spring(rowActionAnimatedValue, {
-                toValue: 500,
+                toValue: windowWidth,
                 useNativeDriver: false
             }).start()
         }
-        
-        return (<Animated.View style={[styles.rowBack, {height: rowHeightAnimatedValue}]}>
-            <Text>Left</Text>
 
-            
+        return (<>
+            <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
+                <Text></Text>
+                <Animated.View style={[styles.backRightBtn, styles.backRightBtnRight, {
+                    flex: 1,
+                    width: windowWidth
+                }]}>
+                    <TouchableOpacity onPress={onDelete} style={[styles.backRightBtn, styles.backRightBtnRight]}>
+                        <Animated.View style={[styles.trash, {
+                            transform: [
+                                {
+                                    scale: swipeAnimatedValue.interpolate({
+                                        inputRange: [-90, -45],
+                                        outputRange: [1, 0],
+                                        extrapolate: 'clamp',
+                                    }),
+                                },
+                            ],
+                        }]}>
+                            <MaterialCommunityIcons name="trash-can-outline" size={25} color={colorScheme === 'dark' ? 'white' : 'black'} />
+                        </Animated.View>
+                    </TouchableOpacity>
+                </Animated.View>
 
-            <Animated.View style={[styles.backRightBtn, styles.backRightBtnRight, {
-                flex: 1,
-                width: rowActionAnimatedValue
-            }]}>
-                <TouchableOpacity onPress={onDelete} style={[styles.backRightBtn, styles.backRightBtnRight]}>
-                    <Animated.View style={[styles.trash, {
-                        transform: [
-                            {
-                                scale: swipeAnimatedValue.interpolate({
-                                    inputRange: [-90, -45],
-                                    outputRange: [1, 0],
-                                    extrapolate: 'clamp',
-                                }),
-                            },
-                        ],
-                    }]}>
-                        <MaterialCommunityIcons name="trash-can-outline" size={25} color={colorScheme === 'dark' ? 'white' : 'black'} />
-                    </Animated.View>
-                </TouchableOpacity>
             </Animated.View>
-
-        </Animated.View>)
+        </>)
     }
 
     const renderItem = (data: any, rowMap: any) => {
         const rowHeightAnimatedValue = new Animated.Value(60)
         return (
-            <VisibleItem data={data} rowHeightAnimatedValue={rowHeightAnimatedValue} removeRow={()=>{deleteRow(rowMap, data.item.key)}} />
+            <VisibleItem data={data} rowHeightAnimatedValue={rowHeightAnimatedValue} removeRow={() => { deleteRow(rowMap, data.item.key) }} />
         )
     }
 
-    const closeRow = (rowMap: any, rowKey: any) => {
-        if (rowMap[rowKey]) {
-            rowMap[rowKey].closeRow()
-        }
-    }
-
     const deleteRow = async (rowMap: any, rowKey: any) => {
-        closeRow(rowMap, rowKey)
         const newData = [...data]
         const prevIndex = data.findIndex((item: any) => item.key === rowKey)
         newData.splice(prevIndex, 1)
         setData(newData)
-        await AsyncStorage.setItem("ImageClassify", JSON.stringify(newData.reverse()))
+        await AsyncStorage.setItem("ImageClassify", JSON.stringify(newData))
     }
-
-    const onRowDidOpen = (rowKey:any) => {
-        console.log('This row opened', rowKey);
-    };
-
-    const onLeftActionStatusChange = (rowKey:any) => {
-        console.log('onLeftActionStatusChange', rowKey);
-    };
-
-    const onRightActionStatusChange = (rowKey:any) => {
-        console.log('onRightActionStatusChange', rowKey);
-    };
-
-    const onRightAction = (rowKey:any) => {
-        console.log('onRightAction', rowKey);
-    };
-
-    const onLeftAction = (rowKey:any) => {
-        console.log('onLeftAction', rowKey);
-    };
 
     const renderHiddenItem = (data: any, rowMap: any) => {
         const rowActionAnimatedValue = new Animated.Value(75)
-        const rowHeightAnimatedValue = new Animated.Value(60)
+        const rowHeightAnimatedValue = new Animated.Value(windowWidth / 2)
 
         return (
             <HiddenItemWithActions
@@ -133,7 +108,6 @@ export default function HomeScreen() {
                 rowMap={rowMap}
                 rowActionAnimatedValue={rowActionAnimatedValue}
                 rowHeightAnimatedValue={rowHeightAnimatedValue}
-                onClose={() => closeRow(rowMap, data.item.key)}
                 onDelete={() => deleteRow(deleteRow, data.item.key)}
             />
         )
@@ -146,7 +120,7 @@ export default function HomeScreen() {
         }
         await AsyncStorage.getItem("ImageClassify")
             .then((res) => {
-                let item = JSON.parse(res as string).reverse()
+                let item = JSON.parse(res as string)
                 if (item != []) {
                     setData(item)
                 }
@@ -159,36 +133,38 @@ export default function HomeScreen() {
         })();
     }, [uri]);
 
+    const go_to_feedback = () => {
+        navigation.navigate("FeedBack")
+    }
+
     return (<>
-        {data.length === 0 ? (
+        {data.length === 0 ? (<>
+            <View style={{ position: 'absolute', top: flipPosition + 30, right: 20, backgroundColor: 'black', borderRadius: 60 }}>
+                <TouchableOpacity onPress={go_to_feedback}>
+                    <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white": "black"} />
+                </TouchableOpacity>
+            </View>
             <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>
                 <Image source={require("../assets/images/empty.png")} />
                 <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>Take a picture and see</Text>
                 <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
             </View>
-        ) : (
+        </>) : (<>
             <SwipeListView
                 data={data}
                 renderItem={renderItem}
                 renderHiddenItem={renderHiddenItem}
                 leftOpenValue={75}
-                rightOpenValue={-75}
                 disableRightSwipe
-                onRowDidOpen={onRowDidOpen}
                 leftActivationValue={100}
                 rightActivationValue={-200}
                 leftActionValue={0}
                 rightActionValue={-500}
-                onLeftAction={onLeftAction}
-                onRightAction={onRightAction}
-                onLeftActionStatusChange={onLeftActionStatusChange}
-                onRightActionStatusChange={onRightActionStatusChange}
-                style={{marginTop: 100}}
-
+                style={{ marginTop: 100 }}
             >
             </SwipeListView>
-        )}
+        </>)}
     </>);
 }
 
