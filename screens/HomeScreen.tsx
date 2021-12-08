@@ -90,7 +90,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const renderItem = (data: any, rowMap: any) => {
-        const rowHeightAnimatedValue = new Animated.Value(data.item.width / 2 + 45)
+        const rowHeightAnimatedValue = new Animated.Value(windowWidth * (3/4) + 10)
         return (
             <VisibleItem data={data} rowHeightAnimatedValue={rowHeightAnimatedValue} removeRow={() => { deleteRow(rowMap, data.item.key) }} />
         )
@@ -106,7 +106,7 @@ export default function HomeScreen({ navigation }: any) {
 
     const renderHiddenItem = (data: any, rowMap: any) => {
         const rowActionAnimatedValue = new Animated.Value(70)
-        const rowHeightAnimatedValue = new Animated.Value(data.item.width / 2 + 45)
+        const rowHeightAnimatedValue = new Animated.Value(windowWidth * (3/4) + 10)
 
         return (
             <HiddenItemWithActions
@@ -161,7 +161,7 @@ export default function HomeScreen({ navigation }: any) {
                 leftActivationValue={100}
                 rightActivationValue={-200}
                 leftActionValue={0}
-                rightActionValue={-500}
+                rightActionValue={-windowWidth}
                 style={{ marginTop: 100 }}
             >
             </SwipeListView>
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
         top: 0,
         width: 75,
         paddingRight: 17,
-        height: windowWidth /2 + 45
+        height: windowWidth * (3/4) + 10
     },
     backRightBtnLeft: {
         backgroundColor: '#1f65ff',
