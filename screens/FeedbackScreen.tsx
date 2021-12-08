@@ -23,7 +23,14 @@ const FeedbackScreen = ({ navigation }: any) => {
     const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
     const colorScheme = useColorScheme()
     const checkMarkGIF = '../assets/images/checkMark.gif'
-    const [gifData, setGifData] = useState(Image.resolveAssetSource(require('../assets/images/checkMark.gif')).uri)
+    
+    const [nameError, setNameError] = useState(false)
+    const [emailError, setEmailError] = useState(false)
+    const [subjectError, setSubjectError] = useState(false)
+    const [messageError, setMessageError] = useState(false)
+
+
+
 
     const handleSubmit = async () => {
 
@@ -32,6 +39,44 @@ const FeedbackScreen = ({ navigation }: any) => {
             email,
             subject,
             message
+        }
+
+        let check = false
+
+        if (name === '') {
+            setNameError(true)
+            check = true
+        }
+        else {
+            setNameError(false)
+        }
+
+        if (email === '' || !email.includes('@')) {
+            setEmailError(true)
+            check = true
+        }
+        else {
+            setEmailError(false)
+        }
+
+        if (subject === '') {
+            setSubjectError(true)
+            check = true
+        }
+        else {
+            setSubjectError(false)
+        }
+
+        if (message === '') {
+            setMessageError(true)
+            check = true
+        }
+        else {
+            setMessageError(false)
+        }
+
+        if (check) {
+            return;
         }
 
         setIsLoading(true)
@@ -66,7 +111,7 @@ const FeedbackScreen = ({ navigation }: any) => {
 
             <View style={styles.container}>
                 {/* style={{ width: 160, height: 160, borderRadius: 80, overflow: "hidden", overlayColor: colorScheme === "dark" ? "black" : "white" }} */}
-                <Image source={require('../assets/images/checkMark.gif')} style={{width: 320, height: 320}} resizeMode={"contain"} />
+                <Image source={require('../assets/images/checkMark.gif')} style={{ width: 320, height: 320 }} resizeMode={"contain"} />
                 {/* <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 30 }}>Thanks for the feedback!</Text> */}
             </View>
 
@@ -79,10 +124,10 @@ const FeedbackScreen = ({ navigation }: any) => {
 
                 <Text style={{ fontSize: 20, color: colorScheme === "dark" ? "white" : "black", paddingBottom: 10 }}>Send us some feedback of our product!</Text>
                 <View style={{ backgroundColor: colorScheme === "dark" ? "#2a2a2a" : '#EEEEEE', padding: 20, borderRadius: 3 }}>
-                    <TextInput placeholder="Name" placeholderTextColor={'black'} autoCompleteType={'name'} style={styles.inputStyle} onChangeText={(res) => setName(res)} />
-                    <TextInput placeholder="Email" placeholderTextColor={'black'} autoCompleteType={'email'} keyboardType={'email-address'} textContentType={'emailAddress'} style={styles.inputStyle} onChangeText={(res) => setEmail(res)} />
-                    <TextInput placeholder="Subject Line" placeholderTextColor={'black'} spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setSubject(res)} />
-                    <TextInput placeholder="Message" placeholderTextColor={'black'} spellCheck={true} style={styles.inputStyle} onChangeText={(res) => setMessage(res)} />
+                    <TextInput placeholder="Name" placeholderTextColor={'black'} autoCompleteType={'name'} style={[styles.inputStyle, {borderColor: nameError ? 'red' : 'transparent'}]} onChangeText={(res) => setName(res)} />
+                    <TextInput placeholder="Email" placeholderTextColor={'black'} autoCompleteType={'email'} keyboardType={'email-address'} textContentType={'emailAddress'} style={[styles.inputStyle, {borderColor: emailError ? 'red' : 'transparent'}]} onChangeText={(res) => setEmail(res)} />
+                    <TextInput placeholder="Subject Line" placeholderTextColor={'black'} spellCheck={true} style={[styles.inputStyle, {borderColor: subjectError ? 'red' : 'transparent'}]} onChangeText={(res) => setSubject(res)} />
+                    <TextInput placeholder="Message" placeholderTextColor={'black'} spellCheck={true} style={[styles.inputStyle, {borderColor: messageError ? 'red' : 'transparent'}]} onChangeText={(res) => setMessage(res)} />
                     <TouchableOpacity style={styles.ButtonContainer} onPress={handleSubmit}>
                         <Text style={styles.ButtonText}>Submit</Text>
                     </TouchableOpacity>
@@ -117,6 +162,7 @@ const styles = StyleSheet.create({
         height: 40,
         paddingHorizontal: 10,
         borderRadius: 50,
+        borderWidth: 3,
         backgroundColor: '#DCDCDC',
     },
     formText: {

@@ -35,9 +35,6 @@ export default function HomeScreen({ navigation }: any) {
         }
 
         return (
-            
-
-
                 <TouchableHighlight
                     underlayColor={'#aaa'}
                 >
@@ -66,7 +63,7 @@ export default function HomeScreen({ navigation }: any) {
 
         return (<>
             <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
-                <Text></Text>
+                <Text />
                 <Animated.View style={[styles.backRightBtn, styles.backRightBtnRight, {
                     flex: 1,
                     width: windowWidth
