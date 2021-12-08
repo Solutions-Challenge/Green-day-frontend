@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons"
 import { osName } from "expo-device"
-import React, { useContext, useState } from "react"
-import { StatusBar, TouchableOpacity, View, StyleSheet, TextInput, Text, Image } from "react-native"
+import React, { useContext, useEffect, useState } from "react"
+import { StatusBar, TouchableOpacity, View, StyleSheet, TextInput, Text, Image, KeyboardAvoidingView, Platform } from "react-native"
 import ImageContext from "../hooks/imageContext"
 import useColorScheme from '../hooks/useColorScheme';
-import { LinearGradient } from 'expo-linear-gradient';
+import * as RNFS from 'react-native-fs'
+import FastImage from 'react-native-fast-image'
+import * as FileSystem from 'expo-file-system';
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
@@ -20,6 +22,8 @@ const FeedbackScreen = ({ navigation }: any) => {
     const [submitted, setSubmitted] = useState(false)
     const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
     const colorScheme = useColorScheme()
+    const checkMarkGIF = '../assets/images/checkMark.gif'
+    const [gifData, setGifData] = useState(Image.resolveAssetSource(require('../assets/images/checkMark.gif')).uri)
 
     const handleSubmit = async () => {
 
@@ -31,7 +35,6 @@ const FeedbackScreen = ({ navigation }: any) => {
         }
 
         setIsLoading(true)
-
 
         const res = await fetch('http://100.64.56.31:4000/send_mail', {
             method: 'POST',
@@ -58,18 +61,21 @@ const FeedbackScreen = ({ navigation }: any) => {
 
     }
 
-
     return (<>
         {submitted ?
 
             <View style={styles.container}>
-                <Image source={require('../assets/images/checkMark.gif')} resizeMode={"cover"} style={{ width: 160, height: 160, borderRadius: 80, overflow: "hidden", overlayColor: colorScheme === "dark" ? "black" : "white" }} />
-                <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 30 }}>Thanks for the feedback!</Text>
+                {/* style={{ width: 160, height: 160, borderRadius: 80, overflow: "hidden", overlayColor: colorScheme === "dark" ? "black" : "white" }} */}
+                <Image source={require('../assets/images/checkMark.gif')} style={{width: 320, height: 320}} resizeMode={"contain"} />
+                {/* <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 30 }}>Thanks for the feedback!</Text> */}
             </View>
 
             :
 
-            <View style={styles.container}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.container}
+            >
 
                 <Text style={{ fontSize: 20, color: colorScheme === "dark" ? "white" : "black", paddingBottom: 10 }}>Send us some feedback of our product!</Text>
                 <View style={{ backgroundColor: colorScheme === "dark" ? "#2a2a2a" : '#EEEEEE', padding: 20, borderRadius: 3 }}>
@@ -81,7 +87,7 @@ const FeedbackScreen = ({ navigation }: any) => {
                         <Text style={styles.ButtonText}>Submit</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
 
         }
         <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>

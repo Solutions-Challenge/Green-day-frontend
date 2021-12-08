@@ -24,7 +24,6 @@ export default function CameraScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
   const [uri, setUri] = useContext(ImageContext).uri
 
-
   const isFocused = useIsFocused();
 
   const save = async (material: string, uri: string, width: number) => {

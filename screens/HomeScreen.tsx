@@ -27,20 +27,24 @@ export default function HomeScreen({ navigation }: any) {
         if (rightActionState) {
             Animated.timing(rowHeightAnimatedValue, {
                 toValue: 0,
-                duration: 100,
-                useNativeDriver: false
+                duration: 200,
+                useNativeDriver: false,
             }).start(() => {
-                removeRow()
-            })
+                removeRow();
+            });
         }
 
         return (
-            <TouchableHighlight
-                underlayColor={'#aaa'}
-            >
-                <ImageClassification material={data.item.material} uri={data.item.uri} width={data.item.width} />
-            </TouchableHighlight>
+            
 
+
+                <TouchableHighlight
+                    underlayColor={'#aaa'}
+                >
+                    <Animated.View style={{ height: rowHeightAnimatedValue }}>
+                        <ImageClassification material={data.item.material} uri={data.item.uri} width={data.item.width} />
+                    </Animated.View>
+                </TouchableHighlight>
 
         )
     }
@@ -50,9 +54,14 @@ export default function HomeScreen({ navigation }: any) {
 
         if (rightActionActivated) {
             Animated.spring(rowActionAnimatedValue, {
-                toValue: windowWidth,
+                toValue: 500,
                 useNativeDriver: false
-            }).start()
+            }).start();
+        } else {
+            Animated.spring(rowActionAnimatedValue, {
+                toValue: 75,
+                useNativeDriver: false
+            }).start();
         }
 
         return (<>
@@ -84,7 +93,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const renderItem = (data: any, rowMap: any) => {
-        const rowHeightAnimatedValue = new Animated.Value(60)
+        const rowHeightAnimatedValue = new Animated.Value(data.item.width / 2 + 45)
         return (
             <VisibleItem data={data} rowHeightAnimatedValue={rowHeightAnimatedValue} removeRow={() => { deleteRow(rowMap, data.item.key) }} />
         )
@@ -99,8 +108,8 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const renderHiddenItem = (data: any, rowMap: any) => {
-        const rowActionAnimatedValue = new Animated.Value(75)
-        const rowHeightAnimatedValue = new Animated.Value(windowWidth / 2)
+        const rowActionAnimatedValue = new Animated.Value(70)
+        const rowHeightAnimatedValue = new Animated.Value(data.item.width / 2 + 45)
 
         return (
             <HiddenItemWithActions
@@ -160,9 +169,9 @@ export default function HomeScreen({ navigation }: any) {
             >
             </SwipeListView>
         </>)}
-        <View style={{position: 'absolute', top: flipPosition + 10, right: 20}}>
+        <View style={{ position: 'absolute', top: flipPosition + 10, right: 20 }}>
             <TouchableOpacity onPress={go_to_feedback}>
-                <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white": "black"} />
+                <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
             </TouchableOpacity>
         </View>
     </>);
@@ -215,6 +224,7 @@ const styles = StyleSheet.create({
         top: 0,
         width: 75,
         paddingRight: 17,
+        height: windowWidth /2 + 45
     },
     backRightBtnLeft: {
         backgroundColor: '#1f65ff',

@@ -2,7 +2,7 @@ import ImageContext from '../hooks/imageContext';
 import { useState, useContext } from 'react';
 import * as React from 'react'
 import { Text, View } from '../components/Themed';
-import { Dimensions, Image, Platform, StatusBar, StyleSheet, Button } from 'react-native';
+import { Dimensions, Image, Platform, StatusBar, StyleSheet, Button, ImageBackground } from 'react-native';
 import categories from '../components/categories';
 
 
@@ -22,7 +22,10 @@ const ImageClassification = ({material, uri, width}:any) => {
           <Text style={{ fontSize: 30, fontWeight: 'bold', paddingRight: 10 }}>{material}</Text>
           <Image source={categories[index].icon} style={styles.category} />
         </View>
-        <Image source={{ uri: uri }} style={{ height: width / 2, width: width / 2, borderRadius: 3 }} />
+        
+        <Image source={{ uri: uri }} style={{ height: width / 2, width: width / 2, borderRadius: 3 }}>
+        
+        </Image>
       </View>
     )
 }
@@ -32,6 +35,8 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 40,
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   separator: {
     marginVertical: 30,
