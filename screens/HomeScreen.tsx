@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
 import ImageContext from '../hooks/imageContext';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { SharedElement } from 'react-navigation-shared-element';
 
@@ -44,7 +44,7 @@ export default function HomeScreen({ navigation }: any) {
                 <Animated.View style={{ height: rowHeightAnimatedValue }}>
                     <View style={styles.card}>
                         <View style={[styles.containerTitle2, { backgroundColor: colorScheme === "dark" ? '#181818' : '#fff' }]}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => { navigation.push('ExpandImage', { item }) }}>
+                            <TouchableOpacity activeOpacity={1} style={{paddingBottom: data.item.width < 600 ? 30: 0}} onPress={() => { navigation.push('ExpandImage', { item }) }}>
                                 {/* @ts-ignore */}
                                 <SharedElement id={`item.${item.uri}.image`}>
                                     <Image
@@ -52,13 +52,17 @@ export default function HomeScreen({ navigation }: any) {
                                         style={{
                                             height: imageWidth,
                                             width: imageWidth,
+                                            borderRadius: 10
                                         }} />
                                 </SharedElement>
                             </TouchableOpacity>
-                            <View style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+                            <View style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
                                 <SharedElement id={`item.${item.uri}.material`}>
                                     <Text style={{ fontSize: item.width < 600 ? 20 : 40, color: colorScheme === "dark" ? 'white' : 'black' }}>{item.material}</Text>
                                 </SharedElement>
+                                <TouchableOpacity style={styles.recycleButton} onPress={() => { navigation.push('ExpandImage', { item }) }}>
+                                    <Text style={{ color: 'white', marginLeft: 'auto', marginRight: 'auto', marginTop: 'auto', marginBottom: 'auto' }}>{item.recyclability} <AntDesign name="downcircleo" size={16} color="white" /></Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>
@@ -135,6 +139,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const load = async () => {
+
         let ImageClassify = await AsyncStorage.getItem("ImageClassify")
         if (ImageClassify === null) {
             await AsyncStorage.setItem("ImageClassify", JSON.stringify(data))
@@ -218,7 +223,7 @@ const styles = StyleSheet.create({
     backRightBtnRight: {
         backgroundColor: 'red',
         right: 0,
-        height: (windowWidth / divNum) + 20,
+        height: (windowWidth / divNum) + 20 + (windowWidth < 600 ? 30:0),
         borderTopRightRadius: 10,
         borderBottomRightRadius: 10
     },
@@ -240,5 +245,15 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 1, height: 1 },
         shadowOpacity: 0.3,
         shadowRadius: 2,
+    },
+    recycleButton: {
+        backgroundColor: "#190c8d",
+        fontSize: 20,
+        fontWeight: "600",
+        borderRadius: 50,
+        height: 30,
+        width: 200,
+        paddingHorizontal: 10,
+        marginTop: 'auto'
     }
 });

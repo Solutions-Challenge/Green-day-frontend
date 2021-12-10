@@ -19,7 +19,7 @@ const ExpandImageScreen = ({ navigation, route  }: any) => {
     return (<View>
         {/* @ts-ignore */}
         <SharedElement id={`item.${item.uri}.image`}>
-            <Image source={{ uri: item.uri }} style={{ width: '100%', height: 300, borderRadius: 3 }} resizeMode="cover" />
+            <Image source={{ uri: item.uri }} style={{ width: '100%', height: 300 }} resizeMode="cover" />
         </SharedElement>
         <SharedElement id={`item.${item.uri}.material`}>
             <Text style={{ color: 'white', fontSize: size, position: 'absolute', top: -size-15}}>{item.material}</Text>

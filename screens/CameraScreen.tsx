@@ -26,7 +26,7 @@ export default function CameraScreen({ navigation }: any) {
 
   const isFocused = useIsFocused();
 
-  const save = async (material: string, uri: string, width: number) => {
+  const save = async (material:string, recyclability:string, uri: string, width: number) => {
 
     let items:any = []
 
@@ -41,6 +41,7 @@ export default function CameraScreen({ navigation }: any) {
       items.unshift({
         key: 0,
         material: material,
+        recyclability: recyclability,
         uri: uri,
         width: width
       })
@@ -118,7 +119,7 @@ export default function CameraScreen({ navigation }: any) {
 
     setIsLoading(false)
 
-    save(data.material, manipImage.uri, windowWidth)
+    save(data.material.Material, data.material.Recyclability, manipImage.uri, windowWidth)
     setUri(manipImage.uri)
 
     navigation.navigate('Home')
