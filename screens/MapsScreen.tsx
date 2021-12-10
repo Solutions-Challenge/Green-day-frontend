@@ -15,6 +15,10 @@ import categories from '../components/categories'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Svg from 'react-native-svg';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 
 let flipPosition = Platform.OS === "android" ? StatusBar.currentHeight as number : 30
@@ -25,22 +29,22 @@ const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 const latitudeDelta = 0.0922
 const longitudeDelta = 0.121
 
-function getDistanceFromLatLonInKm(lat1:number,lon1:number,lat2:number,lon2:number) {
+function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   var R = 6371; // Radius of the earth in km
-  var dLat = deg2rad(lat2-lat1);  // deg2rad below
-  var dLon = deg2rad(lon2-lon1); 
-  var a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2)
-    ; 
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+  var dLon = deg2rad(lon2 - lon1);
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    ;
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   var d = R * c; // Distance in km
   return d;
 }
 
-function deg2rad(deg:number) {
-  return deg * (Math.PI/180)
+function deg2rad(deg: number) {
+  return deg * (Math.PI / 180)
 }
 
 export default function App({ navigation }: any) {
@@ -54,7 +58,7 @@ export default function App({ navigation }: any) {
   let mapIndex = 0;
   let mapAnimation = new Animated.Value(0);
 
-  const findLink = (href:string) => {
+  const findLink = (href: string) => {
     let temp = href.split('"')
     href = temp[1]
 
@@ -68,25 +72,25 @@ export default function App({ navigation }: any) {
   useEffect(() => {
     mapAnimation.addListener(({ value }) => {
       if (canMap()) {
-        
+
         let index = Math.floor(value / CARD_WIDTH + 0.3)
-        
+
         if (index >= mapData.results.length) {
           index = mapData.results.length - 1;
         }
         if (index <= 0) {
           index = 0;
         }
-  
+
         // @ts-ignore
         clearTimeout(regionTimeout);
         const regionTimeout = setTimeout(() => {
           if (mapIndex !== index && canMap()) {
             mapIndex = index;
-            
+
             let lat = mapData.results[index].geometry.location.lat
             let lng = mapData.results[index].geometry.location.lng
-  
+
             _map.current.animateToRegion(
               {
                 latitude: lat,
@@ -115,6 +119,8 @@ export default function App({ navigation }: any) {
       let { status } = await requestForegroundPermissionsAsync();
       setIsLoading(true)
 
+
+      // Await user to grant location access
       if (status !== 'granted') {
         navigation.navigate('Home')
       }
@@ -126,46 +132,50 @@ export default function App({ navigation }: any) {
     })();
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     (async () => {
-      
+
       if (latitude !== 0 && longitude !== 0) {
+
+        // Caches data of original location
         let mapCache = await AsyncStorage.getItem("MapCache")
         if (mapCache === null) {
           let item = await fetchData(latitude, longitude)
           await AsyncStorage.setItem("MapCache", JSON.stringify(item))
-          await AsyncStorage.setItem("CurrentLocation", JSON.stringify({latitude: latitude, longitude: longitude}))
+          await AsyncStorage.setItem("CurrentLocation", JSON.stringify({ latitude: latitude, longitude: longitude }))
         }
+
         
+        // If the current location surpasses ~10 miles, rerender new search query for recycling centers
         let check = false
         await AsyncStorage.getItem("CurrentLocation")
-        .then((res)=>{
-          let item = JSON.parse(res as string)
-          let distance = getDistanceFromLatLonInKm(latitude, longitude, item.latitude, item.longitude)
-          if (distance > 16.0934) {
-            check = true
-          }
-        })
+          .then((res) => {
+            let item = JSON.parse(res as string)
+            let distance = getDistanceFromLatLonInKm(latitude, longitude, item.latitude, item.longitude)
+            if (distance > 16.0934) {
+              check = true
+            }
+          })
 
         if (check) {
           let item = await fetchData(latitude, longitude)
           await AsyncStorage.setItem("MapCache", JSON.stringify(item))
-          await AsyncStorage.setItem("CurrentLocation", JSON.stringify({latitude: latitude, longitude: longitude}))
+          await AsyncStorage.setItem("CurrentLocation", JSON.stringify({ latitude: latitude, longitude: longitude }))
         }
-        
+
         await AsyncStorage.getItem("MapCache")
-        .then((res)=>{
-          let item = JSON.parse(res as string)
-          setmapData(item)
-        })
-        
-        
-      } 
+          .then((res) => {
+            let item = JSON.parse(res as string)
+            setmapData(item)
+          })
+
+
+      }
     })();
   }, [longitude])
 
-  return (<SafeAreaView style={{flex: 1}}>
-    <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill: {flex: 1}}
+  return (<SafeAreaView style={{ flex: 1 }}>
+    <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
       ref={_map}
       provider={PROVIDER_GOOGLE}
       showsUserLocation={true}
@@ -177,7 +187,7 @@ export default function App({ navigation }: any) {
         longitudeDelta: longitudeDelta
       }}
     >
-      { canMap() ? mapData.results.map((e:any, index:any) => {
+      {canMap() ? mapData.results.map((e: any, index: any) => {
         return (
           <Marker
             key={index}
@@ -206,7 +216,7 @@ export default function App({ navigation }: any) {
             </Animated.View>
           </Marker>
         )
-        }):<></>}
+      }) : <></>}
     </MapView>
 
     <View style={styles.searchBox}>
@@ -230,7 +240,7 @@ export default function App({ navigation }: any) {
     >
       {categories.map((e, index) => {
         return (<TouchableOpacity key={index} style={styles.chipsItem}>
-          <Image source={e.icon} style={{width: 20, height:20, marginRight: 5}} />
+          <Image source={e.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
           <Text>{e.name}</Text>
         </TouchableOpacity>)
       })}
@@ -267,16 +277,16 @@ export default function App({ navigation }: any) {
             }
           }
         ],
-        { useNativeDriver: true }
+        { useNativeDriver: false }
       )}
     >
-      {canMap() ? mapData.results.map((e:any, index:any) => {
+      {canMap() ? mapData.results.map((e: any, index: any) => {
         return (<View style={styles.card} key={index}>
           <View style={styles.textContent}>
-            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-              <View style={{flexDirection: 'row'}}>
+            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row' }}>
                 <Image
-                  source={{uri: e.icon}}
+                  source={{ uri: e.icon }}
                   style={styles.cardImage}
                   resizeMode="cover"
                 />
@@ -286,12 +296,12 @@ export default function App({ navigation }: any) {
                 </View>
               </View>
               <Text numberOfLines={1} style={styles.cardDescription}>{e.description}</Text>
-              {"photos" in e ? <Button title="Details" onPress={()=>{ Linking.openURL(findLink(e.photos[0].html_attributions[0]))}}>
-              </Button>: <></>}
+              {"photos" in e ? <Button title="Details" onPress={() => { Linking.openURL(findLink(e.photos[0].html_attributions[0])) }}>
+              </Button> : <></>}
             </View>
             <View style={styles.button}>
               <TouchableOpacity
-                onPress={() => {Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${e.vicinity}`)}}
+                onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${e.vicinity}`) }}
                 style={styles.signIn}
               >
                 <Text style={styles.textSign}>{e.vicinity}</Text>
@@ -300,7 +310,7 @@ export default function App({ navigation }: any) {
           </View>
         </View>)
 
-      }):<></>}
+      }) : <></>}
     </Animated.ScrollView>
 
     <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 12, left: 12, backgroundColor: "black", borderRadius: 60 }}>
@@ -356,7 +366,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     position: "absolute",
-    bottom: Platform.OS === 'android' ? 20: 40,
+    bottom: Platform.OS === 'android' ? 20 : 40,
     left: 0,
     right: 0,
     paddingVertical: 10,
@@ -370,7 +380,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderRadius: 5,
     marginHorizontal: 10,
-    marginBottom: Platform.OS === "android" ? 40: 20,
+    marginBottom: Platform.OS === "android" ? 40 : 20,
     shadowColor: "#000",
     shadowRadius: 5,
     shadowOpacity: 0.3,

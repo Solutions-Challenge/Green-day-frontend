@@ -1,53 +1,40 @@
-import ImageContext from '../hooks/imageContext';
-import { useState, useContext } from 'react';
 import * as React from 'react'
-import { Text, View } from '../components/Themed';
-import { Dimensions, Image, Platform, StatusBar, StyleSheet, Button, ImageBackground } from 'react-native';
-import categories from '../components/categories';
+import { Dimensions, Image, StyleSheet, Text, useColorScheme, View } from 'react-native';
 
+
+const windowWidth = Dimensions.get('window').width;
 
 const ImageClassification = ({material, uri, width}:any) => {
 
-    // allows the home page to handle categories without icons
-    let index = 0
-    for (let i = 0; i < categories.length; i++) {
-      if (categories[i].name === material) {
-        index = i
-      }
-    }
+    const colorScheme = useColorScheme()
 
+    const imageWidth = width < 600 ? width / 4 : width / 2
     return (
-        <View style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
-        <View style={styles.containerTitle}>
-          <Text style={{ fontSize: 30, fontWeight: 'bold', paddingRight: 10 }}>{material}</Text>
-          <Image source={categories[index].icon} style={styles.category} />
-        </View>
-        
-        <Image source={{ uri: uri }} style={{ height: width / 2, width: width / 2, borderRadius: 3 }}>
-        
-        </Image>
+        <View style={styles.card}>
+          <View style={[styles.containerTitle, {backgroundColor: colorScheme === "dark" ? '#181818' : '#fff'}]}>
+            <Image source={{ uri: uri }} style={{ height: imageWidth, width: imageWidth, borderRadius: 3 }} />
+            <View style={{marginLeft: 'auto', marginRight: 'auto'}}>
+              <Text style={{ fontSize: width < 600 ? 20: 40, color: colorScheme === "dark" ? 'white':'black' }}>{material}</Text>
+            </View>
+          </View>
       </View>
     )
 }
 
 const styles = StyleSheet.create({
   containerTitle: {
-    padding: 20,
-    paddingTop: 40,
+    padding: 10,
+    display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center'
+    width: windowWidth - 30,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  category: {
-    width: 45,
-    height: 45,
-    backgroundColor: 'white',
-    borderRadius: 3
+  card: {
+    elevation: 3,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
   }
 });
 

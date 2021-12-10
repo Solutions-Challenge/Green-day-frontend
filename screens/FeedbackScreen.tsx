@@ -81,7 +81,7 @@ const FeedbackScreen = ({ navigation }: any) => {
 
         setIsLoading(true)
 
-        const res = await fetch('http://100.64.56.31:4000/send_mail', {
+        const res = await fetch('http://10.0.0.222:4000/send_mail', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {

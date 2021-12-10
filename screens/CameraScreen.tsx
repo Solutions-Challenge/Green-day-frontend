@@ -69,9 +69,8 @@ export default function CameraScreen({ navigation }: any) {
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
-    const photo = await camera.takePictureAsync()
-
     setIsLoading(true)
+    const photo = await camera.takePictureAsync()
 
     const manipImage = await manipulateAsync(
       photo.uri,
@@ -107,7 +106,7 @@ export default function CameraScreen({ navigation }: any) {
     // @ts-ignore
     formData.append('file', { uri: localUri, name: filename, type });
 
-    const res = await fetch('http://100.64.56.31:5000/predict', {
+    const res = await fetch('http://10.0.0.222:5000//predict', {
       method: 'POST',
       body: formData,
       headers: {

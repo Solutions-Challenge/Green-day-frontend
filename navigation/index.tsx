@@ -23,6 +23,7 @@ import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
+import Svg, { Circle, Path } from 'react-native-svg';
 const windowWidth = Dimensions.get('window').width;
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -61,7 +62,7 @@ const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 const HomeTabs = ({ navigation }: any) => {
   const colorScheme = useColorScheme();
-  return (
+  return (<>
     <BottomTab.Navigator
       initialRouteName="Home"
       screenOptions={{
@@ -108,7 +109,7 @@ const HomeTabs = ({ navigation }: any) => {
             />,
 
           tabBarButton: (props) =>
-            <View style={{ position: 'absolute', top: -5, left: windowWidth / 2 - 35 }}>
+            <View style={{ position: 'absolute', top: 0, left: windowWidth / 2 - 35 }}>
               <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
                 style={{
                   top: -30,
@@ -148,8 +149,7 @@ const HomeTabs = ({ navigation }: any) => {
         })}
       />
     </BottomTab.Navigator>
-
-  )
+  </>)
 }
 
 
@@ -174,14 +174,4 @@ function BottomTabNavigator() {
 
 
   );
-}
-
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
 }

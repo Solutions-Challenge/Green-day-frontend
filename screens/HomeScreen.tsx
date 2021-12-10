@@ -11,6 +11,8 @@ import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-ic
 import { osName } from 'expo-device';
 const windowWidth = Dimensions.get('window').width;
 
+const divNum = windowWidth < 600 ? 4 : 2
+
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
 
@@ -22,7 +24,7 @@ export default function HomeScreen({ navigation }: any) {
 
 
     const VisibleItem = (props: any) => {
-        const { data, rowHeightAnimatedValue, removeRow, leftActionState, rightActionState } = props
+        const { data, rowHeightAnimatedValue, removeRow, rightActionState } = props
 
         if (rightActionState) {
             Animated.timing(rowHeightAnimatedValue, {
@@ -35,9 +37,7 @@ export default function HomeScreen({ navigation }: any) {
         }
 
         return (
-                <TouchableHighlight
-                    underlayColor={'#aaa'}
-                >
+                <TouchableHighlight style={{marginBottom: 50}}>
                     <Animated.View style={{ height: rowHeightAnimatedValue }}>
                         <ImageClassification material={data.item.material} uri={data.item.uri} width={data.item.width} />
                     </Animated.View>
@@ -47,7 +47,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const HiddenItemWithActions = (props: any) => {
-        const { onClose, onDelete, swipeAnimatedValue, leftActionActivated, rightActionActivated, rowActionAnimatedValue, rowHeightAnimatedValue } = props
+        const { onDelete, swipeAnimatedValue, rightActionActivated, rowActionAnimatedValue, rowHeightAnimatedValue } = props
 
         if (rightActionActivated) {
             Animated.spring(rowActionAnimatedValue, {
@@ -65,8 +65,7 @@ export default function HomeScreen({ navigation }: any) {
             <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
                 <Text />
                 <Animated.View style={[styles.backRightBtn, styles.backRightBtnRight, {
-                    flex: 1,
-                    width: windowWidth
+                    width: windowWidth,
                 }]}>
                     <TouchableOpacity onPress={onDelete} style={[styles.backRightBtn, styles.backRightBtnRight]}>
                         <Animated.View style={[styles.trash, {
@@ -80,7 +79,7 @@ export default function HomeScreen({ navigation }: any) {
                                 },
                             ],
                         }]}>
-                            <MaterialCommunityIcons name="trash-can-outline" size={25} color={colorScheme === 'dark' ? 'white' : 'black'} />
+                            <MaterialCommunityIcons name="trash-can-outline" size={25} color={'white'} />
                         </Animated.View>
                     </TouchableOpacity>
                 </Animated.View>
@@ -90,7 +89,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const renderItem = (data: any, rowMap: any) => {
-        const rowHeightAnimatedValue = new Animated.Value(windowWidth * (3/4) + 10)
+        const rowHeightAnimatedValue = new Animated.Value((windowWidth / divNum) + 20)
         return (
             <VisibleItem data={data} rowHeightAnimatedValue={rowHeightAnimatedValue} removeRow={() => { deleteRow(rowMap, data.item.key) }} />
         )
@@ -106,7 +105,7 @@ export default function HomeScreen({ navigation }: any) {
 
     const renderHiddenItem = (data: any, rowMap: any) => {
         const rowActionAnimatedValue = new Animated.Value(70)
-        const rowHeightAnimatedValue = new Animated.Value(windowWidth * (3/4) + 10)
+        const rowHeightAnimatedValue = new Animated.Value((windowWidth / divNum) + 20)
 
         return (
             <HiddenItemWithActions
@@ -162,11 +161,14 @@ export default function HomeScreen({ navigation }: any) {
                 rightActivationValue={-200}
                 leftActionValue={0}
                 rightActionValue={-windowWidth}
-                style={{ marginTop: 100 }}
+                style={{ marginVertical: 100 }}
             >
             </SwipeListView>
+            <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
+                <Text style={{color: 'white', fontSize: 40}} >{data.length} Image{data.length === 1 ? "":"s"}</Text>
+            </View>
         </>)}
-        <View style={{ position: 'absolute', top: flipPosition + 10, right: 20 }}>
+        <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
             <TouchableOpacity onPress={go_to_feedback}>
                 <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
             </TouchableOpacity>
@@ -180,37 +182,10 @@ const styles = StyleSheet.create({
         paddingTop: 40,
         flexDirection: 'row',
     },
-    backTextWhite: {
-        color: '#FFF',
-    },
-    rowFront: {
-        backgroundColor: '#FFF',
-        borderRadius: 5,
-        height: 60,
-        margin: 5,
-        marginBottom: 15,
-        shadowColor: '#999',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-    },
-    rowFrontVisible: {
-        backgroundColor: '#FFF',
-        borderRadius: 5,
-        height: 60,
-        padding: 10,
-        marginBottom: 15,
-    },
     rowBack: {
         alignItems: 'center',
-        backgroundColor: '#DDD',
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingLeft: 15,
-        margin: 5,
-        marginBottom: 15,
         borderRadius: 5,
     },
     backRightBtn: {
@@ -221,31 +196,18 @@ const styles = StyleSheet.create({
         top: 0,
         width: 75,
         paddingRight: 17,
-        height: windowWidth * (3/4) + 10
-    },
-    backRightBtnLeft: {
-        backgroundColor: '#1f65ff',
-        right: 75,
+        marginRight: 30
     },
     backRightBtnRight: {
         backgroundColor: 'red',
         right: 0,
-        borderTopRightRadius: 5,
-        borderBottomRightRadius: 5,
+        height: (windowWidth / divNum) + 20,
+        borderTopRightRadius: 10,
+        borderBottomRightRadius: 10
     },
     trash: {
         height: 25,
         width: 25,
         marginRight: 7,
-    },
-    title: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        color: '#666',
-    },
-    details: {
-        fontSize: 12,
-        color: '#999',
     },
 });
