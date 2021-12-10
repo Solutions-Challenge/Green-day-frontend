@@ -8,9 +8,9 @@ import { Feather } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { ColorSchemeName, Dimensions, TouchableOpacity, View } from 'react-native';
+import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
@@ -23,7 +23,7 @@ import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
-import Svg, { Circle, Path } from 'react-native-svg';
+import ExpandImageScreen from '../screens/ExpandImageScreen';
 const windowWidth = Dimensions.get('window').width;
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -36,21 +36,53 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   );
 }
 
-/**
- * A root stack navigator is often used for displaying modals on top of all other content.
- * https://reactnavigation.org/docs/modal
- */
-const Stack = createNativeStackNavigator<any>();
+
+const Stack = createSharedElementStackNavigator();
 
 function RootNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="Modal" component={ModalScreen} />
-      </Stack.Group>
+
+    <Stack.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="Home" component={HomeTabs} />
+      <Stack.Screen name="Pic" component={CameraScreen} />
+      <Stack.Screen name="Maps" component={MapsScreen} />
+      <Stack.Screen name="FeedBack" component={FeedbackScreen} />
+      <Stack.Screen
+        name="ExpandImage"
+        component={ExpandImageScreen}
+        sharedElements={(route) => {
+          return [{
+            id: `item.${route.params.item.uri}.image`,
+            resize: 'auto',
+            animation: 'move'
+          },{
+            id: `item.${route.params.item.uri}.material`,
+            resize: 'auto',
+            animation: 'move'
+          }]
+        }}
+        options={()=>({
+          gestureEnabled : false,
+          transitionSpec : {
+            open : {animation:'timing', config : {duration:300}},
+            close : {animation:'timing', config : {duration:300}}
+          },
+          cardStyleInterpolator : ({current : {progress}}) => {
+              return {
+                cardStyle : {
+                  opacity : progress
+                }
+              }
+          }
+        })}
+      />
     </Stack.Navigator>
+
   );
 }
 
@@ -64,7 +96,6 @@ const HomeTabs = ({ navigation }: any) => {
   const colorScheme = useColorScheme();
   return (<>
     <BottomTab.Navigator
-      initialRouteName="Home"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
         tabBarShowLabel: false,
@@ -91,7 +122,7 @@ const HomeTabs = ({ navigation }: any) => {
 
         })}
       />
-
+      
       <BottomTab.Screen
         name="Pic"
         component={CameraScreen}
@@ -150,28 +181,4 @@ const HomeTabs = ({ navigation }: any) => {
       />
     </BottomTab.Navigator>
   </>)
-}
-
-
-function BottomTabNavigator() {
-
-  return (
-
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-
-      <Stack.Screen name="Start" component={HomeTabs} />
-      <Stack.Screen name="Pic" component={CameraScreen} />
-      <Stack.Screen name="Maps" component={MapsScreen} />
-      <Stack.Screen name="FeedBack" component={FeedbackScreen} />
-
-    </Stack.Navigator>
-
-
-
-
-  );
 }
