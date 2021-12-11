@@ -15,10 +15,7 @@ import categories from '../components/categories'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Svg from 'react-native-svg';
-
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
+import { useIsFocused } from '@react-navigation/native';
 
 
 let flipPosition = Platform.OS === "android" ? StatusBar.currentHeight as number : 30
@@ -54,9 +51,14 @@ export default function App({ navigation }: any) {
   const _map = useRef(null as any)
   const _scrollView = useRef(null as any)
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
+  const isFocused = useIsFocused();
 
   let mapIndex = 0;
   let mapAnimation = new Animated.Value(0);
+
+  const goBack = () => {
+    navigation.navigate('Home')
+  }
 
   const findLink = (href: string) => {
     let temp = href.split('"')
@@ -106,12 +108,6 @@ export default function App({ navigation }: any) {
     });
   });
 
-
-
-  const goBack = () => {
-    navigation.navigate('Home')
-  }
-
   const [mapData, setmapData] = useState({} as any)
 
   useEffect(() => {
@@ -145,7 +141,7 @@ export default function App({ navigation }: any) {
           await AsyncStorage.setItem("CurrentLocation", JSON.stringify({ latitude: latitude, longitude: longitude }))
         }
 
-        
+
         // If the current location surpasses ~10 miles, rerender new search query for recycling centers
         let check = false
         await AsyncStorage.getItem("CurrentLocation")
@@ -174,7 +170,7 @@ export default function App({ navigation }: any) {
     })();
   }, [longitude])
 
-  return (<SafeAreaView style={{ flex: 1 }}>
+  return (<>{isFocused && <SafeAreaView style={{ flex: 1 }}>
     <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
       ref={_map}
       provider={PROVIDER_GOOGLE}
@@ -313,13 +309,13 @@ export default function App({ navigation }: any) {
       }) : <></>}
     </Animated.ScrollView>
 
-    <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 12, left: 12, backgroundColor: "black", borderRadius: 60 }}>
+  </SafeAreaView>}
+  <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 12, left: 12, backgroundColor: "black", borderRadius: 60 }}>
       <TouchableOpacity onPress={goBack}>
-        <Ionicons name="ios-arrow-back-sharp" size={35} color="white" />
+        <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
       </TouchableOpacity>
     </View>
-
-  </SafeAreaView>);
+  </>);
 }
 
 const styles = StyleSheet.create({
@@ -366,7 +362,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     position: "absolute",
-    bottom: Platform.OS === 'android' ? 20 : 40,
+    bottom: Platform.OS === 'android' ? 50 : 70,
     left: 0,
     right: 0,
     paddingVertical: 10,

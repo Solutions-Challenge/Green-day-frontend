@@ -9,6 +9,7 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 import { AntDesign, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { SharedElement } from 'react-navigation-shared-element';
+import { useIsFocused } from '@react-navigation/core';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -21,6 +22,7 @@ export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
+    const isFocused = useIsFocused()
 
     const VisibleItem = (props: any) => {
         const { data, rowHeightAnimatedValue, removeRow, rightActionState } = props
@@ -44,9 +46,9 @@ export default function HomeScreen({ navigation }: any) {
                 <Animated.View style={{ height: rowHeightAnimatedValue }}>
                     <View style={styles.card}>
                         <View style={[styles.containerTitle2, { backgroundColor: colorScheme === "dark" ? '#181818' : '#fff' }]}>
-                            <TouchableOpacity activeOpacity={1} style={{paddingBottom: data.item.width < 600 ? 30: 0}} onPress={() => { navigation.push('ExpandImage', { item }) }}>
+                            <TouchableOpacity activeOpacity={1} style={{paddingBottom: data.item.width < 600 ? 30: 0}} onPress={() => { navigation.push('Details', { item }) }}>
                                 {/* @ts-ignore */}
-                                <SharedElement id={`item.${item.uri}.image`}>
+                                <SharedElement id={`item.${item.key}.image`}>
                                     <Image
                                         source={{ uri: item.uri }}
                                         style={{
@@ -57,11 +59,14 @@ export default function HomeScreen({ navigation }: any) {
                                 </SharedElement>
                             </TouchableOpacity>
                             <View style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
-                                <SharedElement id={`item.${item.uri}.material`}>
+                                <SharedElement id={`item.${item.key}.material`}>
                                     <Text style={{ fontSize: item.width < 600 ? 20 : 40, color: colorScheme === "dark" ? 'white' : 'black' }}>{item.material}</Text>
                                 </SharedElement>
-                                <TouchableOpacity style={styles.recycleButton} onPress={() => { navigation.push('ExpandImage', { item }) }}>
-                                    <Text style={{ color: 'white', marginLeft: 'auto', marginRight: 'auto', marginTop: 'auto', marginBottom: 'auto' }}>{item.recyclability} <AntDesign name="downcircleo" size={16} color="white" /></Text>
+                                <TouchableOpacity style={styles.recycleButton} hitSlop={{bottom: 10, left: 20, right: 20, top: 20}} onPress={() => { navigation.push('Details', { item }) }}>
+                                    <View style={{marginLeft: 'auto', marginRight: 'auto', marginTop: 'auto', marginBottom: 'auto', flexDirection: 'row', justifyContent: 'center'}}>
+                                        <Text style={{ color: 'white', paddingRight: 10 }}>{item.recyclability}</Text>
+                                        <AntDesign name="downcircleo" size={16} color="white" />
+                                    </View>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -163,38 +168,44 @@ export default function HomeScreen({ navigation }: any) {
         navigation.navigate("FeedBack")
     }
 
-    return (<>
-        {data.length === 0 ? (<>
-            <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>
-                <Image source={require("../assets/images/empty.png")} />
-                <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>Take a picture and see</Text>
-                <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
+    const Root = () => {
+        return (<>
+            {data.length === 0 ? (<>
+                <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>
+                    <Image source={require("../assets/images/empty.png")} />
+                    <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>Take a picture and see</Text>
+                    <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
+                </View>
+            </>) : (<>
+                <SwipeListView
+                    data={data}
+                    renderItem={renderItem}
+                    renderHiddenItem={renderHiddenItem}
+                    leftOpenValue={75}
+                    disableRightSwipe
+                    leftActivationValue={100}
+                    rightActivationValue={-200}
+                    leftActionValue={0}
+                    rightActionValue={-windowWidth}
+                    style={{ marginVertical: 100 }}
+                >
+                </SwipeListView>
+                <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
+                    <Text style={{ color: colorScheme === "dark" ? "white":"black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
+                </View>
+            </>)}
+            <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
+                <TouchableOpacity onPress={go_to_feedback}>
+                    <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
+                </TouchableOpacity>
             </View>
-        </>) : (<>
-            <SwipeListView
-                data={data}
-                renderItem={renderItem}
-                renderHiddenItem={renderHiddenItem}
-                leftOpenValue={75}
-                disableRightSwipe
-                leftActivationValue={100}
-                rightActivationValue={-200}
-                leftActionValue={0}
-                rightActionValue={-windowWidth}
-                style={{ marginVertical: 100 }}
-            >
-            </SwipeListView>
-            <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
-                <Text style={{ color: 'white', fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
-            </View>
-        </>)}
-        <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
-            <TouchableOpacity onPress={go_to_feedback}>
-                <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
-            </TouchableOpacity>
-        </View>
-    </>);
+        </>
+        );
+    }
+
+    return <Root />
+
 }
 
 
@@ -217,7 +228,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         width: 75,
-        paddingRight: 17,
         marginRight: 30
     },
     backRightBtnRight: {
@@ -251,7 +261,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: "600",
         borderRadius: 50,
-        height: 30,
+        height: 50,
         width: 200,
         paddingHorizontal: 10,
         marginTop: 'auto'

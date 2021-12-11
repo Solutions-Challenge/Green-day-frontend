@@ -17,6 +17,13 @@ const windowHeight = Dimensions.get('window').height;
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 export default function CameraScreen({ navigation }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
@@ -39,15 +46,11 @@ export default function CameraScreen({ navigation }: any) {
       }
 
       items.unshift({
-        key: 0,
+        key: uuid(),
         material: material,
         recyclability: recyclability,
         uri: uri,
         width: width
-      })
-
-      items.map((e:any, index:number)=>{
-        e.key = index
       })
 
     })
