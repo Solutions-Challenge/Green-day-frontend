@@ -9,7 +9,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme, useIsFocused, getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import * as React from 'react';
-import { ColorSchemeName, Dimensions, TouchableOpacity, View } from 'react-native';
+import { ColorSchemeName, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
 import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
 
 import Colors from '../constants/Colors';
@@ -24,23 +24,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
-
-function getHeaderTitle(route:any) {
-  const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
-
-  switch (routeName) {
-    case 'Home':
-      return 'Home';
-    case 'Maps':
-      return 'Maps';
-    case 'Pic':
-      return 'Pic';
-    case 'FeedBack':
-      return 'FeedBack';
-    case 'Details':
-      return 'Details';
-  }
-}
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -59,24 +42,8 @@ function RootNavigator() {
     <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
       <Stack.Screen name="Home" component={HomeTabs} />
       <Stack.Screen name="Pic" component={CameraScreen} />
-      <Stack.Screen name="Maps" component={MapsScreen} />
       <Stack.Screen name="FeedBack" component={FeedbackScreen} />
-
-      <Stack.Screen
-        name="Details"
-        component={ExpandImageScreen}
-        sharedElements={(route) => {
-          return [{
-            id: `item.${route.params.item.key}.image`,
-            resize: 'auto',
-            animation: 'move'
-          }, {
-            id: `item.${route.params.item.key}.material`,
-            resize: 'auto',
-            animation: 'move'
-          }]
-        }}
-      />
+      <Stack.Screen name="Details" component={ExpandImageScreen} />
     </Stack.Navigator>
 
   );
@@ -98,7 +65,10 @@ const HomeTabs = ({ navigation }: any) => {
         headerShown: false,
         tabBarStyle: {
           height: 70,
+          bottom: Platform.OS === 'android' ? 30 : 60,
           borderRadius: 15,
+          left: 20,
+          right: 20,
           position: 'absolute',
         }
       }}
@@ -110,10 +80,9 @@ const HomeTabs = ({ navigation }: any) => {
         options={() => ({
           title: 'Start',
           tabBarIcon: ({ focused }) =>
-            <View style={{ alignItems: 'center', justifyContent: 'center', top: 10 }}>
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
               <AntDesign name="home" size={30} color={focused ? colorScheme === "dark" ? '#fff': '#e32f45' : '#748c94'} />
             </View>
-
         })}
       />
 
@@ -121,16 +90,18 @@ const HomeTabs = ({ navigation }: any) => {
         name="Pic"
         component={CameraScreen}
         options={() => ({
+          
           title: 'Pic',
           tabBarIcon: () => {
             return (
               <View style={{ justifyContent: 'center'}}>
                 <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
                   style={{
-                    shadowColor: colorScheme === 'dark' ? 'white' : 'black',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 3,
+                    shadowColor: '#7F5DF0',
+                    shadowOffset: { width: 0, height: 10 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.5,
+                    elevation: 5 
                   }}
                 >
                   <View
@@ -143,7 +114,7 @@ const HomeTabs = ({ navigation }: any) => {
                   >
                     <Feather
                       name="camera"
-                      size={44}
+                      size={40}
                       color="white"
                       style={{
                         alignSelf: 'center',
@@ -165,10 +136,8 @@ const HomeTabs = ({ navigation }: any) => {
           title: 'Maps',
           tabBarIcon: ({ focused }) => {
             return (
-              <View style={{ alignItems: 'center', justifyContent: 'center', top: 10 }}>
-                  <TouchableOpacity onPress={()=>navigation.navigate('Maps')}>
-                    <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff': '#e32f45' : '#748c94'} />
-                  </TouchableOpacity>
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}> 
+                  <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff': '#e32f45' : '#748c94'} />
               </View>
             )
           }

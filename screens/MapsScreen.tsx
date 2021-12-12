@@ -1,8 +1,7 @@
 import React, { useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated, Button, Linking } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated, Button, Linking, ImageBackground } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { osName } from 'expo-device';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
@@ -20,7 +19,7 @@ import { useIsFocused } from '@react-navigation/native';
 
 let flipPosition = Platform.OS === "android" ? StatusBar.currentHeight as number : 30
 const { width, height } = Dimensions.get("window");
-const CARD_HEIGHT = 150;
+const CARD_HEIGHT = 100;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 const latitudeDelta = 0.0922
@@ -55,10 +54,6 @@ export default function App({ navigation }: any) {
 
   let mapIndex = 0;
   let mapAnimation = new Animated.Value(0);
-
-  const goBack = () => {
-    navigation.navigate('Home')
-  }
 
   const findLink = (href: string) => {
     let temp = href.split('"')
@@ -194,22 +189,14 @@ export default function App({ navigation }: any) {
             onPress={(mapEventData) => {
               // @ts-ignore
               const markerId = mapEventData._targetInst.return.key;
-              let x = markerId * CARD_WIDTH + markerId * 20
+              let x = (markerId * CARD_WIDTH) + (markerId * 20)
               if (Platform.OS === 'ios') {
                 x = x - SPACING_FOR_CARD_INSET;
               }
               _scrollView.current.scrollTo({ x: x, y: 0, animated: true })
             }}
           >
-            <Animated.View style={[
-              styles.marker,
-              {
-                height: '100%',
-                width: '100%',
-              }
-            ]}>
-              <FontAwesome name="map-marker" size={30} color={colorScheme === "dark" ? "white" : "red"} />
-            </Animated.View>
+            <FontAwesome name="map-marker" size={30} color={colorScheme === "dark" ? "white" : "red"} />
           </Marker>
         )
       }) : <></>}
@@ -235,10 +222,10 @@ export default function App({ navigation }: any) {
       }}
     >
       {categories.map((e, index) => {
-        return (<TouchableOpacity key={index} style={styles.chipsItem}>
+        return (index != 0 ? <TouchableOpacity key={index} style={styles.chipsItem}>
           <Image source={e.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
           <Text>{e.name}</Text>
-        </TouchableOpacity>)
+        </TouchableOpacity>: <TouchableOpacity key={index} />)
       })}
 
     </ScrollView>
@@ -246,14 +233,14 @@ export default function App({ navigation }: any) {
     <Animated.ScrollView
       ref={_scrollView}
       horizontal
-      disableScrollViewPanResponder={true}
+      pagingEnabled
       scrollEventThrottle={1}
       showsHorizontalScrollIndicator={false}
-      style={styles.scrollView}
-      pagingEnabled
       snapToInterval={CARD_WIDTH + 20}
       snapToAlignment="center"
-      decelerationRate="fast"
+      decelerationRate={"normal"}
+      automaticallyAdjustContentInsets={true}
+      style={styles.scrollView}
       contentInset={{
         top: 0,
         left: SPACING_FOR_CARD_INSET,
@@ -277,7 +264,7 @@ export default function App({ navigation }: any) {
       )}
     >
       {canMap() ? mapData.results.map((e: any, index: any) => {
-        return (<View style={styles.card} key={index}>
+        return (<View style={[styles.card, {backgroundColor: colorScheme === "dark" ? '#181818' : "white"}]} key={index}>
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row' }}>
@@ -287,11 +274,10 @@ export default function App({ navigation }: any) {
                   resizeMode="cover"
                 />
                 <View>
-                  <Text numberOfLines={1} style={styles.cardtitle}>{e.name}</Text>
+                  <Text numberOfLines={1} style={[styles.cardtitle, {color: colorScheme === "dark" ? "white": "black"}]}>{e.name}</Text>
                   <StarRating ratings={Math.round(e.rating)} reviews={e.user_ratings_total} />
                 </View>
               </View>
-              <Text numberOfLines={1} style={styles.cardDescription}>{e.description}</Text>
               {"photos" in e ? <Button title="Details" onPress={() => { Linking.openURL(findLink(e.photos[0].html_attributions[0])) }}>
               </Button> : <></>}
             </View>
@@ -300,7 +286,7 @@ export default function App({ navigation }: any) {
                 onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${e.vicinity}`) }}
                 style={styles.signIn}
               >
-                <Text style={styles.textSign}>{e.vicinity}</Text>
+                <Text style={[styles.textSign, {color: colorScheme === "dark" ? "white": "black"}]}>{e.vicinity}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -310,11 +296,6 @@ export default function App({ navigation }: any) {
     </Animated.ScrollView>
 
   </SafeAreaView>}
-  <View style={{ position: 'absolute', top: Platform.OS === "ios" ? 40 : flipPosition + 12, left: 12, backgroundColor: "black", borderRadius: 60 }}>
-      <TouchableOpacity onPress={goBack}>
-        <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
-      </TouchableOpacity>
-    </View>
   </>);
 }
 
@@ -324,7 +305,7 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     position: 'absolute',
-    marginTop: Platform.OS === 'ios' ? 40 : flipPosition + 11,
+    marginTop: Platform.OS === 'ios' ? 70 : 50,
     flexDirection: "row",
     backgroundColor: '#fff',
     width: '70%',
@@ -336,6 +317,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 10,
+  },
+  chipsScrollView: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 120 : 110,
+    paddingHorizontal: 10
+  },
+  chipsIcon: {
+    marginRight: 5,
   },
   chipsItem: {
     flexDirection: "row",
@@ -351,18 +340,9 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 10,
   },
-  chipsScrollView: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 100 : flipPosition + 80,
-    paddingHorizontal: 10,
-    width: '100%',
-  },
-  chipsIcon: {
-    marginRight: 5,
-  },
   scrollView: {
     position: "absolute",
-    bottom: Platform.OS === 'android' ? 50 : 70,
+    bottom: 0,
     left: 0,
     right: 0,
     paddingVertical: 10,
@@ -373,10 +353,9 @@ const styles = StyleSheet.create({
   card: {
     padding: 10,
     elevation: 2,
-    backgroundColor: "#FFF",
-    borderRadius: 5,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
     marginHorizontal: 10,
-    marginBottom: Platform.OS === "android" ? 40 : 20,
     shadowColor: "#000",
     shadowRadius: 5,
     shadowOpacity: 0.3,
@@ -384,11 +363,13 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     width: CARD_WIDTH,
     overflow: "hidden",
+    marginBottom: 100 + (Platform.OS === "android" ? 0:30) 
   },
   cardImage: {
-    width: 32,
-    height: 32,
-    marginRight: 10
+    flex: 3,
+    width: "100%",
+    height: "100%",
+    alignSelf: "center",
   },
   textContent: {
     flex: 2,
@@ -396,6 +377,7 @@ const styles = StyleSheet.create({
   },
   cardtitle: {
     fontSize: 12,
+    // marginTop: 5,
     fontWeight: "bold",
   },
   cardDescription: {
@@ -424,14 +406,7 @@ const styles = StyleSheet.create({
     borderRadius: 3
   },
   textSign: {
-    borderRadius: 3,
-    borderColor: '#aaa',
-    borderWidth: 1,
-    color: '#444',
     fontSize: 14,
-    marginBottom: 0,
-    minWidth: 64,
-    paddingHorizontal: 3,
-    paddingVertical: 12
+    fontWeight: 'bold'
   }
 });

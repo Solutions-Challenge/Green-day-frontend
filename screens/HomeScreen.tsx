@@ -22,7 +22,6 @@ export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
-    const isFocused = useIsFocused()
 
     const VisibleItem = (props: any) => {
         const { data, rowHeightAnimatedValue, removeRow, rightActionState } = props
@@ -46,24 +45,19 @@ export default function HomeScreen({ navigation }: any) {
                 <Animated.View style={{ height: rowHeightAnimatedValue }}>
                     <View style={styles.card}>
                         <View style={[styles.containerTitle2, { backgroundColor: colorScheme === "dark" ? '#181818' : '#fff' }]}>
-                            <TouchableOpacity activeOpacity={1} style={{paddingBottom: data.item.width < 600 ? 30: 0}} onPress={() => { navigation.push('Details', { item }) }}>
-                                {/* @ts-ignore */}
-                                <SharedElement id={`item.${item.key}.image`}>
-                                    <Image
-                                        source={{ uri: item.uri }}
-                                        style={{
-                                            height: imageWidth,
-                                            width: imageWidth,
-                                            borderRadius: 10
-                                        }} />
-                                </SharedElement>
+                            <TouchableOpacity activeOpacity={1} style={{ paddingBottom: data.item.width < 600 ? 30 : 0 }} onPress={() => { navigation.push('Details', { item }) }}>
+                                <Image
+                                    source={{ uri: item.uri }}
+                                    style={{
+                                        height: imageWidth,
+                                        width: imageWidth,
+                                        borderRadius: 10
+                                    }} />
                             </TouchableOpacity>
                             <View style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
-                                <SharedElement id={`item.${item.key}.material`}>
-                                    <Text style={{ fontSize: item.width < 600 ? 20 : 40, color: colorScheme === "dark" ? 'white' : 'black' }}>{item.material}</Text>
-                                </SharedElement>
-                                <TouchableOpacity style={styles.recycleButton} hitSlop={{bottom: 10, left: 20, right: 20, top: 20}} onPress={() => { navigation.push('Details', { item }) }}>
-                                    <View style={{marginLeft: 'auto', marginRight: 'auto', marginTop: 'auto', marginBottom: 'auto', flexDirection: 'row', justifyContent: 'center'}}>
+                                <Text style={{ fontSize: item.width < 600 ? 20 : 40, color: colorScheme === "dark" ? 'white' : 'black' }}>{item.material}</Text>
+                                <TouchableOpacity style={styles.recycleButton} onPress={() => { navigation.push('Details', { item }) }}>
+                                    <View style={{ marginLeft: 'auto', marginRight: 'auto', marginTop: 'auto', marginBottom: 'auto', flexDirection: 'row', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
                                         <Text style={{ color: 'white', paddingRight: 10 }}>{item.recyclability}</Text>
                                         <AntDesign name="downcircleo" size={16} color="white" />
                                     </View>
@@ -77,14 +71,8 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const HiddenItemWithActions = (props: any) => {
-        const { onDelete, swipeAnimatedValue, rightActionActivated, rowActionAnimatedValue, rowHeightAnimatedValue } = props
-
-        if (rightActionActivated) {
-            Animated.spring(rowActionAnimatedValue, {
-                toValue: windowWidth,
-                useNativeDriver: false
-            }).start();
-        }
+        const { onDelete, swipeAnimatedValue, rowHeightAnimatedValue } = props
+          
 
         return (<>
             <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
@@ -120,7 +108,14 @@ export default function HomeScreen({ navigation }: any) {
         )
     }
 
+    const closeRow = (rowMap:any, rowKey:any) => {
+        if (rowMap[rowKey]) {
+          rowMap[rowKey].closeRow();
+        }
+      };
+
     const deleteRow = async (rowMap: any, rowKey: any) => {
+        closeRow(rowMap, rowKey)
         const newData = [...data]
         const prevIndex = data.findIndex((item: any) => item.key === rowKey)
         newData.splice(prevIndex, 1)
@@ -129,14 +124,12 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const renderHiddenItem = (data: any, rowMap: any) => {
-        const rowActionAnimatedValue = new Animated.Value(70)
         const rowHeightAnimatedValue = new Animated.Value((windowWidth / divNum) + 20)
 
         return (
             <HiddenItemWithActions
                 data={data}
                 rowMap={rowMap}
-                rowActionAnimatedValue={rowActionAnimatedValue}
                 rowHeightAnimatedValue={rowHeightAnimatedValue}
                 onDelete={() => deleteRow(deleteRow, data.item.key)}
             />
@@ -192,7 +185,7 @@ export default function HomeScreen({ navigation }: any) {
                 >
                 </SwipeListView>
                 <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
-                    <Text style={{ color: colorScheme === "dark" ? "white":"black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
+                    <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
                 </View>
             </>)}
             <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
@@ -233,7 +226,7 @@ const styles = StyleSheet.create({
     backRightBtnRight: {
         backgroundColor: 'red',
         right: 0,
-        height: (windowWidth / divNum) + 20 + (windowWidth < 600 ? 30:0),
+        height: (windowWidth / divNum) + 20 + (windowWidth < 600 ? 30 : 0),
         borderTopRightRadius: 10,
         borderBottomRightRadius: 10
     },

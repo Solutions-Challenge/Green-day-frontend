@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import useColorScheme from '../hooks/useColorScheme';
 
 const StarRating = (props:any) => {
 
@@ -18,13 +19,15 @@ const StarRating = (props:any) => {
         stars.push(name)
     }
 
+    const colorScheme = useColorScheme()
+
     return (
         <View style={ styles.container }>
             {stars.map((e, index)=>{
                 // @ts-ignore
                 return <Ionicons name={e} size={15} style={styles.star} key={index} /> 
             })} 
-            <Text style={styles.text}>({props.reviews})</Text>
+            <Text style={[styles.text, {color: colorScheme === "dark" ? "white":"black"}]}>({props.reviews})</Text>
         </View>
     );
 	

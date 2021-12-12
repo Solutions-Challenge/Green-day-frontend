@@ -4,12 +4,12 @@ import { Camera } from 'expo-camera';
 import { osName } from 'expo-device';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import ImageContext from '../hooks/imageContext';
-import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { Dimensions } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Col, Row, Grid } from "react-native-easy-grid";
 import { PinchGestureHandler } from 'react-native-gesture-handler';
-import Svg, { Circle, Rect, Path } from 'react-native-svg';
+import Svg, { Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const windowWidth = Dimensions.get('window').width;
@@ -18,7 +18,7 @@ const windowHeight = Dimensions.get('window').height;
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
 function uuid() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
@@ -33,27 +33,27 @@ export default function CameraScreen({ navigation }: any) {
 
   const isFocused = useIsFocused();
 
-  const save = async (material:string, recyclability:string, uri: string, width: number) => {
+  const save = async (material: string, recyclability: string, uri: string, width: number) => {
 
-    let items:any = []
+    let items: any = []
 
     await AsyncStorage.getItem("ImageClassify")
-    .then((res)=>{
-      items = JSON.parse(res as string)
+      .then((res) => {
+        items = JSON.parse(res as string)
 
-      if (items.length > 10) {
-        items.pop()
-      }
+        if (items.length > 10) {
+          items.pop()
+        }
 
-      items.unshift({
-        key: uuid(),
-        material: material,
-        recyclability: recyclability,
-        uri: uri,
-        width: width
+        items.unshift({
+          key: uuid(),
+          material: material,
+          recyclability: recyclability,
+          uri: uri,
+          width: width
+        })
+
       })
-
-    })
     await AsyncStorage.setItem("ImageClassify", JSON.stringify(items))
   }
 
@@ -74,7 +74,7 @@ export default function CameraScreen({ navigation }: any) {
   const __takePicture = async () => {
     if (!camera) return
     setIsLoading(true)
-    const photo = await camera.takePictureAsync()
+    const photo = await camera.takePictureAsync({quality: 1})
 
     const manipImage = await manipulateAsync(
       photo.uri,
@@ -110,7 +110,7 @@ export default function CameraScreen({ navigation }: any) {
     // @ts-ignore
     formData.append('file', { uri: localUri, name: filename, type });
 
-    const res = await fetch('http://10.0.0.222:5000//predict', {
+    const res = await fetch('http://10.0.0.222:5000/predict', {
       method: 'POST',
       body: formData,
       headers: {
@@ -125,18 +125,18 @@ export default function CameraScreen({ navigation }: any) {
     save(data.material.Material, data.material.Recyclability, manipImage.uri, windowWidth)
     setUri(manipImage.uri)
 
-    navigation.navigate('Home')
+    navigation.navigate('Home', {screen: "Start"})
   }
 
   const goBack = () => {
-    navigation.navigate('Home')
+    navigation.navigate('Home', {screen: "Start"})
   }
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        navigation.navigate('Home')
+        navigation.navigate('Home', {screen: "Start"})
       }
     })();
   }, []);
@@ -199,12 +199,6 @@ export default function CameraScreen({ navigation }: any) {
               </Col>
             </Row>
           </Grid>
-          <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>
-            <TouchableOpacity onPress={goBack}>
-              <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
-            </TouchableOpacity>
-          </View>
-
           <Svg
             width={windowWidth}
             height={windowHeight}
@@ -215,6 +209,12 @@ export default function CameraScreen({ navigation }: any) {
         </Camera>}
       </View>
     </PinchGestureHandler>
+
+    <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>
+      <TouchableOpacity onPress={goBack}>
+        <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
+      </TouchableOpacity>
+    </View>
 
   </>);
 }
