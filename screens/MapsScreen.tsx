@@ -52,19 +52,34 @@ export default function App({ navigation }: any) {
   const isFocused = useIsFocused();
 
   const [catIndex, setCatIndex] = useState(0)
-  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 100 })
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 })
   let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
     setMapIndex(changed[0].key);
   })
 
-  useEffect(()=>{
-    if (canMap()) {
+  const useHasChanged = (val: any) => {
+    const prevVal = usePrevious(val)
+    return prevVal !== val
+  }
+
+  const usePrevious = (value:any) => {
+    const ref = useRef();
+    useEffect(() => {
+      ref.current = value;
+    });
+    return ref.current;
+  }
+
+  const hasVal1Changed = useHasChanged(mapIndex)
+
+  useEffect(() => {
+    if (canMap() && hasVal1Changed) {
       _map.current.animateToRegion({
         latitude: mapData.results[mapIndex].geometry.location.lat,
         longitude: mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: latitudeDelta,
         longitudeDelta: longitudeDelta
-      })
+      }, 350)
     }
   }, [mapIndex])
 
@@ -145,7 +160,7 @@ export default function App({ navigation }: any) {
       provider={PROVIDER_GOOGLE}
       showsUserLocation={true}
       customMapStyle={colorScheme === 'dark' ? data : []}
-      region={{
+      initialRegion={{
         latitude: latitude,
         longitude: longitude,
         latitudeDelta: latitudeDelta,

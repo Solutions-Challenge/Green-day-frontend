@@ -62,7 +62,7 @@ const HomeTabs = ({ navigation }: any) => {
         headerShown: false,
         tabBarStyle: {
           height: 70,
-          bottom: Platform.OS === 'android' ? 30 : 60,
+          bottom: Platform.OS === "android" ? 30:60,
           borderRadius: 15,
           left: 20,
           right: 20,
@@ -77,7 +77,7 @@ const HomeTabs = ({ navigation }: any) => {
         options={() => ({
           title: 'Start',
           tabBarIcon: ({ focused }) =>
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto', top: Platform.OS === 'ios' ? 15 : 0 }}>
               <AntDesign name="home" size={30} color={focused ? colorScheme === "dark" ? '#fff': '#e32f45' : '#748c94'} />
             </View>
         })}
@@ -91,7 +91,7 @@ const HomeTabs = ({ navigation }: any) => {
           title: 'Pic',
           tabBarIcon: () => {
             return (
-              <View style={{ justifyContent: 'center' }}>
+              <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto', top: Platform.OS === 'ios' ? 15 : 0 }}>
                 <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
                   style={{
                     shadowColor: '#7F5DF0',
@@ -133,7 +133,7 @@ const HomeTabs = ({ navigation }: any) => {
           title: 'Maps',
           tabBarIcon: ({ focused }) => {
             return (
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}> 
+              <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto', top: Platform.OS === 'ios' ? 15 : 0 }}> 
                   <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff': '#e32f45' : '#748c94'} />
               </View>
             )
