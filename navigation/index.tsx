@@ -3,19 +3,16 @@
  * https://reactnavigation.org/docs/getting-started
  *
  */
-import { FontAwesome } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, DefaultTheme, DarkTheme, useIsFocused, getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import * as React from 'react';
-import { ColorSchemeName, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
+import { ColorSchemeName, Platform, TouchableOpacity, View } from 'react-native';
 import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
-import ModalScreen from '../screens/ModalScreen';
-import NotFoundScreen from '../screens/NotFoundScreen';
 import { RootTabParamList } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 import CameraScreen from '../screens/CameraScreen';
@@ -94,7 +91,7 @@ const HomeTabs = ({ navigation }: any) => {
           title: 'Pic',
           tabBarIcon: () => {
             return (
-              <View style={{ justifyContent: 'center'}}>
+              <View style={{ justifyContent: 'center' }}>
                 <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
                   style={{
                     shadowColor: '#7F5DF0',

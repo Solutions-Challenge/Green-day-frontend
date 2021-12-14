@@ -1,5 +1,6 @@
 import React, { Component, useContext } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
+// @ts-ignore
 import Spinner from 'react-native-loading-spinner-overlay';
 import ImageContext from '../hooks/imageContext';
 

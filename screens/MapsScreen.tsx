@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated, Button, Linking, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated, Button, Linking, ImageBackground, FlatList } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
@@ -16,8 +16,6 @@ import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 
-
-let flipPosition = Platform.OS === "android" ? StatusBar.currentHeight as number : 30
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 100;
 const CARD_WIDTH = width * 0.8;
@@ -50,10 +48,27 @@ export default function App({ navigation }: any) {
   const _map = useRef(null as any)
   const _scrollView = useRef(null as any)
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
+  const [mapIndex, setMapIndex] = useState(0)
   const isFocused = useIsFocused();
 
-  let mapIndex = 0;
-  let mapAnimation = new Animated.Value(0);
+  const [catIndex, setCatIndex] = useState(0)
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 100 })
+  let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
+    setMapIndex(changed[0].key);
+  })
+
+  useEffect(()=>{
+    if (canMap()) {
+      _map.current.animateToRegion({
+        latitude: mapData.results[mapIndex].geometry.location.lat,
+        longitude: mapData.results[mapIndex].geometry.location.lng,
+        latitudeDelta: latitudeDelta,
+        longitudeDelta: longitudeDelta
+      })
+    }
+  }, [mapIndex])
+
+  const [mapData, setmapData] = useState({} as any)
 
   const findLink = (href: string) => {
     let temp = href.split('"')
@@ -65,45 +80,6 @@ export default function App({ navigation }: any) {
   const canMap = () => {
     return JSON.stringify(mapData) !== '{}'
   }
-
-  useEffect(() => {
-    mapAnimation.addListener(({ value }) => {
-      if (canMap()) {
-
-        let index = Math.floor(value / CARD_WIDTH + 0.3)
-
-        if (index >= mapData.results.length) {
-          index = mapData.results.length - 1;
-        }
-        if (index <= 0) {
-          index = 0;
-        }
-
-        // @ts-ignore
-        clearTimeout(regionTimeout);
-        const regionTimeout = setTimeout(() => {
-          if (mapIndex !== index && canMap()) {
-            mapIndex = index;
-
-            let lat = mapData.results[index].geometry.location.lat
-            let lng = mapData.results[index].geometry.location.lng
-
-            _map.current.animateToRegion(
-              {
-                latitude: lat,
-                longitude: lng,
-                latitudeDelta: latitudeDelta,
-                longitudeDelta: longitudeDelta
-              },
-              300
-            );
-          }
-        }, 10);
-      }
-    });
-  });
-
-  const [mapData, setmapData] = useState({} as any)
 
   useEffect(() => {
     (async () => {
@@ -159,8 +135,6 @@ export default function App({ navigation }: any) {
             let item = JSON.parse(res as string)
             setmapData(item)
           })
-
-
       }
     })();
   }, [longitude])
@@ -186,14 +160,8 @@ export default function App({ navigation }: any) {
               latitude: e.geometry.location.lat,
               longitude: e.geometry.location.lng
             }}
-            onPress={(mapEventData) => {
-              // @ts-ignore
-              const markerId = mapEventData._targetInst.return.key;
-              let x = (markerId * CARD_WIDTH) + (markerId * 20)
-              if (Platform.OS === 'ios') {
-                x = x - SPACING_FOR_CARD_INSET;
-              }
-              _scrollView.current.scrollTo({ x: x, y: 0, animated: true })
+            onPress={() => {
+              _scrollView.current.scrollToIndex({ index: "" + index, animated: true, viewPosition: 0.5 })
             }}
           >
             <FontAwesome name="map-marker" size={30} color={colorScheme === "dark" ? "white" : "red"} />
@@ -212,7 +180,7 @@ export default function App({ navigation }: any) {
       <Ionicons name="ios-search" size={20} />
     </View>
 
-    <ScrollView
+    <FlatList
       horizontal
       scrollEventThrottle={1}
       showsHorizontalScrollIndicator={false}
@@ -220,17 +188,81 @@ export default function App({ navigation }: any) {
       contentContainerStyle={{
         paddingRight: 20
       }}
+      data={categories}
+      renderItem={({ item }: any) => {
+        return (
+          (item.key != 0 ? <TouchableOpacity
+            key={item.key}
+            onPress={() => {
+              setCatIndex(item.key)
+            }}
+            style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
+            <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+            <Text>{item.name}</Text>
+          </TouchableOpacity> : <View key={item.key} />)
+        )
+      }}
     >
-      {categories.map((e, index) => {
-        return (index != 0 ? <TouchableOpacity key={index} style={styles.chipsItem}>
-          <Image source={e.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-          <Text>{e.name}</Text>
-        </TouchableOpacity>: <TouchableOpacity key={index} />)
-      })}
+    </FlatList>
+    <FlatList
+      ref={_scrollView}
+      initialScrollIndex={0}
+      viewabilityConfig={viewConfigRef.current}
+      onViewableItemsChanged={onViewableItemsChanged.current}
+      horizontal
+      pagingEnabled
+      scrollEventThrottle={1}
+      showsHorizontalScrollIndicator={false}
+      snapToInterval={CARD_WIDTH + 20}
+      snapToAlignment="center"
+      decelerationRate={"fast"}
+      style={styles.scrollView}
+      contentInset={{
+        top: 0,
+        left: SPACING_FOR_CARD_INSET,
+        bottom: 0,
+        right: SPACING_FOR_CARD_INSET
+      }}
+      contentContainerStyle={{
+        paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
+      }}
+      data={mapData.results}
+      keyExtractor={(item, index) => index.toString()}
+      renderItem={({ item }: any) => {
+        return (
+          canMap() ? <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+            <View style={styles.textContent}>
+              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row' }}>
+                  <Image
+                    source={{ uri: item.icon }}
+                    style={styles.cardImage}
+                    resizeMode="cover"
+                  />
+                  <View>
+                    <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
+                    <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
+                  </View>
+                </View>
+                {"photos" in item ? <Button title="Details" onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
+                </Button> : <></>}
+              </View>
+              <View style={styles.button}>
+                <TouchableOpacity
+                  onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${item.vicinity}`) }}
+                  style={styles.signIn}
+                >
+                  <Text style={[styles.textSign, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.vicinity}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View> : <></>
+        )
+      }}
+    >
+    </FlatList>
 
-    </ScrollView>
-
-    <Animated.ScrollView
+    {/* <Animated.ScrollView
       ref={_scrollView}
       horizontal
       pagingEnabled
@@ -238,7 +270,7 @@ export default function App({ navigation }: any) {
       showsHorizontalScrollIndicator={false}
       snapToInterval={CARD_WIDTH + 20}
       snapToAlignment="center"
-      decelerationRate={"normal"}
+      decelerationRate={"fast"}
       automaticallyAdjustContentInsets={true}
       style={styles.scrollView}
       contentInset={{
@@ -264,7 +296,7 @@ export default function App({ navigation }: any) {
       )}
     >
       {canMap() ? mapData.results.map((e: any, index: any) => {
-        return (<View style={[styles.card, {backgroundColor: colorScheme === "dark" ? '#181818' : "white"}]} key={index}>
+        return (<View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]} key={index}>
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row' }}>
@@ -274,7 +306,7 @@ export default function App({ navigation }: any) {
                   resizeMode="cover"
                 />
                 <View>
-                  <Text numberOfLines={1} style={[styles.cardtitle, {color: colorScheme === "dark" ? "white": "black"}]}>{e.name}</Text>
+                  <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{e.name}</Text>
                   <StarRating ratings={Math.round(e.rating)} reviews={e.user_ratings_total} />
                 </View>
               </View>
@@ -286,14 +318,14 @@ export default function App({ navigation }: any) {
                 onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${e.vicinity}`) }}
                 style={styles.signIn}
               >
-                <Text style={[styles.textSign, {color: colorScheme === "dark" ? "white": "black"}]}>{e.vicinity}</Text>
+                <Text style={[styles.textSign, { color: colorScheme === "dark" ? "white" : "black" }]}>{e.vicinity}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>)
 
       }) : <></>}
-    </Animated.ScrollView>
+    </Animated.ScrollView> */}
 
   </SafeAreaView>}
   </>);
@@ -363,7 +395,7 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     width: CARD_WIDTH,
     overflow: "hidden",
-    marginBottom: 100 + (Platform.OS === "android" ? 0:30) 
+    marginBottom: 100 + (Platform.OS === "android" ? 0 : 30)
   },
   cardImage: {
     flex: 3,
@@ -410,3 +442,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   }
 });
+
