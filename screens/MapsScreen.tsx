@@ -223,7 +223,6 @@ export default function App({ navigation }: any) {
         showsUserLocation={true}
         showsBuildings={true}
         showsCompass={true}
-        showsMyLocationButton={true}
         customMapStyle={colorScheme === 'dark' ? data : []}
         initialRegion={{
           latitude: latitude,

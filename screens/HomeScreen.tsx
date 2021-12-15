@@ -8,6 +8,7 @@ import ImageContext from '../hooks/imageContext';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { AntDesign, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
+import read_data from '../api/firebase';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -187,7 +188,7 @@ export default function HomeScreen({ navigation }: any) {
                 </View>
             </>)}
             <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
-                <TouchableOpacity onPress={go_to_feedback}>
+                <TouchableOpacity onPress={()=>read_data()}>
                     <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
                 </TouchableOpacity>
             </View>

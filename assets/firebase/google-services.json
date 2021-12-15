@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "328110789625",
+    "project_id": "inlaid-hope-330503",
+    "storage_bucket": "inlaid-hope-330503.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:328110789625:android:1dedbcc6fb83391f6ea328",
+        "android_client_info": {
+          "package_name": "com.nextchart.greenday"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "328110789625-aqnpb5lho2mubssnlb77uga0ir8bj0f9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtCkn3hD5GBALMvUv8eLPry8iVU6ppf0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "328110789625-aqnpb5lho2mubssnlb77uga0ir8bj0f9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "328110789625-n8br1e4lcqp9mjgv34kg4o97duok96cs.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nextchart.greenday"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

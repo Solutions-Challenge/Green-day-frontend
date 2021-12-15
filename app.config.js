@@ -7,6 +7,17 @@ export default {
   "userInterfaceStyle": "automatic",
   "privacy": "public",
   "icon": "./assets/images/ecopal.png",
+  "expo": {
+    "android": {
+      "googleServicesFile": "./assets/firebase/google-services.json"
+    },
+    "ios": {
+      "googleServicesFile": "./assets/firebase/GoogleService-Info.plist"
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+    ]
+  },
   "splash": {
     "image": "./assets/images/splash.png",
     "resizeMode": "contain",
