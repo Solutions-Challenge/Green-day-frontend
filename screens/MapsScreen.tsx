@@ -1,7 +1,7 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, StatusBar, TextInput, ScrollView, Animated, Button, Linking, ImageBackground, FlatList } from 'react-native';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, Linking, FlatList } from 'react-native';
+import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
+import BottomSheet from 'reanimated-bottom-sheet'
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -51,6 +52,7 @@ export default function App({ navigation }: any) {
   const [mapIndex, setMapIndex] = useState(0)
   const isFocused = useIsFocused();
   const mapColors = colorScheme === "dark" ? "white" : "red"
+  const bs = useRef<BottomSheet>(null)
 
   const [catIndex, setCatIndex] = useState(0)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 })
@@ -79,12 +81,12 @@ export default function App({ navigation }: any) {
 
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
-        _map.current.animateToRegion({
-            latitude: mapData.results[mapIndex].geometry.location.lat,
-            longitude: mapData.results[mapIndex].geometry.location.lng,
-            latitudeDelta: 0.07,
-            longitudeDelta: 0.05
-          },350)
+      _map.current.animateToRegion({
+        latitude: mapData.results[mapIndex].geometry.location.lat,
+        longitude: mapData.results[mapIndex].geometry.location.lng,
+        latitudeDelta: 0.07,
+        longitudeDelta: 0.05
+      }, 350)
     }
   }, [mapIndex])
 
@@ -155,7 +157,49 @@ export default function App({ navigation }: any) {
     })();
   }, [longitude])
 
-  return (<>{isFocused && <SafeAreaView style={{ flex: 1 }}>
+  const mainColor = colorScheme === "dark" ? '#181818' : "white"
+
+
+  const renderInner = () => (
+    <View style={[styles.panel, {paddingBottom: 600, backgroundColor: mainColor}]}>
+      <View style={{ alignItems: 'center' }}>
+        <Text style={[styles.panelTitle, {color: colorScheme === 'dark' ? 'white':'black', marginBottom: 10}]}>Add Your Own Markers</Text>
+      </View>
+      <TouchableOpacity style={styles.panelButton}>
+        <Text style={styles.panelButtonTitle}>Mark your Own Position</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.panelButton}>
+        <Text style={styles.panelButtonTitle}>Take from Current Position</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.panelButton}
+        onPress={()=>{bs?.current?.snapTo(1)}}
+        >
+        <Text style={styles.panelButtonTitle}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  )
+
+  const renderHeader = () => (
+    <View style={[styles.header, {backgroundColor: mainColor}]}>
+      <View style={styles.panelHeader}>
+        <View style={[styles.panelHandle, {backgroundColor: colorScheme === "dark" ? "white" : '#00000040'}]} />
+      </View>
+    </View>
+  )
+
+  return (<>
+  <BottomSheet
+      ref={bs}
+      snapPoints={[450, 0]}
+      initialSnap={1}
+      enabledGestureInteraction={true}
+      renderContent={renderInner}
+      renderHeader={renderHeader}
+      enabledInnerScrolling={false}
+      enabledContentGestureInteraction={false}
+    />
+  {isFocused && <SafeAreaView style={{ flex: 1 }}>
     <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
       ref={_map}
       provider={PROVIDER_GOOGLE}
@@ -177,11 +221,10 @@ export default function App({ navigation }: any) {
               longitude: e.geometry.location.lng
             }}
             onPress={() => {
-              console.log(index)
               _scrollView.current.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
             }}
           >
-              <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={index == mapIndex ? "lightgreen" : mapColors} /> 
+            <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
           </Marker>
         )
       }) : <></>}
@@ -247,25 +290,25 @@ export default function App({ navigation }: any) {
       contentContainerStyle={{
         paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
       }}
-      onScrollToIndexFailed={(err)=>{console.log(err)}}
+      onScrollToIndexFailed={(err) => { console.log(err) }}
       data={mapData.results}
       keyExtractor={(item, index) => index.toString()}
       renderItem={({ item }: any) => {
         return (
-          canMap() ? <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+          canMap() ? <View style={[styles.card, { backgroundColor: mainColor }]}>
             <View style={styles.textContent}>
-              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: width - 20 }}>
-                <View style={{ flexDirection: 'row' }}>                
+              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row' }}>
                   <View>
                     <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
                     <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
                   </View>
                 </View>
-                {"photos" in item && 
-                  <TouchableOpacity 
+                {"photos" in item &&
+                  <TouchableOpacity
                     style={styles.button}
                     onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
-                    <Text style={{color: 'white'}}>Details</Text>
+                    <Text style={{ color: 'white' }}>Details</Text>
                   </TouchableOpacity>}
               </View>
               <View>
@@ -282,6 +325,12 @@ export default function App({ navigation }: any) {
       }}
     >
     </FlatList>
+    <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50:0), right: 25 }} onPress={() => bs?.current?.snapTo(0)}>
+      <View style={{backgroundColor: colorScheme === "light" ? 'white':'black', borderRadius: 25 }}>
+        <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white':'black'} />
+      </View>
+    </TouchableOpacity>
+  
   </SafeAreaView>}
   </>);
 }
@@ -386,7 +435,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     width: 80,
-    right: 100,
     backgroundColor: '#190c8d'
   },
   signIn: {
@@ -400,6 +448,53 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     marginTop: 10,
-  }
+  },
+
+  panel: {
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    paddingTop: 20,
+  },
+  header: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#333333',
+    shadowOffset: { width: -1, height: -3 },
+    shadowRadius: 2,
+    shadowOpacity: 0.4,
+    paddingTop: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  panelHeader: {
+    alignItems: 'center',
+  },
+  panelHandle: {
+    width: 40,
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  panelTitle: {
+    fontSize: 27,
+    height: 35,
+  },
+  panelSubtitle: {
+    fontSize: 14,
+    color: 'gray',
+    height: 30,
+    marginBottom: 10,
+  },
+  panelButton: {
+    padding: 13,
+    borderRadius: 10,
+    backgroundColor: '#FF6347',
+    alignItems: 'center',
+    marginVertical: 7,
+  },
+  panelButtonTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: 'white',
+  },
 });
 

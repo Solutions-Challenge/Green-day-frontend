@@ -21,13 +21,17 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import bottomSheetModalProvider from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetModalProvider';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
       <NavigationContainer
       linking={LinkingConfiguration}
       theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <RootNavigator />
+     
+        <RootNavigator />
+      
     </NavigationContainer>
   );
 }
@@ -36,13 +40,12 @@ const Stack = createSharedElementStackNavigator();
 
 function RootNavigator() {
   return (
-    <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
-      <Stack.Screen name="Home" component={HomeTabs} />
-      <Stack.Screen name="Pic" component={CameraScreen} />
-      <Stack.Screen name="FeedBack" component={FeedbackScreen} />
-      <Stack.Screen name="Details" component={ExpandImageScreen} />
-    </Stack.Navigator>
-
+      <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Home" component={HomeTabs} />
+        <Stack.Screen name="Pic" component={CameraScreen} />
+        <Stack.Screen name="FeedBack" component={FeedbackScreen} />
+        <Stack.Screen name="Details" component={ExpandImageScreen} />
+      </Stack.Navigator>
   );
 }
 
