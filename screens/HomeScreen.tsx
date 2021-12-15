@@ -1,19 +1,17 @@
 import { useState, useEffect, useContext } from 'react';
 import * as React from 'react'
-import { Animated, Image, StyleSheet, View, Text, Dimensions, Button, TouchableOpacity, TouchableHighlight, StatusBar } from 'react-native';
+import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
 import ImageContext from '../hooks/imageContext';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { AntDesign, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
-import { SharedElement } from 'react-navigation-shared-element';
-import { useIsFocused } from '@react-navigation/core';
 
 const windowWidth = Dimensions.get('window').width;
 
-const divNum = windowWidth < 600 ? 4 : 2
+const divNum = windowWidth < 600 ? 4 : 3
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
@@ -36,7 +34,7 @@ export default function HomeScreen({ navigation }: any) {
             });
         }
 
-        const imageWidth = data.item.width < 600 ? data.item.width / 4 : data.item.width / 2
+        const imageWidth = data.item.width < 600 ? data.item.width / 4 : data.item.width / 3
         const item = data.item
 
         return (

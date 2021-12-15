@@ -17,7 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get("window");
-const CARD_HEIGHT = 100;
+const CARD_HEIGHT = 130;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 const latitudeDelta = 0.0922
@@ -50,6 +50,7 @@ export default function App({ navigation }: any) {
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
   const [mapIndex, setMapIndex] = useState(0)
   const isFocused = useIsFocused();
+  const mapColors = colorScheme === "dark" ? "white" : "red"
 
   const [catIndex, setCatIndex] = useState(0)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 })
@@ -57,12 +58,16 @@ export default function App({ navigation }: any) {
     setMapIndex(changed[0].key);
   })
 
+  const canMap = () => {
+    return JSON.stringify(mapData) !== '{}'
+  }
+
   const useHasChanged = (val: any) => {
     const prevVal = usePrevious(val)
     return prevVal !== val
   }
 
-  const usePrevious = (value:any) => {
+  const usePrevious = (value: any) => {
     const ref = useRef();
     useEffect(() => {
       ref.current = value;
@@ -74,12 +79,12 @@ export default function App({ navigation }: any) {
 
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
-      _map.current.animateToRegion({
-        latitude: mapData.results[mapIndex].geometry.location.lat,
-        longitude: mapData.results[mapIndex].geometry.location.lng,
-        latitudeDelta: latitudeDelta,
-        longitudeDelta: longitudeDelta
-      }, 350)
+        _map.current.animateToRegion({
+            latitude: mapData.results[mapIndex].geometry.location.lat,
+            longitude: mapData.results[mapIndex].geometry.location.lng,
+            latitudeDelta: 0.07,
+            longitudeDelta: 0.05
+          },350)
     }
   }, [mapIndex])
 
@@ -90,10 +95,6 @@ export default function App({ navigation }: any) {
     href = temp[1]
 
     return href
-  }
-
-  const canMap = () => {
-    return JSON.stringify(mapData) !== '{}'
   }
 
   useEffect(() => {
@@ -176,10 +177,11 @@ export default function App({ navigation }: any) {
               longitude: e.geometry.location.lng
             }}
             onPress={() => {
-              _scrollView.current.scrollToIndex({ index: "" + index, animated: true, viewPosition: 0.5 })
+              console.log(index)
+              _scrollView.current.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
             }}
           >
-            <FontAwesome name="map-marker" size={30} color={colorScheme === "dark" ? "white" : "red"} />
+              <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={index == mapIndex ? "lightgreen" : mapColors} /> 
           </Marker>
         )
       }) : <></>}
@@ -229,6 +231,10 @@ export default function App({ navigation }: any) {
       scrollEventThrottle={1}
       showsHorizontalScrollIndicator={false}
       snapToInterval={CARD_WIDTH + 20}
+      initialNumToRender={3}
+      maxToRenderPerBatch={3}
+      windowSize={10}
+      removeClippedSubviews={true}
       snapToAlignment="center"
       decelerationRate={"fast"}
       style={styles.scrollView}
@@ -241,28 +247,28 @@ export default function App({ navigation }: any) {
       contentContainerStyle={{
         paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
       }}
+      onScrollToIndexFailed={(err)=>{console.log(err)}}
       data={mapData.results}
       keyExtractor={(item, index) => index.toString()}
       renderItem={({ item }: any) => {
         return (
           canMap() ? <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
             <View style={styles.textContent}>
-              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row' }}>
-                  <Image
-                    source={{ uri: item.icon }}
-                    style={styles.cardImage}
-                    resizeMode="cover"
-                  />
+              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: width - 20 }}>
+                <View style={{ flexDirection: 'row' }}>                
                   <View>
                     <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
                     <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
                   </View>
                 </View>
-                {"photos" in item ? <Button title="Details" onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
-                </Button> : <></>}
+                {"photos" in item && 
+                  <TouchableOpacity 
+                    style={styles.button}
+                    onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
+                    <Text style={{color: 'white'}}>Details</Text>
+                  </TouchableOpacity>}
               </View>
-              <View style={styles.button}>
+              <View>
                 <TouchableOpacity
                   onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${item.vicinity}`) }}
                   style={styles.signIn}
@@ -276,72 +282,6 @@ export default function App({ navigation }: any) {
       }}
     >
     </FlatList>
-
-    {/* <Animated.ScrollView
-      ref={_scrollView}
-      horizontal
-      pagingEnabled
-      scrollEventThrottle={1}
-      showsHorizontalScrollIndicator={false}
-      snapToInterval={CARD_WIDTH + 20}
-      snapToAlignment="center"
-      decelerationRate={"fast"}
-      automaticallyAdjustContentInsets={true}
-      style={styles.scrollView}
-      contentInset={{
-        top: 0,
-        left: SPACING_FOR_CARD_INSET,
-        bottom: 0,
-        right: SPACING_FOR_CARD_INSET
-      }}
-      contentContainerStyle={{
-        paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
-      }}
-      onScroll={Animated.event(
-        [
-          {
-            nativeEvent: {
-              contentOffset: {
-                x: mapAnimation
-              }
-            }
-          }
-        ],
-        { useNativeDriver: false }
-      )}
-    >
-      {canMap() ? mapData.results.map((e: any, index: any) => {
-        return (<View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]} key={index}>
-          <View style={styles.textContent}>
-            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <View style={{ flexDirection: 'row' }}>
-                <Image
-                  source={{ uri: e.icon }}
-                  style={styles.cardImage}
-                  resizeMode="cover"
-                />
-                <View>
-                  <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{e.name}</Text>
-                  <StarRating ratings={Math.round(e.rating)} reviews={e.user_ratings_total} />
-                </View>
-              </View>
-              {"photos" in e ? <Button title="Details" onPress={() => { Linking.openURL(findLink(e.photos[0].html_attributions[0])) }}>
-              </Button> : <></>}
-            </View>
-            <View style={styles.button}>
-              <TouchableOpacity
-                onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${e.vicinity}`) }}
-                style={styles.signIn}
-              >
-                <Text style={[styles.textSign, { color: colorScheme === "dark" ? "white" : "black" }]}>{e.vicinity}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>)
-
-      }) : <></>}
-    </Animated.ScrollView> */}
-
   </SafeAreaView>}
   </>);
 }
@@ -424,7 +364,7 @@ const styles = StyleSheet.create({
   },
   cardtitle: {
     fontSize: 12,
-    // marginTop: 5,
+    width: 200,
     fontWeight: "bold",
   },
   cardDescription: {
@@ -443,7 +383,11 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    marginTop: 5
+    justifyContent: 'center',
+    borderRadius: 10,
+    width: 80,
+    right: 100,
+    backgroundColor: '#190c8d'
   },
   signIn: {
     width: '100%',
@@ -454,7 +398,8 @@ const styles = StyleSheet.create({
   },
   textSign: {
     fontSize: 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    marginTop: 10,
   }
 });
 
