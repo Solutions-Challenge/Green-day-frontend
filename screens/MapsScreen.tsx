@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, Linking, FlatList } from 'react-native';
 import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
-import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
+import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
 import data from '../mapStyle.json';
@@ -16,6 +16,8 @@ import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
+import { StatusBar } from 'expo-status-bar';
+import { WINDOW_HEIGHT } from '@gorhom/bottom-sheet';
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -46,13 +48,15 @@ export default function App({ navigation }: any) {
   const colorScheme = useColorScheme();
   const [latitude, setLatitude] = useState(0)
   const [longitude, setLongitude] = useState(0)
-  const _map = useRef(null as any)
+  const _map = useRef<MapView>(null)
   const _scrollView = useRef(null as any)
-  const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
+  const [, setIsLoading] = useContext(ImageContext).isLoading
   const [mapIndex, setMapIndex] = useState(0)
   const isFocused = useIsFocused();
   const mapColors = colorScheme === "dark" ? "white" : "red"
   const bs = useRef<BottomSheet>(null)
+  const [visible, setVisible] = useState(true)
+  const [addingMarker, setAddingMarker] = useState({})
 
   const [catIndex, setCatIndex] = useState(0)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 })
@@ -81,7 +85,7 @@ export default function App({ navigation }: any) {
 
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
-      _map.current.animateToRegion({
+      _map?.current?.animateToRegion({
         latitude: mapData.results[mapIndex].geometry.location.lat,
         longitude: mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.07,
@@ -110,7 +114,7 @@ export default function App({ navigation }: any) {
         navigation.navigate('Home')
       }
 
-      let location = await getCurrentPositionAsync({})
+      let location = await getCurrentPositionAsync({accuracy: Accuracy.Highest})
       setLatitude(location.coords.latitude)
       setLongitude(location.coords.longitude)
       setIsLoading(false)
@@ -161,35 +165,48 @@ export default function App({ navigation }: any) {
 
 
   const renderInner = () => (
-    <View style={[styles.panel, {paddingBottom: 600, backgroundColor: mainColor}]}>
+    <View style={[styles.panel, { paddingBottom: 600, backgroundColor: mainColor }]}>
       <View style={{ alignItems: 'center' }}>
-        <Text style={[styles.panelTitle, {color: colorScheme === 'dark' ? 'white':'black', marginBottom: 10}]}>Add Your Own Markers</Text>
+        <Text style={[styles.panelTitle, { color: colorScheme === 'dark' ? 'white' : 'black', marginBottom: 10 }]}>Add Your Own Markers</Text>
       </View>
-      <TouchableOpacity style={styles.panelButton}>
-        <Text style={styles.panelButtonTitle}>Mark your Own Position</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.panelButton}>
-        <Text style={styles.panelButtonTitle}>Take from Current Position</Text>
+      <TouchableOpacity
+        style={styles.panelButton}
+        onPress={async () => {
+          await getCurrentPositionAsync({ accuracy: Accuracy.Highest })
+            .then((res) => {
+              setAddingMarker({ latitude: res.coords.latitude, longitude: res.coords.longitude })
+            })
+          setVisible(false)
+          bs?.current?.snapTo(1)
+        }}
+      >
+        <Text style={styles.panelButtonTitle}>Use Your Current Location</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.panelButton}
-        onPress={()=>{bs?.current?.snapTo(1)}}
-        >
+        onPress={() => { setVisible(false); bs?.current?.snapTo(1) }}
+      >
+        <Text style={styles.panelButtonTitle}>Mark Your Marker In The Map</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.panelButton}
+        onPress={() => { bs?.current?.snapTo(1) }}
+      >
         <Text style={styles.panelButtonTitle}>Cancel</Text>
       </TouchableOpacity>
     </View>
   )
 
   const renderHeader = () => (
-    <View style={[styles.header, {backgroundColor: mainColor}]}>
+    <View style={[styles.header, { backgroundColor: mainColor }]}>
       <View style={styles.panelHeader}>
-        <View style={[styles.panelHandle, {backgroundColor: colorScheme === "dark" ? "white" : '#00000040'}]} />
+        <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
       </View>
     </View>
   )
 
   return (<>
-  <BottomSheet
+    <BottomSheet
       ref={bs}
       snapPoints={[450, 0]}
       initialSnap={1}
@@ -199,21 +216,34 @@ export default function App({ navigation }: any) {
       enabledInnerScrolling={false}
       enabledContentGestureInteraction={false}
     />
-  {isFocused && <SafeAreaView style={{ flex: 1 }}>
-    <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
-      ref={_map}
-      provider={PROVIDER_GOOGLE}
-      showsUserLocation={true}
-      customMapStyle={colorScheme === 'dark' ? data : []}
-      initialRegion={{
-        latitude: latitude,
-        longitude: longitude,
-        latitudeDelta: latitudeDelta,
-        longitudeDelta: longitudeDelta
-      }}
-    >
-      {canMap() ? mapData.results.map((e: any, index: any) => {
-        return (
+    {isFocused && <SafeAreaView style={{ flex: 1 }}>
+      <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
+        ref={_map}
+        provider={PROVIDER_GOOGLE}
+        showsUserLocation={true}
+        loadingEnabled={true}
+        customMapStyle={colorScheme === 'dark' ? data : []}
+        initialRegion={{
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: latitudeDelta,
+          longitudeDelta: longitudeDelta
+        }}
+        onPress={(e: any) => { !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
+      > 
+        <Marker
+          coordinate={{
+            // @ts-ignore
+            latitude: addingMarker.latitude || 0,
+            // @ts-ignore
+            longitude: addingMarker.longitude || 0,
+          }}
+        >
+          <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={'blue'} />
+        </Marker>
+
+      {canMap() && mapData.results.map((e: any, index: any) => {
+        return (<>
           <Marker
             key={index}
             coordinate={{
@@ -226,111 +256,171 @@ export default function App({ navigation }: any) {
           >
             <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
           </Marker>
-        )
-      }) : <></>}
+        </>)
+      })}
     </MapView>
 
-    <View style={styles.searchBox}>
-      <TextInput
-        placeholder="Search Here"
-        placeholderTextColor="#000"
-        autoCapitalize="none"
-        style={{ flex: 1, padding: 0 }}
-      />
-      <Ionicons name="ios-search" size={20} />
-    </View>
+      {
+      !visible && !("latitude" in addingMarker) && (<View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
+        <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
+      </View>)
+    }
 
-    <FlatList
-      horizontal
-      scrollEventThrottle={1}
-      showsHorizontalScrollIndicator={false}
-      style={styles.chipsScrollView}
-      contentContainerStyle={{
-        paddingRight: 20
-      }}
-      data={categories}
-      renderItem={({ item }: any) => {
-        return (
-          (item.key != 0 ? <TouchableOpacity
-            key={item.key}
-            onPress={() => {
-              setCatIndex(item.key)
+    {
+      "latitude" in addingMarker && (<>
+        {_map.current?.animateToRegion({
+          // @ts-ignore
+          latitude: addingMarker.latitude,
+          // @ts-ignore
+          longitude: addingMarker.longitude,
+          latitudeDelta: 0.0007,
+          longitudeDelta: 0.0001
+        })}
+        <View
+          style={{ position: 'absolute', alignItems: 'flex-end', justifyContent: 'center', left: 20, width: width - 40, height: 200, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', flexDirection: 'row', padding: 10, borderRadius: 10 }}
+        >
+          <TouchableOpacity
+            onPress={() => { setVisible(true); setAddingMarker({}) }}
+          >
+            <View
+              style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
+            >
+              <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => { setVisible(true); setAddingMarker({}) }}
+          >
+            <View
+              style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
+            >
+              <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <MapView>
+          <Marker
+            coordinate={{
+              // @ts-ignore
+              latitude: addingMarker.latitude,
+              // @ts-ignore
+              longitude: addingMarker.longitude,
             }}
-            style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
-            <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-            <Text>{item.name}</Text>
-          </TouchableOpacity> : <View key={item.key} />)
-        )
-      }}
-    >
-    </FlatList>
-    <FlatList
-      ref={_scrollView}
-      initialScrollIndex={0}
-      viewabilityConfig={viewConfigRef.current}
-      onViewableItemsChanged={onViewableItemsChanged.current}
-      horizontal
-      pagingEnabled
-      scrollEventThrottle={1}
-      showsHorizontalScrollIndicator={false}
-      snapToInterval={CARD_WIDTH + 20}
-      initialNumToRender={3}
-      maxToRenderPerBatch={3}
-      windowSize={10}
-      removeClippedSubviews={true}
-      snapToAlignment="center"
-      decelerationRate={"fast"}
-      style={styles.scrollView}
-      contentInset={{
-        top: 0,
-        left: SPACING_FOR_CARD_INSET,
-        bottom: 0,
-        right: SPACING_FOR_CARD_INSET
-      }}
-      contentContainerStyle={{
-        paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
-      }}
-      onScrollToIndexFailed={(err) => { console.log(err) }}
-      data={mapData.results}
-      keyExtractor={(item, index) => index.toString()}
-      renderItem={({ item }: any) => {
-        return (
-          canMap() ? <View style={[styles.card, { backgroundColor: mainColor }]}>
-            <View style={styles.textContent}>
-              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row' }}>
+          >
+
+            <FontAwesome name="map-marker" style={[styles.marker, { width: 100, height: 100 }]} size={50} color={'blue'} />
+          </Marker>
+
+        </MapView>
+      </>)
+    }
+
+    {
+      visible && (<>
+
+        <View style={styles.searchBox}>
+          <TextInput
+            placeholder="Search Here"
+            placeholderTextColor="#000"
+            autoCapitalize="none"
+            style={{ flex: 1, padding: 0 }}
+          />
+          <Ionicons name="ios-search" size={20} />
+        </View>
+
+        <FlatList
+          horizontal
+          scrollEventThrottle={1}
+          showsHorizontalScrollIndicator={false}
+          style={styles.chipsScrollView}
+          contentContainerStyle={{
+            paddingRight: 20
+          }}
+          data={categories}
+          renderItem={({ item }: any) => {
+            return (
+              (item.key != 0 ? <TouchableOpacity
+                key={item.key}
+                onPress={() => {
+                  setCatIndex(item.key)
+                }}
+                style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
+                <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                <Text>{item.name}</Text>
+              </TouchableOpacity> : <View key={item.key} />)
+            )
+          }}
+        >
+        </FlatList>
+        <FlatList
+          ref={_scrollView}
+          initialScrollIndex={0}
+          viewabilityConfig={viewConfigRef.current}
+          onViewableItemsChanged={onViewableItemsChanged.current}
+          horizontal
+          pagingEnabled
+          scrollEventThrottle={1}
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_WIDTH + 20}
+          initialNumToRender={3}
+          maxToRenderPerBatch={3}
+          windowSize={10}
+          removeClippedSubviews={true}
+          snapToAlignment="center"
+          decelerationRate={"fast"}
+          style={styles.scrollView}
+          contentInset={{
+            top: 0,
+            left: SPACING_FOR_CARD_INSET,
+            bottom: 0,
+            right: SPACING_FOR_CARD_INSET
+          }}
+          contentContainerStyle={{
+            paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
+          }}
+          onScrollToIndexFailed={(err) => { console.log(err) }}
+          data={mapData.results}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }: any) => {
+            return (
+              canMap() ? <View style={[styles.card, { backgroundColor: mainColor }]}>
+                <View style={styles.textContent}>
+                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row' }}>
+                      <View>
+                        <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
+                        <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
+                      </View>
+                    </View>
+                    {"photos" in item &&
+                      <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
+                        <Text style={{ color: 'white' }}>Details</Text>
+                      </TouchableOpacity>}
+                  </View>
                   <View>
-                    <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
-                    <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
+                    <TouchableOpacity
+                      onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${item.vicinity}`) }}
+                      style={styles.signIn}
+                    >
+                      <Text style={[styles.textSign, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.vicinity}</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
-                {"photos" in item &&
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
-                    <Text style={{ color: 'white' }}>Details</Text>
-                  </TouchableOpacity>}
-              </View>
-              <View>
-                <TouchableOpacity
-                  onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${item.vicinity}`) }}
-                  style={styles.signIn}
-                >
-                  <Text style={[styles.textSign, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.vicinity}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View> : <></>
-        )
-      }}
-    >
-    </FlatList>
-    <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50:0), right: 25 }} onPress={() => bs?.current?.snapTo(0)}>
-      <View style={{backgroundColor: colorScheme === "light" ? 'white':'black', borderRadius: 25 }}>
-        <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white':'black'} />
-      </View>
-    </TouchableOpacity>
-  
+              </View> : <></>
+            )
+          }}
+        >
+        </FlatList>
+        <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
+          <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
+            <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+          </View>
+        </TouchableOpacity>
+      </>)
+    }
+
   </SafeAreaView>}
   </>);
 }
