@@ -221,7 +221,9 @@ export default function App({ navigation }: any) {
         ref={_map}
         provider={PROVIDER_GOOGLE}
         showsUserLocation={true}
-        loadingEnabled={true}
+        showsBuildings={true}
+        showsCompass={true}
+        showsMyLocationButton={true}
         customMapStyle={colorScheme === 'dark' ? data : []}
         initialRegion={{
           latitude: latitude,
