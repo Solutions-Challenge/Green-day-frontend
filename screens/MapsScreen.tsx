@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, Linking, FlatList } from 'react-native';
-import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { AntDesign, FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
@@ -59,6 +59,7 @@ export default function App({ navigation }: any) {
   const [visible, setVisible] = useState(true)
   const [addingMarker, setAddingMarker] = useState({})
   const [userData, setUserData] = useState({} as any)
+  const [toggle, setToggle] = useState(false)
 
   const [catIndex, setCatIndex] = useState(0)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 })
@@ -88,8 +89,8 @@ export default function App({ navigation }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: mapData.results[mapIndex].geometry.location.lat,
-        longitude: mapData.results[mapIndex].geometry.location.lng,
+        latitude: toggle ? userData[mapIndex].latitude : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? userData[mapIndex].longitude : mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.07,
         longitudeDelta: 0.05
       }, 350)
@@ -164,11 +165,9 @@ export default function App({ navigation }: any) {
     })();
   }, [longitude])
 
-  const mainColor = colorScheme === "dark" ? '#181818' : "white"
-
 
   const renderInner = () => (
-    <View style={[styles.panel, { paddingBottom: 600, backgroundColor: mainColor }]}>
+    <View style={[styles.panel, { paddingBottom: 600, backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
       <View style={{ alignItems: 'center' }}>
         <Text style={[styles.panelTitle, { color: colorScheme === 'dark' ? 'white' : 'black', marginBottom: 10 }]}>Add Your Own Markers</Text>
       </View>
@@ -201,11 +200,76 @@ export default function App({ navigation }: any) {
   )
 
   const renderHeader = () => (
-    <View style={[styles.header, { backgroundColor: mainColor }]}>
+    <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
       <View style={styles.panelHeader}>
         <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
       </View>
     </View>
+  )
+
+  const keyExtractor = useCallback(
+    (item, index) => index.toString(),
+    [mapData]
+  )
+
+  const getItemLayout = useCallback(
+    (item, index)=>({
+      length: CARD_WIDTH,
+      offset: (CARD_WIDTH * index) + (20 * index) + (Platform.OS === "ios" ? 0:SPACING_FOR_CARD_INSET),
+      index
+    }),
+    [mapData]
+  )
+
+  const renderItemUser = useCallback (
+    ({item}:any) => {
+      return (
+        <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+          <View style={styles.textContent}>
+            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>({item.latitude},{item.longitude})</Text>
+            </View>
+          </View>
+        </View>
+      )
+
+    },
+    [userData]
+  )
+
+  const renderItem = useCallback(
+    ({ item }:any) => {
+      return (
+        <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+          <View style={styles.textContent}>
+            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              
+              <View>
+                <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
+                <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
+              </View>
+              
+              {"photos" in item &&
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
+                  <Text style={{ color: 'white' }}>Details</Text>
+                </TouchableOpacity>}
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${item.vicinity}`) }}
+                style={styles.signIn}
+              >
+                <Text style={[styles.textSign, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.vicinity}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )
+      
+    },
+    [mapData],
   )
 
   return (<>
@@ -235,16 +299,16 @@ export default function App({ navigation }: any) {
         }}
         onPress={(e: any) => { !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
       > 
-        <Marker
+        {canMap() && JSON.stringify(addingMarker) != '{}' && <Marker
           coordinate={{
             // @ts-ignore
-            latitude: addingMarker.latitude || 0,
+            latitude: addingMarker.latitude,
             // @ts-ignore
-            longitude: addingMarker.longitude || 0,
+            longitude: addingMarker.longitude,
           }}
         >
           <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={'blue'} />
-        </Marker>
+        </Marker>}
 
       {canMap() && mapData.results.map((e: any, index: any) => {
         return (<>
@@ -350,7 +414,6 @@ export default function App({ navigation }: any) {
 
         <FlatList
           horizontal
-          scrollEventThrottle={1}
           showsHorizontalScrollIndicator={false}
           style={styles.chipsScrollView}
           contentContainerStyle={{
@@ -379,12 +442,8 @@ export default function App({ navigation }: any) {
           onViewableItemsChanged={onViewableItemsChanged.current}
           horizontal
           pagingEnabled
-          scrollEventThrottle={1}
           showsHorizontalScrollIndicator={false}
           snapToInterval={CARD_WIDTH + 20}
-          initialNumToRender={3}
-          maxToRenderPerBatch={3}
-          windowSize={10}
           removeClippedSubviews={true}
           snapToAlignment="center"
           decelerationRate={"fast"}
@@ -399,43 +458,24 @@ export default function App({ navigation }: any) {
             paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
           }}
           onScrollToIndexFailed={(err) => { console.log(err) }}
-          data={mapData.results}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }: any) => {
-            return (
-              canMap() ? <View style={[styles.card, { backgroundColor: mainColor }]}>
-                <View style={styles.textContent}>
-                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row' }}>
-                      <View>
-                        <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
-                        <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
-                      </View>
-                    </View>
-                    {"photos" in item &&
-                      <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
-                        <Text style={{ color: 'white' }}>Details</Text>
-                      </TouchableOpacity>}
-                  </View>
-                  <View>
-                    <TouchableOpacity
-                      onPress={() => { Linking.openURL(`https://maps.${Platform.OS === "android" ? "google" : "apple"}.com/?q=${item.vicinity}`) }}
-                      style={styles.signIn}
-                    >
-                      <Text style={[styles.textSign, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.vicinity}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View> : <></>
-            )
-          }}
+          data={toggle ? userData : mapData.results}
+          keyExtractor={keyExtractor}
+          renderItem={toggle ? renderItemUser : renderItem}
+          getItemLayout={getItemLayout}
         >
         </FlatList>
         <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
           <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
             <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={()=>setToggle(!toggle)}>
+          <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
+            {
+              !toggle ? 
+                <Ionicons name="person-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />:
+                <Ionicons name="search-circle-outline"  size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+            }
           </View>
         </TouchableOpacity>
       </>)
