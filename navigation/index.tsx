@@ -9,7 +9,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import * as React from 'react';
 import { ColorSchemeName, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
-import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
@@ -21,6 +20,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -36,7 +36,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   );
 }
 
-const Stack = createSharedElementStackNavigator();
+const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
   return (

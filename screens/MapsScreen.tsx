@@ -18,6 +18,7 @@ import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
 import { StatusBar } from 'expo-status-bar';
 import { WINDOW_HEIGHT } from '@gorhom/bottom-sheet';
+import { read_data, write_data } from '../api/firebase';
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -57,6 +58,7 @@ export default function App({ navigation }: any) {
   const bs = useRef<BottomSheet>(null)
   const [visible, setVisible] = useState(true)
   const [addingMarker, setAddingMarker] = useState({})
+  const [userData, setUserData] = useState({} as any)
 
   const [catIndex, setCatIndex] = useState(0)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 })
@@ -65,7 +67,7 @@ export default function App({ navigation }: any) {
   })
 
   const canMap = () => {
-    return JSON.stringify(mapData) !== '{}'
+    return JSON.stringify(mapData) !== '{}' && JSON.stringify(userData) !== '{}'
   }
 
   const useHasChanged = (val: any) => {
@@ -157,6 +159,7 @@ export default function App({ navigation }: any) {
             let item = JSON.parse(res as string)
             setmapData(item)
           })
+        read_data(latitude, longitude, setUserData)
       }
     })();
   }, [longitude])
@@ -259,6 +262,21 @@ export default function App({ navigation }: any) {
           </Marker>
         </>)
       })}
+
+      {canMap() && userData.map((e: any, index: any)=>{
+        return (
+        <Marker
+          key={index}
+          coordinate={{
+            latitude: e.latitude,
+            longitude: e.longitude
+          }}
+        >
+            <FontAwesome name="map-marker" style={[styles.marker]} size={30} color="yellow" />
+
+        </Marker>
+        )
+      })}
     </MapView>
 
       {
@@ -290,7 +308,8 @@ export default function App({ navigation }: any) {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => { setVisible(true); setAddingMarker({}) }}
+            // @ts-ignore
+            onPress={() => { setVisible(true); write_data(addingMarker.latitude, addingMarker.longitude); setAddingMarker({}); read_data(latitude, longitude, setUserData) }}
           >
             <View
               style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
