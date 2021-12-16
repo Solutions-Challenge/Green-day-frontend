@@ -4,9 +4,6 @@ import React, { useContext, useEffect, useState } from "react"
 import { StatusBar, TouchableOpacity, View, StyleSheet, TextInput, Text, Image, KeyboardAvoidingView, Platform } from "react-native"
 import ImageContext from "../hooks/imageContext"
 import useColorScheme from '../hooks/useColorScheme';
-import * as RNFS from 'react-native-fs'
-import FastImage from 'react-native-fast-image'
-import * as FileSystem from 'expo-file-system';
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 

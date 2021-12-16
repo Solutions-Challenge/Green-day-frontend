@@ -23,14 +23,16 @@ export const read_data = async(latitude:number, longitude:number, setUserData:an
   let ans:any = []
   await querySnapshot.forEach((e)=>{
     if (e.exists() && typeof(e.data().coordinates) != "undefined") {
-      ans.push(e.data().coordinates)
+      ans.push(e.data())
     }
   })
   setUserData(ans)
 } 
 
-export const write_data = async(latitude:number, longitude:number) => {
+export const write_data = async(latitude:number, longitude:number, name:string, message:string) => {
   addDoc(geoData, {
+    title: name,
+    description: message,
     coordinates: new GeoPoint(latitude, longitude)
   })
 }

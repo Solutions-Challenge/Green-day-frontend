@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, TextInput, Linking, FlatList } from 'react-native';
-import { AntDesign, FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Linking, FlatList } from 'react-native';
+import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
@@ -16,9 +16,8 @@ import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
-import { StatusBar } from 'expo-status-bar';
-import { WINDOW_HEIGHT } from '@gorhom/bottom-sheet';
 import { read_data, write_data } from '../api/firebase';
+import {TextInput} from 'react-native-paper'
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -50,7 +49,8 @@ export default function App({ navigation }: any) {
   const [latitude, setLatitude] = useState(0)
   const [longitude, setLongitude] = useState(0)
   const _map = useRef<MapView>(null)
-  const _scrollView = useRef(null as any)
+  const _scrollView = useRef<FlatList>(null)
+  const _scrollViewUser = useRef<FlatList>(null)
   const [, setIsLoading] = useContext(ImageContext).isLoading
   const [mapIndex, setMapIndex] = useState(0)
   const isFocused = useIsFocused();
@@ -60,9 +60,11 @@ export default function App({ navigation }: any) {
   const [addingMarker, setAddingMarker] = useState({})
   const [userData, setUserData] = useState({} as any)
   const [toggle, setToggle] = useState(false)
+  const [name, setName] = useState('')
+  const [message, setMessage] = useState('')
 
   const [catIndex, setCatIndex] = useState(0)
-  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70 })
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
   let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
     setMapIndex(changed[0].key);
   })
@@ -89,10 +91,10 @@ export default function App({ navigation }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: toggle ? userData[mapIndex].latitude : mapData.results[mapIndex].geometry.location.lat,
-        longitude: toggle ? userData[mapIndex].longitude : mapData.results[mapIndex].geometry.location.lng,
-        latitudeDelta: 0.07,
-        longitudeDelta: 0.05
+        latitude: toggle ? userData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? userData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
+        latitudeDelta: 0.007,
+        longitudeDelta: 0.005
       }, 350)
     }
   }, [mapIndex])
@@ -117,7 +119,7 @@ export default function App({ navigation }: any) {
         navigation.navigate('Home')
       }
 
-      let location = await getCurrentPositionAsync({accuracy: Accuracy.Highest})
+      let location = await getCurrentPositionAsync({ accuracy: Accuracy.Highest })
       setLatitude(location.coords.latitude)
       setLongitude(location.coords.longitude)
       setIsLoading(false)
@@ -213,21 +215,29 @@ export default function App({ navigation }: any) {
   )
 
   const getItemLayout = useCallback(
-    (item, index)=>({
+    (item, index) => ({
       length: CARD_WIDTH,
-      offset: (CARD_WIDTH * index) + (20 * index) + (Platform.OS === "ios" ? 0:SPACING_FOR_CARD_INSET),
+      offset: (CARD_WIDTH * index) + (20 * index) + (Platform.OS === "ios" ? 0 : SPACING_FOR_CARD_INSET),
       index
     }),
     [mapData]
   )
 
-  const renderItemUser = useCallback (
-    ({item}:any) => {
+  const renderItemUser = useCallback(
+    // https://www.google.com/maps/search/38.3872814/@38.3911299,-121.4113302,15z
+    ({ item }: any) => {
       return (
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>({item.latitude},{item.longitude})</Text>
+              <TouchableOpacity 
+                style={{backgroundColor: 'white'}}
+                onPress={()=>{Linking.openURL(`https://www.google.com/maps/search/@${item.coordinates.latitude},${item.coordinates.longitude},15z`) }}
+                >
+                <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>({item.coordinates.latitude},{item.coordinates.longitude})</Text>
+              </TouchableOpacity>
+              <Text>{item.description}</Text>
+              <Text>{item.title}</Text>
             </View>
           </View>
         </View>
@@ -238,17 +248,17 @@ export default function App({ navigation }: any) {
   )
 
   const renderItem = useCallback(
-    ({ item }:any) => {
+    ({ item }: any) => {
       return (
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              
+
               <View>
                 <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.name}</Text>
                 <StarRating ratings={Math.round(item.rating)} reviews={item.user_ratings_total} />
               </View>
-              
+
               {"photos" in item &&
                 <TouchableOpacity
                   style={styles.button}
@@ -267,7 +277,7 @@ export default function App({ navigation }: any) {
           </View>
         </View>
       )
-      
+
     },
     [mapData],
   )
@@ -298,7 +308,7 @@ export default function App({ navigation }: any) {
           longitudeDelta: longitudeDelta
         }}
         onPress={(e: any) => { !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
-      > 
+      >
         {canMap() && JSON.stringify(addingMarker) != '{}' && <Marker
           coordinate={{
             // @ts-ignore
@@ -307,181 +317,221 @@ export default function App({ navigation }: any) {
             longitude: addingMarker.longitude,
           }}
         >
-          <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={'blue'} />
+          <FontAwesome name="map-marker" size={30} color={mapColors} />
         </Marker>}
 
-      {canMap() && mapData.results.map((e: any, index: any) => {
-        return (<>
-          <Marker
-            key={index}
-            coordinate={{
-              latitude: e.geometry.location.lat,
-              longitude: e.geometry.location.lng
-            }}
-            onPress={() => {
-              _scrollView.current.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
-            }}
-          >
-            <FontAwesome name="map-marker" style={[styles.marker]} size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
-          </Marker>
-        </>)
-      })}
+        {canMap() && !toggle && mapData.results.map((e: any, index: any) => {
+          return (
+            <Marker
+              coordinate={{
+                latitude: e.geometry.location.lat,
+                longitude: e.geometry.location.lng
+              }}
+              onPress={() => {
+                _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
+              }}
+            >
+              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
+            </Marker>
+          )
+        })}
 
-      {canMap() && userData.map((e: any, index: any)=>{
-        return (
-        <Marker
-          key={index}
-          coordinate={{
-            latitude: e.latitude,
-            longitude: e.longitude
-          }}
-        >
-            <FontAwesome name="map-marker" style={[styles.marker]} size={30} color="yellow" />
-
-        </Marker>
-        )
-      })}
-    </MapView>
+        {canMap() && toggle && userData.map((e: any, index: any) => {
+          return (
+            <Marker
+              key={index}
+              coordinate={{
+                latitude: e.coordinates.latitude,
+                longitude: e.coordinates.longitude
+              }}
+              onPress={() => {
+                _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
+              }}
+            >
+              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors } />
+            </Marker>
+          )
+        })}
+      </MapView>
 
       {
-      !visible && !("latitude" in addingMarker) && (<View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
-        <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
-      </View>)
-    }
+        !visible && !("latitude" in addingMarker) && (<View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
+          <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
+        </View>)
+      }
 
-    {
-      "latitude" in addingMarker && (<>
-        {_map.current?.animateToRegion({
-          // @ts-ignore
-          latitude: addingMarker.latitude,
-          // @ts-ignore
-          longitude: addingMarker.longitude,
-          latitudeDelta: 0.0007,
-          longitudeDelta: 0.0001
-        })}
-        <View
-          style={{ position: 'absolute', alignItems: 'flex-end', justifyContent: 'center', left: 20, width: width - 40, height: 200, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', flexDirection: 'row', padding: 10, borderRadius: 10 }}
-        >
-          <TouchableOpacity
-            onPress={() => { setVisible(true); setAddingMarker({}) }}
-          >
-            <View
-              style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
-            >
-              <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
+      {
+        "latitude" in addingMarker && (<>
+          {_map.current?.animateToRegion({
             // @ts-ignore
-            onPress={() => { setVisible(true); write_data(addingMarker.latitude, addingMarker.longitude); setAddingMarker({}); read_data(latitude, longitude, setUserData) }}
+            latitude: addingMarker.latitude,
+            // @ts-ignore
+            longitude: addingMarker.longitude,
+            latitudeDelta: 0.0007,
+            longitudeDelta: 0.0001
+          })}
+          <View
+            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, height: 300, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
           >
-            <View
-              style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
-            >
-              <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
+            <View style={{flexDirection: 'column'}}>
+              <TextInput 
+                placeholder={"Title: "} 
+                autoComplete={''} 
+                error={name === ""}
+                placeholderTextColor={'black'} 
+                mode={"outlined"}
+                multiline={false}
+                dense={true}
+                style={styles.inputStyle}
+                onChangeText={(res) => setName(res)} />
+              <TextInput
+                placeholder={"Description: "} 
+                autoComplete={''} 
+                error={message===""}
+                placeholderTextColor={'black'} 
+                mode={"outlined"}
+                multiline={true}
+                numberOfLines={4}
+                dense={true}
+                style={styles.inputStyle}
+                spellCheck={true} 
+                onChangeText={(res) => setMessage(res)} />
             </View>
-          </TouchableOpacity>
-        </View>
-        <MapView>
-          <Marker
-            coordinate={{
-              // @ts-ignore
-              latitude: addingMarker.latitude,
-              // @ts-ignore
-              longitude: addingMarker.longitude,
+            <View style={{flexDirection: 'row'}}>
+              <TouchableOpacity
+                onPress={() => { setVisible(true); setAddingMarker({}) }}
+              >
+                <View
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
+                >
+                  <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => { 
+                  if (name !== "" && message !== "") {
+                    setVisible(true); 
+                    // @ts-ignore
+                    write_data(addingMarker.latitude, addingMarker.longitude, name, message); 
+                    setAddingMarker({}); 
+                    read_data(latitude, longitude, setUserData) }}
+                  } 
+              >
+                <View
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
+                >
+                  <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <MapView>
+            <Marker
+              coordinate={{
+                // @ts-ignore
+                latitude: addingMarker.latitude,
+                // @ts-ignore
+                longitude: addingMarker.longitude,
+              }}
+            >
+
+              <FontAwesome name="map-marker" size={50} color={mapColors} />
+            </Marker>
+
+          </MapView>
+        </>)
+      }
+
+      {
+        visible && (<>
+
+          <View style={styles.searchBox}>
+            <TextInput
+              placeholder="Search"
+              placeholderTextColor="#000"
+              mode={'outlined'}
+              autoComplete={'search'}
+              autoCapitalize="none"
+              dense={true}
+              outlineColor={"transparent"}
+              activeOutlineColor={"transparent"}
+              style={{ flex: 1, backgroundColor: 'transparent' }}
+            />              
+            <View style={{ marginTop: 'auto', marginBottom: 'auto', paddingRight: 5 }}>
+              <Ionicons name="ios-search" size={20} />
+            </View>
+          </View>
+
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.chipsScrollView}
+            contentContainerStyle={{
+              paddingRight: 20
+            }}
+            data={categories}
+            renderItem={({ item }: any) => {
+              return (
+                (item.key != 0 ? <TouchableOpacity
+                  key={item.key}
+                  onPress={() => {
+                    setCatIndex(item.key)
+                  }}
+                  style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
+                  <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                  <Text>{item.name}</Text>
+                </TouchableOpacity> : <View key={item.key} />)
+              )
             }}
           >
+          </FlatList>
+          <FlatList
+            ref={_scrollView}
+            initialScrollIndex={0}
+            viewabilityConfig={viewConfigRef.current}
+            onViewableItemsChanged={onViewableItemsChanged.current}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={CARD_WIDTH + 20}
+            removeClippedSubviews={true}
+            snapToAlignment="center"
+            decelerationRate={"fast"}
+            style={styles.scrollView}
+            contentInset={{
+              top: 0,
+              left: SPACING_FOR_CARD_INSET,
+              bottom: 0,
+              right: SPACING_FOR_CARD_INSET
+            }}
+            contentContainerStyle={{
+              paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
+            }}
+            onScrollToIndexFailed={() => { }}
+            data={toggle ? userData : mapData.results}
+            keyExtractor={keyExtractor}
+            renderItem={toggle ? renderItemUser : renderItem}
+            getItemLayout={getItemLayout}
+          >
+          </FlatList>
+          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
+            <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
+              <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => {setToggle(!toggle);}}>
+            <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
+              {
+                !toggle ?
+                  <Ionicons name="person-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} /> :
+                  <Ionicons name="search-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+              }
+            </View>
+          </TouchableOpacity>
+        </>)
+      }
 
-            <FontAwesome name="map-marker" style={[styles.marker, { width: 100, height: 100 }]} size={50} color={'blue'} />
-          </Marker>
-
-        </MapView>
-      </>)
-    }
-
-    {
-      visible && (<>
-
-        <View style={styles.searchBox}>
-          <TextInput
-            placeholder="Search Here"
-            placeholderTextColor="#000"
-            autoCapitalize="none"
-            style={{ flex: 1, padding: 0 }}
-          />
-          <Ionicons name="ios-search" size={20} />
-        </View>
-
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.chipsScrollView}
-          contentContainerStyle={{
-            paddingRight: 20
-          }}
-          data={categories}
-          renderItem={({ item }: any) => {
-            return (
-              (item.key != 0 ? <TouchableOpacity
-                key={item.key}
-                onPress={() => {
-                  setCatIndex(item.key)
-                }}
-                style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
-                <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                <Text>{item.name}</Text>
-              </TouchableOpacity> : <View key={item.key} />)
-            )
-          }}
-        >
-        </FlatList>
-        <FlatList
-          ref={_scrollView}
-          initialScrollIndex={0}
-          viewabilityConfig={viewConfigRef.current}
-          onViewableItemsChanged={onViewableItemsChanged.current}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={CARD_WIDTH + 20}
-          removeClippedSubviews={true}
-          snapToAlignment="center"
-          decelerationRate={"fast"}
-          style={styles.scrollView}
-          contentInset={{
-            top: 0,
-            left: SPACING_FOR_CARD_INSET,
-            bottom: 0,
-            right: SPACING_FOR_CARD_INSET
-          }}
-          contentContainerStyle={{
-            paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
-          }}
-          onScrollToIndexFailed={(err) => { console.log(err) }}
-          data={toggle ? userData : mapData.results}
-          keyExtractor={keyExtractor}
-          renderItem={toggle ? renderItemUser : renderItem}
-          getItemLayout={getItemLayout}
-        >
-        </FlatList>
-        <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
-          <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
-            <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={()=>setToggle(!toggle)}>
-          <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
-            {
-              !toggle ? 
-                <Ionicons name="person-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />:
-                <Ionicons name="search-circle-outline"  size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
-            }
-          </View>
-        </TouchableOpacity>
-      </>)
-    }
-
-  </SafeAreaView>}
+    </SafeAreaView>}
   </>);
 }
 
@@ -497,7 +547,6 @@ const styles = StyleSheet.create({
     width: '70%',
     alignSelf: 'center',
     borderRadius: 5,
-    padding: 10,
     shadowColor: '#ccc',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.5,
@@ -506,7 +555,7 @@ const styles = StyleSheet.create({
   },
   chipsScrollView: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 120 : 110,
+    top: Platform.OS === 'ios' ? 130 : 120,
     paddingHorizontal: 10
   },
   chipsIcon: {
@@ -576,10 +625,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
   },
-  marker: {
-    width: 30,
-    height: 30,
-  },
   button: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -645,6 +690,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     color: 'white',
+  },
+  inputStyle: {
+    marginBottom: 10,
+    width: 300,
   },
 });
 
