@@ -29,10 +29,11 @@ export const read_data = async(latitude:number, longitude:number, setUserData:an
   setUserData(ans)
 } 
 
-export const write_data = async(latitude:number, longitude:number, name:string, message:string) => {
+export const write_data = async(latitude:number, longitude:number, name:string, message:string, imageIndex:number) => {
   addDoc(geoData, {
     title: name,
     description: message,
+    imageIndex: imageIndex,
     coordinates: new GeoPoint(latitude, longitude)
   })
 }

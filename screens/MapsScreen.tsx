@@ -17,7 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
 import { read_data, write_data } from '../api/firebase';
-import {TextInput} from 'react-native-paper'
+import { TextInput } from 'react-native-paper'
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -199,6 +199,7 @@ export default function App({ navigation }: any) {
         <Text style={styles.panelButtonTitle}>Cancel</Text>
       </TouchableOpacity>
     </View>
+
   )
 
   const renderHeader = () => (
@@ -211,7 +212,7 @@ export default function App({ navigation }: any) {
 
   const keyExtractor = useCallback(
     (item, index) => index.toString(),
-    [mapData]
+    [mapData, userData]
   )
 
   const getItemLayout = useCallback(
@@ -229,16 +230,19 @@ export default function App({ navigation }: any) {
       return (
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
           <View style={styles.textContent}>
-            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity 
-                style={{backgroundColor: 'white'}}
-                onPress={()=>{Linking.openURL(`https://www.google.com/maps/search/@${item.coordinates.latitude},${item.coordinates.longitude},15z`) }}
-                >
-                <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black" }]}>({item.coordinates.latitude},{item.coordinates.longitude})</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+              <TouchableOpacity
+                onPress={() => { Linking.openURL(`https://www.google.com/maps/search/@${item.coordinates.latitude},${item.coordinates.longitude},15z`) }}
+              >
+                <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
               </TouchableOpacity>
-              <Text>{item.description}</Text>
-              <Text>{item.title}</Text>
+              <View
+                style={[styles.chipsItem, { backgroundColor: "white", margin: 0, marginLeft: 'auto', width: 130 }]}>
+                <Image source={categories[item.imageIndex-1].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                <Text>{categories[item.imageIndex-1].name}</Text>
+              </View>
             </View>
+            <Text style={[styles.cardDescription, {color: colorScheme === "dark" ? "white" : "black"}]}>{item.description}</Text>
           </View>
         </View>
       )
@@ -331,7 +335,7 @@ export default function App({ navigation }: any) {
                 _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
               }}
             >
-              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
+              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? colorScheme === "dark" ? "lightgreen":"#1E5631" : mapColors} />
             </Marker>
           )
         })}
@@ -348,7 +352,7 @@ export default function App({ navigation }: any) {
                 _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
               }}
             >
-              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors } />
+              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? colorScheme === "dark" ? "lightgreen":"#1E5631" : mapColors} />
             </Marker>
           )
         })}
@@ -364,40 +368,56 @@ export default function App({ navigation }: any) {
         "latitude" in addingMarker && (<>
           {_map.current?.animateToRegion({
             // @ts-ignore
-            latitude: addingMarker.latitude,
+            latitude: addingMarker.latitude + 0.0001,
             // @ts-ignore
             longitude: addingMarker.longitude,
             latitudeDelta: 0.0007,
             longitudeDelta: 0.0001
           })}
           <View
-            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, height: 300, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
+            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
           >
-            <View style={{flexDirection: 'column'}}>
-              <TextInput 
-                placeholder={"Title: "} 
-                autoComplete={''} 
+            <View style={{ flexDirection: 'column' }}>
+              <TextInput
+                placeholder={"Title: "}
+                autoComplete={''}
                 error={name === ""}
-                placeholderTextColor={'black'} 
+                placeholderTextColor={'black'}
                 mode={"outlined"}
                 multiline={false}
                 dense={true}
                 style={styles.inputStyle}
                 onChangeText={(res) => setName(res)} />
               <TextInput
-                placeholder={"Description: "} 
-                autoComplete={''} 
-                error={message===""}
-                placeholderTextColor={'black'} 
+                placeholder={"Description: "}
+                autoComplete={''}
+                error={message === ""}
+                placeholderTextColor={'black'}
                 mode={"outlined"}
                 multiline={true}
                 numberOfLines={4}
                 dense={true}
                 style={styles.inputStyle}
-                spellCheck={true} 
+                spellCheck={true}
                 onChangeText={(res) => setMessage(res)} />
             </View>
-            <View style={{flexDirection: 'row'}}>
+            <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'space-between', justifyContent: 'center' }}>
+              {categories.map((item, index) => {
+                return (<>
+                  <TouchableOpacity
+                    key={item.key}
+                    onPress={() => {
+                      setCatIndex(item.key)
+                    }}
+                    style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", marginBottom: 10, width: 130 }]}>
+                    <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                    <Text>{item.name}</Text>
+                  </TouchableOpacity>
+                </>)
+              })}
+            </View>
+            <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity
                 onPress={() => { setVisible(true); setAddingMarker({}) }}
               >
@@ -408,14 +428,20 @@ export default function App({ navigation }: any) {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => { 
+                onPress={async () => {
                   if (name !== "" && message !== "") {
-                    setVisible(true); 
+                    setVisible(true);
                     // @ts-ignore
-                    write_data(addingMarker.latitude, addingMarker.longitude, name, message); 
-                    setAddingMarker({}); 
-                    read_data(latitude, longitude, setUserData) }}
-                  } 
+                    await write_data(addingMarker.latitude, addingMarker.longitude, name, message, catIndex)
+                      .then(() => {
+                        read_data(latitude, longitude, setUserData)
+                      })
+                    setName('')
+                    setMessage('')
+                    setAddingMarker({});
+                  }
+                }
+                }
               >
                 <View
                   style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
@@ -456,7 +482,7 @@ export default function App({ navigation }: any) {
               outlineColor={"transparent"}
               activeOutlineColor={"transparent"}
               style={{ flex: 1, backgroundColor: 'transparent' }}
-            />              
+            />
             <View style={{ marginTop: 'auto', marginBottom: 'auto', paddingRight: 5 }}>
               <Ionicons name="ios-search" size={20} />
             </View>
@@ -472,7 +498,7 @@ export default function App({ navigation }: any) {
             data={categories}
             renderItem={({ item }: any) => {
               return (
-                (item.key != 0 ? <TouchableOpacity
+                <TouchableOpacity
                   key={item.key}
                   onPress={() => {
                     setCatIndex(item.key)
@@ -480,7 +506,7 @@ export default function App({ navigation }: any) {
                   style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
                   <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
                   <Text>{item.name}</Text>
-                </TouchableOpacity> : <View key={item.key} />)
+                </TouchableOpacity>
               )
             }}
           >
@@ -519,7 +545,7 @@ export default function App({ navigation }: any) {
               <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => {setToggle(!toggle);}}>
+          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
             <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
               {
                 !toggle ?

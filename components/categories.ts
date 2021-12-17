@@ -1,11 +1,5 @@
 const categories = [
   {
-    key: 0,
-    name: 'Unknown',
-    toggle: false,
-    icon: require('../assets/images/Materials/empty.png')
-  },
-  {
     key: 1,
     name: 'Wood',
     toggle: false,
