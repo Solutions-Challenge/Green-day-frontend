@@ -231,16 +231,16 @@ export default function App({ navigation }: any) {
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+            <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
               <TouchableOpacity
-                onPress={() => { Linking.openURL(`https://www.google.com/maps/search/@${item.coordinates.latitude},${item.coordinates.longitude},15z`) }}
-              >
-                <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
+                onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
+              >  
+                <View
+                  style={[styles.chipsItem, { backgroundColor: "white", margin: 0, marginLeft: 'auto', width: 130 }]}>
+                  <Image source={categories[item.imageIndex-1].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                  <Text>{categories[item.imageIndex-1].name}</Text>
+                </View>
               </TouchableOpacity>
-              <View
-                style={[styles.chipsItem, { backgroundColor: "white", margin: 0, marginLeft: 'auto', width: 130 }]}>
-                <Image source={categories[item.imageIndex-1].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                <Text>{categories[item.imageIndex-1].name}</Text>
-              </View>
             </View>
             <Text style={[styles.cardDescription, {color: colorScheme === "dark" ? "white" : "black"}]}>{item.description}</Text>
           </View>
