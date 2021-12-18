@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Linking, FlatList } from 'react-native';
-import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Linking, FlatList, KeyboardAvoidingView } from 'react-native';
+import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
@@ -16,7 +16,7 @@ import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
-import { read_data, write_data } from '../api/firebase';
+import { read_data, read_data_hash, write_data, write_data_hash } from '../api/firebase';
 import { TextInput } from 'react-native-paper'
 
 const { width, height } = Dimensions.get("window");
@@ -63,7 +63,7 @@ export default function App({ navigation }: any) {
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
 
-  const [catIndex, setCatIndex] = useState(0)
+  const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
   let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
     setMapIndex(changed[0].key);
@@ -91,8 +91,8 @@ export default function App({ navigation }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: toggle ? userData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
-        longitude: toggle ? userData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
+        latitude: toggle ?  (catIndex == -1 ? userData[mapIndex].coordinates.latitude : userData.filter((e:any)=>e.imageIndex+1===catIndex)[mapIndex].coordinates.latitude) : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? (catIndex == -1 ? userData[mapIndex].coordinates.longitude : userData.filter((e:any)=>e.imageIndex+1===catIndex)[mapIndex].coordinates.longitude) : mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.007,
         longitudeDelta: 0.005
       }, 350)
@@ -162,7 +162,7 @@ export default function App({ navigation }: any) {
             let item = JSON.parse(res as string)
             setmapData(item)
           })
-        read_data(latitude, longitude, setUserData)
+        read_data_hash(latitude, longitude, setUserData)
       }
     })();
   }, [longitude])
@@ -212,7 +212,7 @@ export default function App({ navigation }: any) {
 
   const keyExtractor = useCallback(
     (item, index) => index.toString(),
-    [mapData, userData]
+    [mapData, userData, catIndex]
   )
 
   const getItemLayout = useCallback(
@@ -225,7 +225,6 @@ export default function App({ navigation }: any) {
   )
 
   const renderItemUser = useCallback(
-    // https://www.google.com/maps/search/38.3872814/@38.3911299,-121.4113302,15z
     ({ item }: any) => {
       return (
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
@@ -233,12 +232,13 @@ export default function App({ navigation }: any) {
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
             <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
               <TouchableOpacity
+                style={{marginLeft: 'auto'}}
                 onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
               >  
                 <View
-                  style={[styles.chipsItem, { backgroundColor: "white", margin: 0, marginLeft: 'auto', width: 130 }]}>
-                  <Image source={categories[item.imageIndex-1].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                  <Text>{categories[item.imageIndex-1].name}</Text>
+                  style={[styles.chipsItem, { backgroundColor: "white", width: 130 }]}>
+                  <Image source={categories[item.imageIndex].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                  <Text>{categories[item.imageIndex].name}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -340,7 +340,7 @@ export default function App({ navigation }: any) {
           )
         })}
 
-        {canMap() && toggle && userData.map((e: any, index: any) => {
+        {canMap() && toggle && (catIndex == -1 ? userData : userData.filter((e:any)=>e.imageIndex+1===catIndex)).map((e: any, index: any) => {
           return (
             <Marker
               key={index}
@@ -374,83 +374,87 @@ export default function App({ navigation }: any) {
             latitudeDelta: 0.0007,
             longitudeDelta: 0.0001
           })}
-          <View
-            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
-          >
-            <View style={{ flexDirection: 'column' }}>
-              <TextInput
-                placeholder={"Title: "}
-                autoComplete={''}
-                error={name === ""}
-                placeholderTextColor={'black'}
-                mode={"outlined"}
-                multiline={false}
-                dense={true}
-                style={styles.inputStyle}
-                onChangeText={(res) => setName(res)} />
-              <TextInput
-                placeholder={"Description: "}
-                autoComplete={''}
-                error={message === ""}
-                placeholderTextColor={'black'}
-                mode={"outlined"}
-                multiline={true}
-                numberOfLines={4}
-                dense={true}
-                style={styles.inputStyle}
-                spellCheck={true}
-                onChangeText={(res) => setMessage(res)} />
-            </View>
-            <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'space-between', justifyContent: 'center' }}>
-              {categories.map((item, index) => {
-                return (<>
-                  <TouchableOpacity
-                    key={item.key}
-                    onPress={() => {
-                      setCatIndex(item.key)
-                    }}
-                    style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", marginBottom: 10, width: 130 }]}>
-                    <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                    <Text>{item.name}</Text>
-                  </TouchableOpacity>
-                </>)
-              })}
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity
-                onPress={() => { setVisible(true); setAddingMarker({}) }}
-              >
-                <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
+          <KeyboardAvoidingView>
+
+            <View
+              style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
+            >
+              <View style={{ flexDirection: 'column' }}>
+                <TextInput
+                  placeholder={"Title: "}
+                  autoComplete={''}
+                  error={name === ""}
+                  placeholderTextColor={'black'}
+                  mode={"outlined"}
+                  multiline={false}
+                  dense={true}
+                  style={styles.inputStyle}
+                  onChangeText={(res) => setName(res)} />
+                <TextInput
+                  placeholder={"Description: "}
+                  autoComplete={''}
+                  error={message === ""}
+                  placeholderTextColor={'black'}
+                  mode={"outlined"}
+                  multiline={true}
+                  numberOfLines={4}
+                  dense={true}
+                  style={styles.inputStyle}
+                  spellCheck={true}
+                  onChangeText={(res) => setMessage(res)} />
+              </View>
+              <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'space-between', justifyContent: 'center' }}>
+                {categories.map((item, index) => {
+                  return (<>
+                    <TouchableOpacity
+                      key={item.key}
+                      onPress={() => {
+                        setCatIndex(item.key)
+                      }}
+                      style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", marginBottom: 10, width: 130 }]}>
+                      <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                      <Text>{item.name}</Text>
+                    </TouchableOpacity>
+                  </>)
+                })}
+              </View>
+              <View style={{ flexDirection: 'row' }}>
+                <TouchableOpacity
+                  onPress={() => { setVisible(true); setAddingMarker({}) }}
                 >
-                  <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={async () => {
-                  if (name !== "" && message !== "") {
-                    setVisible(true);
-                    // @ts-ignore
-                    await write_data(addingMarker.latitude, addingMarker.longitude, name, message, catIndex)
-                      .then(() => {
-                        read_data(latitude, longitude, setUserData)
-                      })
-                    setName('')
-                    setMessage('')
-                    setAddingMarker({});
+                  <View
+                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
+                  >
+                    <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={async () => {
+                    if (name !== "" && message !== "") {
+                      setVisible(true);
+                      // @ts-ignore
+                      await write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message, catIndex-1)
+                        .then(() => {
+                          read_data_hash(latitude, longitude, setUserData)
+                        })
+                      setName('')
+                      setMessage('')
+                      setAddingMarker({});
+                      setCatIndex(-1)
+                    }
                   }
-                }
-                }
-              >
-                <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
+                  }
                 >
-                  <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
-                </View>
-              </TouchableOpacity>
+                  <View
+                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
+                  >
+                    <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
           <MapView>
             <Marker
               coordinate={{
@@ -503,9 +507,13 @@ export default function App({ navigation }: any) {
                   onPress={() => {
                     setCatIndex(item.key)
                   }}
-                  style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
+                  style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", alignItems: 'center' }]}>
                   <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                  <Text>{item.name}</Text>
+                  <Text style={{marginRight: 5}}>{item.name}</Text>
+                  {item.key === catIndex && 
+                    <TouchableOpacity onPress={()=>setCatIndex(-1)}>
+                      <MaterialIcons name="cancel" size={20} color="black" />
+                    </TouchableOpacity>}
                 </TouchableOpacity>
               )
             }}
@@ -534,7 +542,7 @@ export default function App({ navigation }: any) {
               paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
             }}
             onScrollToIndexFailed={() => { }}
-            data={toggle ? userData : mapData.results}
+            data={toggle ? (catIndex == -1 ? userData : userData.filter((e:any)=>e.imageIndex+1===catIndex)) : mapData.results}
             keyExtractor={keyExtractor}
             renderItem={toggle ? renderItemUser : renderItem}
             getItemLayout={getItemLayout}
