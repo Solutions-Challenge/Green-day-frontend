@@ -16,7 +16,7 @@ import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
-import { read_data, read_data_hash, write_data, write_data_hash } from '../api/firebase';
+import { read_data_hash, write_data_hash } from '../api/firebase';
 import { TextInput } from 'react-native-paper'
 
 const { width, height } = Dimensions.get("window");
@@ -62,6 +62,7 @@ export default function App({ navigation }: any) {
   const [toggle, setToggle] = useState(false)
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
+  const [partialUserData, setPartialUserData] = useState({} as any)
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -91,13 +92,13 @@ export default function App({ navigation }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: toggle ?  (catIndex == -1 ? userData[mapIndex].coordinates.latitude : userData.filter((e:any)=>e.imageIndex+1===catIndex)[mapIndex].coordinates.latitude) : mapData.results[mapIndex].geometry.location.lat,
-        longitude: toggle ? (catIndex == -1 ? userData[mapIndex].coordinates.longitude : userData.filter((e:any)=>e.imageIndex+1===catIndex)[mapIndex].coordinates.longitude) : mapData.results[mapIndex].geometry.location.lng,
+        latitude: toggle ?  (catIndex == -1 ? userData[mapIndex].coordinates.latitude : partialUserData[mapIndex].coordinates.latitude) : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? (catIndex == -1 ? userData[mapIndex].coordinates.longitude : partialUserData[mapIndex].coordinates.longitude) : mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.007,
         longitudeDelta: 0.005
       }, 350)
     }
-  }, [mapIndex])
+  }, [mapIndex, catIndex, toggle])
 
   const [mapData, setmapData] = useState({} as any)
 
@@ -163,6 +164,12 @@ export default function App({ navigation }: any) {
             setmapData(item)
           })
         read_data_hash(latitude, longitude, setUserData)
+        _map?.current?.animateToRegion({
+          latitude: latitude,
+          longitude: longitude,
+          longitudeDelta: longitudeDelta,
+          latitudeDelta: latitudeDelta
+        })
       }
     })();
   }, [longitude])
@@ -201,6 +208,13 @@ export default function App({ navigation }: any) {
     </View>
 
   )
+
+  useEffect(()=>{
+    if (canMap()) {
+      setPartialUserData(JSON.stringify(userData.filter((e:any)=>e.imageIndex+1===catIndex)) == '[]' ? [{"description":"Emptiness","coordinates":{"latitude":38.36031172770141,"longitude":-121.41240689903498},"hash":"9qcdjpq1jb","imageIndex":2,"title":"checks empty"}]:userData.filter((e:any)=>e.imageIndex+1===catIndex))
+      _scrollView?.current?.scrollToIndex({index:0, animated: true, viewOffset: 0.5})
+    }
+  }, [toggle, catIndex])
 
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
@@ -332,7 +346,7 @@ export default function App({ navigation }: any) {
                 longitude: e.geometry.location.lng
               }}
               onPress={() => {
-                _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
+                _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
               }}
             >
               <FontAwesome name="map-marker" size={30} color={index == mapIndex ? colorScheme === "dark" ? "lightgreen":"#1E5631" : mapColors} />
@@ -340,7 +354,7 @@ export default function App({ navigation }: any) {
           )
         })}
 
-        {canMap() && toggle && (catIndex == -1 ? userData : userData.filter((e:any)=>e.imageIndex+1===catIndex)).map((e: any, index: any) => {
+        {canMap() && toggle && JSON.stringify(partialUserData) != '{}' && (catIndex === -1 ? userData : partialUserData).map((e: any, index: any) => {
           return (
             <Marker
               key={index}
@@ -349,7 +363,7 @@ export default function App({ navigation }: any) {
                 longitude: e.coordinates.longitude
               }}
               onPress={() => {
-                _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
+                _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
               }}
             >
               <FontAwesome name="map-marker" size={30} color={index == mapIndex ? colorScheme === "dark" ? "lightgreen":"#1E5631" : mapColors} />
@@ -499,7 +513,7 @@ export default function App({ navigation }: any) {
             contentContainerStyle={{
               paddingRight: 20
             }}
-            data={categories}
+            data={toggle ? categories:[]}
             renderItem={({ item }: any) => {
               return (
                 <TouchableOpacity
@@ -520,7 +534,7 @@ export default function App({ navigation }: any) {
           >
           </FlatList>
           <FlatList
-            ref={_scrollView}
+            ref={_scrollView }
             initialScrollIndex={0}
             viewabilityConfig={viewConfigRef.current}
             onViewableItemsChanged={onViewableItemsChanged.current}
@@ -541,8 +555,8 @@ export default function App({ navigation }: any) {
             contentContainerStyle={{
               paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
             }}
-            onScrollToIndexFailed={() => { }}
-            data={toggle ? (catIndex == -1 ? userData : userData.filter((e:any)=>e.imageIndex+1===catIndex)) : mapData.results}
+            onScrollToIndexFailed={() => {}}
+            data={toggle ? (catIndex == -1 ? userData : partialUserData) : mapData.results}
             keyExtractor={keyExtractor}
             renderItem={toggle ? renderItemUser : renderItem}
             getItemLayout={getItemLayout}
