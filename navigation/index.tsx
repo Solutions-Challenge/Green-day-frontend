@@ -18,6 +18,7 @@ import CameraScreen from '../screens/CameraScreen';
 import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
+import AuthScreen from '../screens/AuthScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -131,7 +132,7 @@ const HomeTabs = ({ navigation }: any) => {
       />
       <BottomTab.Screen
         name="Maps"
-        component={MapsScreen}
+        component={AuthScreen}
         options={() => ({
           title: 'Maps',
           tabBarIcon: ({ focused }) => {
