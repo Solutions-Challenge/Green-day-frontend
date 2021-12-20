@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import * as React from 'react'
-import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar } from 'react-native';
+import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
@@ -8,7 +8,8 @@ import ImageContext from '../hooks/imageContext';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { AntDesign, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
-import { read_data, write_data } from '../api/firebase';
+
+import Svg, { Rect } from 'react-native-svg';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -35,8 +36,8 @@ export default function HomeScreen({ navigation }: any) {
             });
         }
 
-        const imageWidth = data.item.width < 600 ? data.item.width / 4 : data.item.width / 3
         const item = data.item
+        const imageWidth = item.width / 3
 
         return (
             <TouchableHighlight style={{ marginBottom: 50 }}>
@@ -44,23 +45,32 @@ export default function HomeScreen({ navigation }: any) {
                 <Animated.View style={{ height: rowHeightAnimatedValue }}>
                     <View style={styles.card}>
                         <View style={[styles.containerTitle2, { backgroundColor: colorScheme === "dark" ? '#181818' : '#fff' }]}>
-                            <TouchableOpacity activeOpacity={1} style={{ paddingBottom: data.item.width < 600 ? 30 : 0 }} onPress={() => { navigation.push('Details', { item }) }}>
-                                <Image
+                            <TouchableOpacity activeOpacity={1} onPress={() => { navigation.push('Details', { item }) }}>
+                                <ImageBackground
                                     source={{ uri: item.uri }}
                                     style={{
                                         height: imageWidth,
                                         width: imageWidth,
                                         borderRadius: 10
-                                    }} />
+                                    }}>
+                                    <Svg
+                                        width={imageWidth}
+                                        height={imageWidth}
+                                    >
+                                        {item.multi.map((e:any, index:number)=>{
+                                            return (
+                                                <Rect key={index} rx={5} x={imageWidth * e.vertices[0].x} y={imageWidth * e.vertices[0].y} width={imageWidth * e.vertices[2].x-imageWidth * e.vertices[0].x} height={imageWidth * e.vertices[2].y-imageWidth * e.vertices[0].y} stroke="white" strokeWidth="1" />
+                                            )
+                                        })}
+                                    </Svg>
+                                </ImageBackground>
                             </TouchableOpacity>
                             <View style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
-                                <Text style={{ fontSize: item.width < 600 ? 20 : 40, color: colorScheme === "dark" ? 'white' : 'black' }}>{item.material}</Text>
-                                <TouchableOpacity style={styles.recycleButton} onPress={() => { navigation.push('Details', { item }) }}>
-                                    <View style={{ marginLeft: 'auto', marginRight: 'auto', marginTop: 'auto', marginBottom: 'auto', flexDirection: 'row', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
-                                        <Text style={{ color: 'white', paddingRight: 10 }}>{item.recyclability}</Text>
-                                        <AntDesign name="downcircleo" size={16} color="white" />
-                                    </View>
-                                </TouchableOpacity>
+                                {item.multi.map((e:any, index:number)=>{
+                                    return (<View key={index}>
+                                        <Text style={{ color: colorScheme === "dark" ? 'white' : 'black' }}>{e.name}, ({e.mlData.Material})</Text>
+                                    </View>)
+                                })}
                             </View>
                         </View>
                     </View>
@@ -71,7 +81,7 @@ export default function HomeScreen({ navigation }: any) {
 
     const HiddenItemWithActions = (props: any) => {
         const { onDelete, swipeAnimatedValue, rowHeightAnimatedValue } = props
-          
+
 
         return (<>
             <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
@@ -107,11 +117,11 @@ export default function HomeScreen({ navigation }: any) {
         )
     }
 
-    const closeRow = (rowMap:any, rowKey:any) => {
+    const closeRow = (rowMap: any, rowKey: any) => {
         if (rowMap[rowKey]) {
-          rowMap[rowKey].closeRow();
+            rowMap[rowKey].closeRow();
         }
-      };
+    };
 
     const deleteRow = async (rowMap: any, rowKey: any) => {
         closeRow(rowMap, rowKey)
@@ -119,7 +129,7 @@ export default function HomeScreen({ navigation }: any) {
         const prevIndex = data.findIndex((item: any) => item.key === rowKey)
         newData.splice(prevIndex, 1)
         setData(newData)
-        await AsyncStorage.setItem("ImageClassify", JSON.stringify(newData))
+        await AsyncStorage.setItem("multi", JSON.stringify(newData))
     }
 
     const renderHiddenItem = (data: any, rowMap: any) => {
@@ -136,12 +146,11 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const load = async () => {
-
-        let ImageClassify = await AsyncStorage.getItem("ImageClassify")
+        let ImageClassify = await AsyncStorage.getItem("multi")
         if (ImageClassify === null) {
-            await AsyncStorage.setItem("ImageClassify", JSON.stringify(data))
+            await AsyncStorage.setItem("multi", JSON.stringify(data))
         }
-        await AsyncStorage.getItem("ImageClassify")
+        await AsyncStorage.getItem("multi")
             .then((res) => {
                 let item = JSON.parse(res as string)
                 if (item != []) {
@@ -180,7 +189,7 @@ export default function HomeScreen({ navigation }: any) {
                     rightActivationValue={-200}
                     leftActionValue={0}
                     rightActionValue={-windowWidth}
-                    style={{ marginVertical: 100 }}
+                    style={{ marginVertical: 120 }}
                 >
                 </SwipeListView>
                 <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
@@ -248,14 +257,4 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 2,
     },
-    recycleButton: {
-        backgroundColor: "#190c8d",
-        fontSize: 20,
-        fontWeight: "600",
-        borderRadius: 50,
-        height: 50,
-        width: 200,
-        paddingHorizontal: 10,
-        marginTop: 'auto'
-    }
 });

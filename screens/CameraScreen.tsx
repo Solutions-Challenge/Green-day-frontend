@@ -33,11 +33,11 @@ export default function CameraScreen({ navigation }: any) {
 
   const isFocused = useIsFocused();
 
-  const save = async (material: string, recyclability: string, uri: string, width: number) => {
+  const save = async (data: any, uri: string, windowWidth: number) => {
 
     let items: any = []
 
-    await AsyncStorage.getItem("ImageClassify")
+    await AsyncStorage.getItem("multi")
       .then((res) => {
         items = JSON.parse(res as string)
 
@@ -47,14 +47,13 @@ export default function CameraScreen({ navigation }: any) {
 
         items.unshift({
           key: uuid(),
-          material: material,
-          recyclability: recyclability,
+          width: windowWidth,
           uri: uri,
-          width: width
+          multi: data
         })
-
       })
-    await AsyncStorage.setItem("ImageClassify", JSON.stringify(items))
+
+    await AsyncStorage.setItem("multi", JSON.stringify(items))
   }
 
   const handleEvent = (e: any) => {
@@ -74,7 +73,7 @@ export default function CameraScreen({ navigation }: any) {
   const __takePicture = async () => {
     if (!camera) return
     setIsLoading(true)
-    const photo = await camera.takePictureAsync({quality: 1})
+    const photo = await camera.takePictureAsync({ quality: 1 })
 
     const manipImage = await manipulateAsync(
       photo.uri,
@@ -110,7 +109,7 @@ export default function CameraScreen({ navigation }: any) {
     // @ts-ignore
     formData.append('file', { uri: localUri, name: filename, type });
 
-    const res = await fetch('http://10.0.0.222:5000/predict', {
+    const res = await fetch('http://10.0.0.222:5000/multi', {
       method: 'POST',
       body: formData,
       headers: {
@@ -120,23 +119,84 @@ export default function CameraScreen({ navigation }: any) {
 
     const data = await res.json()
 
-    setIsLoading(false)
+    if (!data.error) {
 
-    save(data.material.Material, data.material.Recyclability, manipImage.uri, windowWidth)
+      let formData = new FormData();
+      const d = data.success
+      let crops = []
+
+      for (let i = 0; i < d.length; i++) {
+        const item = d[i]
+
+        const crop = await manipulateAsync(
+          manipImage.uri,
+          [{
+            resize: {
+              width: manipImage.width,
+              height: manipImage.height
+            }
+          },
+          {
+            crop: {
+              originX: manipImage.width * item.vertices[0].x,
+              originY: manipImage.width * item.vertices[0].y,
+              width: manipImage.width * item.vertices[2].x - manipImage.width * item.vertices[0].x,
+              height: manipImage.width * item.vertices[2].y - manipImage.width * item.vertices[0].y
+            }
+          }
+          ],
+          {
+            format: 'jpeg' as SaveFormat,
+            compress: 1,
+          }
+        )
+
+        let localUri = crop.uri;
+        crops.push(localUri)
+        let filename = localUri.split('/').pop();
+
+        let match = /\.(\w+)$/.exec(filename as string);
+        let type = match ? `image/${match[1]}` : `image`;
+
+        // @ts-ignore
+        formData.append('files[]', { uri: localUri, name: filename, type });
+      }
+
+      const res = await fetch('http://10.0.0.222:3000/predict', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'content-type': 'multipart/form-data',
+        },
+      })
+
+      const mlData = await res.json()
+      
+
+      for (let i = 0; i < data.success.length; i++) {
+        data.success[i]['mlData'] = mlData.material[i]
+        data.success[i]['cropedImages'] = crops[i]
+      }
+
+      save(data.success, manipImage.uri, windowWidth)
+    }
+
+
+    setIsLoading(false)
     setUri(manipImage.uri)
 
-    navigation.navigate('Home', {screen: "Start"})
+    navigation.navigate('Home', { screen: "Start" })
   }
 
   const goBack = () => {
-    navigation.navigate('Home', {screen: "Start"})
+    navigation.navigate('Home', { screen: "Start" })
   }
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        navigation.navigate('Home', {screen: "Start"})
+        navigation.navigate('Home', { screen: "Start" })
       }
     })();
   }, []);
