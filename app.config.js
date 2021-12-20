@@ -21,7 +21,7 @@ export default {
   "ios": {
     "supportsTablet": true,
     "config": {
-      "googleMapsApiKey": process.env.IOSMAPSAPIKEY
+      "googleMapsApiKey": process.env.IosMapsApiKey
     }
   },
   "android": {
@@ -31,7 +31,7 @@ export default {
     },
     "config": {
       "googleMaps": {
-        "apiKey": process.env.ANDROIDMAPSAPIKEY
+        "apiKey": process.env.AndroidMapsApiKey
       }
     },
     "package": "com.aankur01.greendayfrontend"
