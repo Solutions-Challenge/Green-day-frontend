@@ -1,50 +1,43 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React from 'react';
+import { View, Text } from 'react-native';
+import {auth} from '../api/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { GoogleAuthProvider } from "firebase/auth";
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+const provider = new GoogleAuthProvider();
+
+const AuthScreen = () => {
+  var email = "yester1324@gmail.com";
+  var password = "abcd1234";
+  
 
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAz1kUNeaduc9_wh6_md3QduHKPMix25w4",
-  authDomain: "greenday-6aba2.firebaseapp.com",
-  projectId: "greenday-6aba2",
-  storageBucket: "greenday-6aba2.appspot.com",
-  messagingSenderId: "15765189134",
-  appId: "1:15765189134:web:a540ee84d8012dd1a4425f",
-  measurementId: "G-04MVDFPLWP"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-const auth = getAuth();
-createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed in 
-    const user = userCredential.user;
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // ..
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in, see docs for a list of available properties
+      // https://firebase.google.com/docs/reference/js/firebase.User
+      const uid = user.uid;
+      console.log("User is logged in");
+      // ...
+    } else {
+      // User is signed out
+      // ...
+      console.log("User isn't logged in");
+    }
   });
+  var user;
+  if (auth.currentUser != null)
+    user = auth.currentUser.email;
+  else
+    user = "User not logged in";
+  
+  return (
+    <View style={{justifyContent:'center', alignItems:'center', flex:1}}>
+      <Text style={{color:"#FFFFFF"}}>
+        {user}
+      </Text>
+    </View>
+  )
+}
 
-  signInWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed in 
-    const user = userCredential.user;
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-  });
+export default AuthScreen

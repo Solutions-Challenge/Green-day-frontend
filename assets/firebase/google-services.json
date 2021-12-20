@@ -1,41 +1,34 @@
 {
   "project_info": {
-    "project_number": "328110789625",
-    "project_id": "inlaid-hope-330503",
-    "storage_bucket": "inlaid-hope-330503.appspot.com"
+    "project_number": "15765189134",
+    "project_id": "greenday-6aba2",
+    "storage_bucket": "greenday-6aba2.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:328110789625:android:1dedbcc6fb83391f6ea328",
+        "mobilesdk_app_id": "1:15765189134:android:03ec6774e2e31ea9a4425f",
         "android_client_info": {
-          "package_name": "com.nextchart.greenday"
+          "package_name": "auth.android"
         }
       },
       "oauth_client": [
         {
-          "client_id": "328110789625-aqnpb5lho2mubssnlb77uga0ir8bj0f9.apps.googleusercontent.com",
+          "client_id": "15765189134-313suprq90g84m45tlu6fpeisugpfkmt.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCtCkn3hD5GBALMvUv8eLPry8iVU6ppf0Q"
+          "current_key": "AIzaSyBo1jxGEexotsAnAmKUwILtxK82Sf8uvZg"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "328110789625-aqnpb5lho2mubssnlb77uga0ir8bj0f9.apps.googleusercontent.com",
+              "client_id": "15765189134-313suprq90g84m45tlu6fpeisugpfkmt.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "328110789625-n8br1e4lcqp9mjgv34kg4o97duok96cs.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.nextchart.greenday"
-              }
             }
           ]
         }
