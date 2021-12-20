@@ -166,7 +166,7 @@ export default function HomeScreen({ navigation }: any) {
     }, [uri]);
 
     const go_to_feedback = () => {
-        navigation.navigate("FeedBack")
+        navigation.navigate("Auth")
     }
 
     const Root = () => {
