@@ -29,37 +29,6 @@ export const auth = getAuth();
 const db = getFirestore(app);
 const geoData = collection(db, "geoLocation");
 
-export const read_data = async (
-  latitude: number,
-  longitude: number,
-  setUserData: any
-) => {
-  const querySnapshot = await getDocs(geoData);
-
-  let ans: any = [];
-  await querySnapshot.forEach((e) => {
-    if (e.exists() && typeof e.data().coordinates != "undefined") {
-      ans.push(e.data());
-    }
-  });
-  setUserData(ans);
-};
-
-export const write_data = async (
-  latitude: number,
-  longitude: number,
-  name: string,
-  message: string,
-  imageIndex: number
-) => {
-  addDoc(geoData, {
-    title: name,
-    description: message,
-    imageIndex: imageIndex,
-    coordinates: new GeoPoint(latitude, longitude),
-  });
-};
-
 export const write_data_hash = async (
   latitude: number,
   longitude: number,

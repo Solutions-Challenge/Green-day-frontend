@@ -10,6 +10,7 @@ import { AntDesign, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-i
 import { osName } from 'expo-device';
 
 import Svg, { Rect } from 'react-native-svg';
+import { isUserLoggedIn, logout } from '../api/auth';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -51,8 +52,10 @@ export default function HomeScreen({ navigation }: any) {
                                     style={{
                                         height: imageWidth,
                                         width: imageWidth,
-                                        borderRadius: 10
-                                    }}>
+                                    }}
+                                    imageStyle={{ borderRadius: 10}}
+                                    >
+                                        
                                     <Svg
                                         width={imageWidth}
                                         height={imageWidth}
@@ -165,8 +168,19 @@ export default function HomeScreen({ navigation }: any) {
         })();
     }, [uri]);
 
-    const go_to_feedback = () => {
+    useEffect(()=>{
+        if (!isUserLoggedIn()) {
+            go_to_logout()
+        }
+    }, [])
+
+    const go_to_logout = () => {
+        logout()
         navigation.navigate("Auth")
+    }
+
+    const go_to_feedback = () => {
+        navigation.navigate("FeedBack")
     }
 
     const Root = () => {
@@ -199,6 +213,11 @@ export default function HomeScreen({ navigation }: any) {
             <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
                 <TouchableOpacity onPress={go_to_feedback}>
                     <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
+                </TouchableOpacity>
+            </View>
+            <View style={{ position: 'absolute', top: flipPosition + 30, right: 70 }}>
+                <TouchableOpacity onPress={go_to_logout}>
+                    <MaterialIcons name="logout" size={30} color={colorScheme === "dark" ? "white" : "black"} />
                 </TouchableOpacity>
             </View>
         </>

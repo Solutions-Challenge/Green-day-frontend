@@ -24,8 +24,8 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
         <ScrollView>
 
             {item.multi.map((e: any, index: number) => {
-                return (<View style={{ width: windowWidth - 40, backgroundColor: colorScheme === "dark" ? '#181818' : '#fff', marginBottom: 20, borderRadius: 10, flexDirection: 'row' }}>
-                    <ImageBackground key={index} source={{ uri: e.cropedImages }} style={{ width: 150, height: 150 }}>
+                return (<View key={index} style={{ width: windowWidth - 40, backgroundColor: colorScheme === "dark" ? '#181818' : '#fff', marginBottom: 20, borderRadius: 10, flexDirection: 'row' }}>
+                    <ImageBackground key={index} source={{ uri: e.cropedImages }} style={{ width: windowWidth / 3, height: windowWidth / 3 }} imageStyle={{ borderBottomLeftRadius: 10, borderTopLeftRadius: 10 }}>
                     <Text style={{ color: colorScheme === 'dark' ? 'white' : 'black', fontSize: 20, textAlign: 'center', marginTop: 'auto' }}>{e.mlData.Material}</Text>
                         <View style={[styles.recycleButton, { alignSelf: 'center', marginBottom: 10}]}>
                             <Text style={{ color: 'white', textAlign: 'center'}}>{e.mlData.Recyclability}</Text>

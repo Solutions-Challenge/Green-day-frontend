@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Linking, FlatList, KeyboardAvoidingView } from 'react-native';
-import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
@@ -63,6 +63,7 @@ export default function App({ navigation }: any) {
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
   const [partialUserData, setPartialUserData] = useState({} as any)
+  const [mapType, setMapType] = useState(true)
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -313,6 +314,7 @@ export default function App({ navigation }: any) {
     />
     {isFocused && <SafeAreaView style={{ flex: 1 }}>
       <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
+        mapType={mapType ? 'standard':'satellite'}
         ref={_map}
         provider={PROVIDER_GOOGLE}
         showsUserLocation={true}
@@ -576,6 +578,18 @@ export default function App({ navigation }: any) {
               }
             </View>
           </TouchableOpacity>
+          
+          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 175, backgroundColor: 'black', borderRadius: 25, width: 50, height: 50 }} onPress={()=>{setMapType(!mapType)}}>
+            {mapType ?
+              <View style={{alignItems: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
+                <FontAwesome5 name="satellite" size={30} color={colorScheme === "dark" ? 'white' : 'black'} />
+              </View>:
+              <View style={{alignItems: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
+                <Entypo name="map" size={30} color={colorScheme === "dark" ? 'white' : 'black'} />
+              </View>
+            }
+          </TouchableOpacity>
+
         </>)
       }
 
