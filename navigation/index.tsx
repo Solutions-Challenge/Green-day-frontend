@@ -21,7 +21,6 @@ import HomeScreen from '../screens/HomeScreen';
 import FeedbackScreen from '../screens/FeedbackScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AuthScreen from '../screens/AuthScreen';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -46,7 +45,6 @@ function RootNavigator() {
         <Stack.Screen name="Pic" component={CameraScreen} />
         <Stack.Screen name="FeedBack" component={FeedbackScreen} />
         <Stack.Screen name="Details" component={ExpandImageScreen} />
-        <Stack.Screen name="Auth" component={AuthScreen} />
       </Stack.Navigator>
   );
 }

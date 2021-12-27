@@ -6,6 +6,7 @@ import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } 
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
 import data from '../mapStyle.json';
+import data2 from '../mapStyleLight.json'
 import { Platform } from 'expo-modules-core';
 import { Image } from 'react-native'
 import StarRating from '../components/StarRating';
@@ -72,7 +73,7 @@ export default function App({ navigation }: any) {
   })
 
   const canMap = () => {
-    return JSON.stringify(mapData) !== '{}' && JSON.stringify(userData) !== '{}'
+    return JSON.stringify(mapData) !== '{}' && JSON.stringify(userData) !== '{}' 
   }
 
   const useHasChanged = (val: any) => {
@@ -212,7 +213,8 @@ export default function App({ navigation }: any) {
 
   useEffect(()=>{
     if (canMap()) {
-      setPartialUserData(JSON.stringify(userData.filter((e:any)=>e.imageIndex+1===catIndex)) == '[]' ? [{"description":"Emptiness","coordinates":{"latitude":38.36031172770141,"longitude":-121.41240689903498},"hash":"9qcdjpq1jb","imageIndex":2,"title":"checks empty"}]:userData.filter((e:any)=>e.imageIndex+1===catIndex))
+      const partialData = JSON.stringify(userData.filter((e:any)=>e.imageIndex+1===catIndex))
+      setPartialUserData(partialData == '[]' ? [{"description":"Emptiness","coordinates":{"latitude":38.36031172770141,"longitude":-121.41240689903498},"hash":"9qcdjpq1jb","imageIndex":2,"title":"checks empty"}]:partialData)
       _scrollView?.current?.scrollToIndex({index:0, animated: true, viewOffset: 0.5})
     }
   }, [toggle, catIndex])
@@ -227,7 +229,7 @@ export default function App({ navigation }: any) {
 
   const keyExtractor = useCallback(
     (item, index) => index.toString(),
-    [mapData, userData, catIndex]
+    [mapData, userData, partialUserData, catIndex]
   )
 
   const getItemLayout = useCallback(
@@ -320,7 +322,7 @@ export default function App({ navigation }: any) {
         showsUserLocation={true}
         showsBuildings={true}
         showsCompass={true}
-        customMapStyle={colorScheme === 'dark' ? data : []}
+        customMapStyle={colorScheme === 'dark' ? data : data2}
         initialRegion={{
           latitude: latitude,
           longitude: longitude,
@@ -579,7 +581,7 @@ export default function App({ navigation }: any) {
             </View>
           </TouchableOpacity>
           
-          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 175, backgroundColor: 'black', borderRadius: 25, width: 50, height: 50 }} onPress={()=>{setMapType(!mapType)}}>
+          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 175, backgroundColor: colorScheme === "dark" ? 'black' : 'white', borderRadius: 25, width: 50, height: 50 }} onPress={()=>{setMapType(!mapType)}}>
             {mapType ?
               <View style={{alignItems: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
                 <FontAwesome5 name="satellite" size={30} color={colorScheme === "dark" ? 'white' : 'black'} />

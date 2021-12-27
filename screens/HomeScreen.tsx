@@ -168,17 +168,6 @@ export default function HomeScreen({ navigation }: any) {
         })();
     }, [uri]);
 
-    useEffect(()=>{
-        if (!isUserLoggedIn()) {
-            go_to_logout()
-        }
-    }, [])
-
-    const go_to_logout = () => {
-        logout()
-        navigation.navigate("Auth")
-    }
-
     const go_to_feedback = () => {
         navigation.navigate("FeedBack")
     }
@@ -213,11 +202,6 @@ export default function HomeScreen({ navigation }: any) {
             <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
                 <TouchableOpacity onPress={go_to_feedback}>
                     <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
-                </TouchableOpacity>
-            </View>
-            <View style={{ position: 'absolute', top: flipPosition + 30, right: 70 }}>
-                <TouchableOpacity onPress={go_to_logout}>
-                    <MaterialIcons name="logout" size={30} color={colorScheme === "dark" ? "white" : "black"} />
                 </TouchableOpacity>
             </View>
         </>

@@ -68,7 +68,6 @@ export default function CameraScreen({ navigation }: any) {
     setZoom(newZoom);
   }
 
-
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
@@ -95,10 +94,31 @@ export default function CameraScreen({ navigation }: any) {
       {
         format: 'jpeg' as SaveFormat,
         compress: 1,
+        base64: true
       }
     )
 
     let localUri = manipImage.uri;
+
+    const body = JSON.stringify({
+      "requests": [
+        {
+          "image": {
+            "source": {
+              "imageUri": manipImage.base64
+            }
+          },
+          "features": [
+            {
+              "type": "OBJECT_LOCALIZATION",
+              "maxResults": 10
+            }
+          ]
+        }
+      ]
+    })
+
+
     let filename = localUri.split('/').pop();
 
     let match = /\.(\w+)$/.exec(filename as string);
@@ -109,7 +129,19 @@ export default function CameraScreen({ navigation }: any) {
     // @ts-ignore
     formData.append('file', { uri: localUri, name: filename, type });
 
-    const res = await fetch('http://10.0.0.222:5000/multi', {
+    const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${process.env.CLOUDVISIONAPIKEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body
+    })
+
+    const visionData = await visionRequest.json()
+
+    console.log(visionData)
+
+    const res = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/multi', {
       method: 'POST',
       body: formData,
       headers: {
@@ -120,72 +152,19 @@ export default function CameraScreen({ navigation }: any) {
     const data = await res.json()
 
     if (!data.error) {
-
-      let formData = new FormData();
-      const d = data.success
-      let crops = []
-
-      for (let i = 0; i < d.length; i++) {
-        const item = d[i]
-
-        const crop = await manipulateAsync(
-          manipImage.uri,
-          [{
-            resize: {
-              width: manipImage.width,
-              height: manipImage.height
-            }
-          },
-          {
-            crop: {
-              originX: manipImage.width * item.vertices[0].x,
-              originY: manipImage.width * item.vertices[0].y,
-              width: manipImage.width * item.vertices[2].x - manipImage.width * item.vertices[0].x,
-              height: manipImage.width * item.vertices[2].y - manipImage.width * item.vertices[0].y
-            }
-          }
-          ],
-          {
-            format: 'jpeg' as SaveFormat,
-            compress: 1,
-          }
-        )
-
-        let localUri = crop.uri;
-        crops.push(localUri)
-        let filename = localUri.split('/').pop();
-
-        let match = /\.(\w+)$/.exec(filename as string);
-        let type = match ? `image/${match[1]}` : `image`;
-
-        // @ts-ignore
-        formData.append('files[]', { uri: localUri, name: filename, type });
-      }
-
-      const res = await fetch('http://10.0.0.222:3000/predict', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'content-type': 'multipart/form-data',
-        },
-      })
-
-      const mlData = await res.json()
-      
-
-      for (let i = 0; i < data.success.length; i++) {
-        data.success[i]['mlData'] = mlData.material[i]
-        data.success[i]['cropedImages'] = crops[i]
-      }
-
       save(data.success, manipImage.uri, windowWidth)
+
+      setIsLoading(false)
+      setUri(manipImage.uri)
+
+      navigation.navigate('Home', { screen: "Start" })
     }
 
+    else {
+      console.log('an error occurred')
+      navigation.navigate('Home', { screen: "Start" })
+    }
 
-    setIsLoading(false)
-    setUri(manipImage.uri)
-
-    navigation.navigate('Home', { screen: "Start" })
   }
 
   const goBack = () => {

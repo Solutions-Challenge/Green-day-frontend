@@ -15,13 +15,13 @@ import {
 import * as geofire from "geofire-common";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAz1kUNeaduc9_wh6_md3QduHKPMix25w4",
-  authDomain: "greenday-6aba2.firebaseapp.com",
-  projectId: "greenday-6aba2",
-  storageBucket: "greenday-6aba2.appspot.com",
-  messagingSenderId: "15765189134",
-  appId: "1:15765189134:web:e9e4664b4d11b0eea4425f",
-  measurementId: "G-K8WTS2FZ7T",
+  apiKey: process.env.APIKEY,
+  authDomain: process.env.AUTHDOMAIN,
+  projectId: process.env.PROJECTID,
+  storageBucket: process.env.STORAGEBUCKET,
+  messagingSenderId: process.env.MESSAGINGSENDERID,
+  appId: process.env.APPID,
+  measurementId: process.env.MEASUREMENTID,
 };
 
 const app = initializeApp(firebaseConfig);

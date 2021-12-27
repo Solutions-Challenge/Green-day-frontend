@@ -25,7 +25,7 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
 
             {item.multi.map((e: any, index: number) => {
                 return (<View key={index} style={{ width: windowWidth - 40, backgroundColor: colorScheme === "dark" ? '#181818' : '#fff', marginBottom: 20, borderRadius: 10, flexDirection: 'row' }}>
-                    <ImageBackground key={index} source={{ uri: e.cropedImages }} style={{ width: windowWidth / 3, height: windowWidth / 3 }} imageStyle={{ borderBottomLeftRadius: 10, borderTopLeftRadius: 10 }}>
+                    <ImageBackground key={index} source={{ uri: e.croppedImage }} style={{ width: windowWidth / 3, height: windowWidth / 3 }} imageStyle={{ borderBottomLeftRadius: 10, borderTopLeftRadius: 10 }}>
                     <Text style={{ color: colorScheme === 'dark' ? 'white' : 'black', fontSize: 20, textAlign: 'center', marginTop: 'auto' }}>{e.mlData.Material}</Text>
                         <View style={[styles.recycleButton, { alignSelf: 'center', marginBottom: 10}]}>
                             <Text style={{ color: 'white', textAlign: 'center'}}>{e.mlData.Recyclability}</Text>
