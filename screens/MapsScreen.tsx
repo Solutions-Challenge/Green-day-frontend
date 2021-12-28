@@ -1,12 +1,12 @@
 import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Linking, FlatList, KeyboardAvoidingView } from 'react-native';
-import { AntDesign, Entypo, FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Linking, FlatList, LogBox } from 'react-native';
+import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
-import data from '../mapStyle.json';
-import data2 from '../mapStyleLight.json'
+import mapStyleDark from '../mapStyle.json';
+import mapStyleLight from '../mapStyleLight.json'
 import { Platform } from 'expo-modules-core';
 import { Image } from 'react-native'
 import StarRating from '../components/StarRating';
@@ -63,17 +63,16 @@ export default function App({ navigation }: any) {
   const [toggle, setToggle] = useState(false)
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
-  const [partialUserData, setPartialUserData] = useState({} as any)
   const [mapType, setMapType] = useState(true)
 
-  const [catIndex, setCatIndex] = useState(-1)
+  const [catIndex, setCatIndex] = useState(0)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
   let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
     setMapIndex(changed[0].key);
   })
 
   const canMap = () => {
-    return JSON.stringify(mapData) !== '{}' && JSON.stringify(userData) !== '{}' 
+    return JSON.stringify(mapData) !== '{}' && JSON.stringify(userData) !== '{}'
   }
 
   const useHasChanged = (val: any) => {
@@ -94,13 +93,13 @@ export default function App({ navigation }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: toggle ?  (catIndex == -1 ? userData[mapIndex].coordinates.latitude : partialUserData[mapIndex].coordinates.latitude) : mapData.results[mapIndex].geometry.location.lat,
-        longitude: toggle ? (catIndex == -1 ? userData[mapIndex].coordinates.longitude : partialUserData[mapIndex].coordinates.longitude) : mapData.results[mapIndex].geometry.location.lng,
+        latitude: toggle ? userData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? userData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.007,
         longitudeDelta: 0.005
       }, 350)
     }
-  }, [mapIndex, catIndex, toggle])
+  }, [mapIndex])
 
   const [mapData, setmapData] = useState({} as any)
 
@@ -165,6 +164,7 @@ export default function App({ navigation }: any) {
             let item = JSON.parse(res as string)
             setmapData(item)
           })
+        // TODO: Figure out why reading this data gives a strange error on android
         read_data_hash(latitude, longitude, setUserData)
         _map?.current?.animateToRegion({
           latitude: latitude,
@@ -208,16 +208,7 @@ export default function App({ navigation }: any) {
         <Text style={styles.panelButtonTitle}>Cancel</Text>
       </TouchableOpacity>
     </View>
-
   )
-
-  useEffect(()=>{
-    if (canMap()) {
-      const partialData = JSON.stringify(userData.filter((e:any)=>e.imageIndex+1===catIndex))
-      setPartialUserData(partialData == '[]' ? [{"description":"Emptiness","coordinates":{"latitude":38.36031172770141,"longitude":-121.41240689903498},"hash":"9qcdjpq1jb","imageIndex":2,"title":"checks empty"}]:partialData)
-      _scrollView?.current?.scrollToIndex({index:0, animated: true, viewOffset: 0.5})
-    }
-  }, [toggle, catIndex])
 
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
@@ -229,7 +220,7 @@ export default function App({ navigation }: any) {
 
   const keyExtractor = useCallback(
     (item, index) => index.toString(),
-    [mapData, userData, partialUserData, catIndex]
+    [mapData]
   )
 
   const getItemLayout = useCallback(
@@ -265,7 +256,7 @@ export default function App({ navigation }: any) {
       )
 
     },
-    [userData]
+    [userData, colorScheme]
   )
 
   const renderItem = useCallback(
@@ -300,7 +291,7 @@ export default function App({ navigation }: any) {
       )
 
     },
-    [mapData],
+    [mapData, colorScheme],
   )
 
   return (<>
@@ -316,13 +307,13 @@ export default function App({ navigation }: any) {
     />
     {isFocused && <SafeAreaView style={{ flex: 1 }}>
       <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
-        mapType={mapType ? 'standard':'satellite'}
         ref={_map}
         provider={PROVIDER_GOOGLE}
         showsUserLocation={true}
         showsBuildings={true}
         showsCompass={true}
-        customMapStyle={colorScheme === 'dark' ? data : data2}
+        mapType={mapType ? 'standard':'satellite'}
+        customMapStyle={colorScheme === 'dark' ? mapStyleDark : mapStyleLight}
         initialRegion={{
           latitude: latitude,
           longitude: longitude,
@@ -353,12 +344,12 @@ export default function App({ navigation }: any) {
                 _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
               }}
             >
-              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? colorScheme === "dark" ? "lightgreen":"#1E5631" : mapColors} />
+              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
             </Marker>
           )
         })}
 
-        {canMap() && toggle && JSON.stringify(partialUserData) != '{}' && (catIndex === -1 ? userData : partialUserData).map((e: any, index: any) => {
+        {canMap() && toggle && userData.map((e: any, index: any) => {
           return (
             <Marker
               key={index}
@@ -367,10 +358,10 @@ export default function App({ navigation }: any) {
                 longitude: e.coordinates.longitude
               }}
               onPress={() => {
-                _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
+                _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
               }}
             >
-              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? colorScheme === "dark" ? "lightgreen":"#1E5631" : mapColors} />
+              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
             </Marker>
           )
         })}
@@ -386,93 +377,68 @@ export default function App({ navigation }: any) {
         "latitude" in addingMarker && (<>
           {_map.current?.animateToRegion({
             // @ts-ignore
-            latitude: addingMarker.latitude + 0.0001,
+            latitude: addingMarker.latitude,
             // @ts-ignore
             longitude: addingMarker.longitude,
             latitudeDelta: 0.0007,
             longitudeDelta: 0.0001
           })}
-          <KeyboardAvoidingView>
-
-            <View
-              style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
-            >
-              <View style={{ flexDirection: 'column' }}>
-                <TextInput
-                  placeholder={"Title: "}
-                  autoComplete={''}
-                  error={name === ""}
-                  placeholderTextColor={'black'}
-                  mode={"outlined"}
-                  multiline={false}
-                  dense={true}
-                  style={styles.inputStyle}
-                  onChangeText={(res) => setName(res)} />
-                <TextInput
-                  placeholder={"Description: "}
-                  autoComplete={''}
-                  error={message === ""}
-                  placeholderTextColor={'black'}
-                  mode={"outlined"}
-                  multiline={true}
-                  numberOfLines={4}
-                  dense={true}
-                  style={styles.inputStyle}
-                  spellCheck={true}
-                  onChangeText={(res) => setMessage(res)} />
-              </View>
-              <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'space-between', justifyContent: 'center' }}>
-                {categories.map((item, index) => {
-                  return (<>
-                    <TouchableOpacity
-                      key={item.key}
-                      onPress={() => {
-                        setCatIndex(item.key)
-                      }}
-                      style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", marginBottom: 10, width: 130 }]}>
-                      <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                      <Text>{item.name}</Text>
-                    </TouchableOpacity>
-                  </>)
-                })}
-              </View>
-              <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity
-                  onPress={() => { setVisible(true); setAddingMarker({}) }}
-                >
-                  <View
-                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
-                  >
-                    <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={async () => {
-                    if (name !== "" && message !== "") {
-                      setVisible(true);
-                      // @ts-ignore
-                      await write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message, catIndex-1)
-                        .then(() => {
-                          read_data_hash(latitude, longitude, setUserData)
-                        })
-                      setName('')
-                      setMessage('')
-                      setAddingMarker({});
-                      setCatIndex(-1)
-                    }
-                  }
-                  }
-                >
-                  <View
-                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
-                  >
-                    <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
+          <View
+            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, height: 300, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
+          >
+            <View style={{ flexDirection: 'column' }}>
+              <TextInput
+                placeholder={"Title: "}
+                autoComplete={''}
+                error={name === ""}
+                placeholderTextColor={'black'}
+                mode={"outlined"}
+                multiline={false}
+                dense={true}
+                style={styles.inputStyle}
+                onChangeText={(res) => setName(res)} />
+              <TextInput
+                placeholder={"Description: "}
+                autoComplete={''}
+                error={message === ""}
+                placeholderTextColor={'black'}
+                mode={"outlined"}
+                multiline={true}
+                numberOfLines={4}
+                dense={true}
+                style={styles.inputStyle}
+                spellCheck={true}
+                onChangeText={(res) => setMessage(res)} />
             </View>
-          </KeyboardAvoidingView>
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity
+                onPress={() => { setVisible(true); setAddingMarker({}) }}
+              >
+                <View
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
+                >
+                  <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (name !== "" && message !== "") {
+                    setVisible(true);
+                    // @ts-ignore
+                    write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message);
+                    setAddingMarker({});
+                    // read_data_hash(latitude, longitude, setUserData) 
+                  }
+                }}
+              >
+                <View
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
+                >
+                  <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
           <MapView>
             <Marker
               coordinate={{
@@ -494,19 +460,21 @@ export default function App({ navigation }: any) {
         visible && (<>
 
           <View style={styles.searchBox}>
-            <TextInput
-              placeholder="Search"
-              placeholderTextColor="#000"
-              mode={'outlined'}
-              autoComplete={'search'}
-              autoCapitalize="none"
-              dense={true}
-              outlineColor={"transparent"}
-              activeOutlineColor={"transparent"}
-              style={{ flex: 1, backgroundColor: 'transparent' }}
-            />
-            <View style={{ marginTop: 'auto', marginBottom: 'auto', paddingRight: 5 }}>
-              <Ionicons name="ios-search" size={20} />
+            <View style={{ backgroundColor: 'white', width: '50%', borderRadius: 10 }}>
+              <TouchableOpacity
+                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9':'white' }}
+                onPress={() => setMapType(true)}
+              >
+                <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white':'black' }}>Standard</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ backgroundColor: "white", width: '50%', borderRadius: 10 }}>
+              <TouchableOpacity
+                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9':'white' }}
+                onPress={() => setMapType(false)}
+              >
+                <Text style={{color: !mapType ? 'white':'black'}}>Satellite</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -517,28 +485,24 @@ export default function App({ navigation }: any) {
             contentContainerStyle={{
               paddingRight: 20
             }}
-            data={toggle ? categories:[]}
+            data={categories}
             renderItem={({ item }: any) => {
               return (
-                <TouchableOpacity
+                (item.key != 0 ? <TouchableOpacity
                   key={item.key}
                   onPress={() => {
                     setCatIndex(item.key)
                   }}
-                  style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", alignItems: 'center' }]}>
+                  style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
                   <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                  <Text style={{marginRight: 5}}>{item.name}</Text>
-                  {item.key === catIndex && 
-                    <TouchableOpacity onPress={()=>setCatIndex(-1)}>
-                      <MaterialIcons name="cancel" size={20} color="black" />
-                    </TouchableOpacity>}
-                </TouchableOpacity>
+                  <Text>{item.name}</Text>
+                </TouchableOpacity> : <View key={item.key} />)
               )
             }}
           >
           </FlatList>
           <FlatList
-            ref={_scrollView }
+            ref={_scrollView}
             initialScrollIndex={0}
             viewabilityConfig={viewConfigRef.current}
             onViewableItemsChanged={onViewableItemsChanged.current}
@@ -559,8 +523,8 @@ export default function App({ navigation }: any) {
             contentContainerStyle={{
               paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
             }}
-            onScrollToIndexFailed={() => {}}
-            data={toggle ? (catIndex == -1 ? userData : partialUserData) : mapData.results}
+            onScrollToIndexFailed={() => { }}
+            data={toggle ? userData : mapData.results}
             keyExtractor={keyExtractor}
             renderItem={toggle ? renderItemUser : renderItem}
             getItemLayout={getItemLayout}
@@ -580,18 +544,6 @@ export default function App({ navigation }: any) {
               }
             </View>
           </TouchableOpacity>
-          
-          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 175, backgroundColor: colorScheme === "dark" ? 'black' : 'white', borderRadius: 25, width: 50, height: 50 }} onPress={()=>{setMapType(!mapType)}}>
-            {mapType ?
-              <View style={{alignItems: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
-                <FontAwesome5 name="satellite" size={30} color={colorScheme === "dark" ? 'white' : 'black'} />
-              </View>:
-              <View style={{alignItems: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
-                <Entypo name="map" size={30} color={colorScheme === "dark" ? 'white' : 'black'} />
-              </View>
-            }
-          </TouchableOpacity>
-
         </>)
       }
 
@@ -608,7 +560,7 @@ const styles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? 70 : 50,
     flexDirection: "row",
     backgroundColor: '#fff',
-    width: '70%',
+    width: '50%',
     alignSelf: 'center',
     borderRadius: 5,
     shadowColor: '#ccc',
@@ -616,6 +568,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 10,
+    height: 45
   },
   chipsScrollView: {
     position: 'absolute',
@@ -760,4 +713,3 @@ const styles = StyleSheet.create({
     width: 300,
   },
 });
-

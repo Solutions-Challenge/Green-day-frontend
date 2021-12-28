@@ -49,7 +49,7 @@ export default function CameraScreen({ navigation }: any) {
           key: uuid(),
           width: windowWidth,
           uri: uri,
-          multi: data
+          multi: data,
         })
       })
 
@@ -93,76 +93,78 @@ export default function CameraScreen({ navigation }: any) {
       ],
       {
         format: 'jpeg' as SaveFormat,
-        compress: 1,
+        compress: 0.5,
         base64: true
       }
     )
 
-    let localUri = manipImage.uri;
-
     const body = JSON.stringify({
-      "requests": [
+      requests: [
         {
-          "image": {
-            "source": {
-              "imageUri": manipImage.base64
-            }
+          image: {
+            content: manipImage.base64
           },
-          "features": [
+          features: [
             {
-              "type": "OBJECT_LOCALIZATION",
-              "maxResults": 10
+              type: "OBJECT_LOCALIZATION",
+              maxResults: 10
             }
           ]
         }
       ]
     })
 
-
-    let filename = localUri.split('/').pop();
-
-    let match = /\.(\w+)$/.exec(filename as string);
-    let type = match ? `image/${match[1]}` : `image`;
-
-    let formData = new FormData();
-
-    // @ts-ignore
-    formData.append('file', { uri: localUri, name: filename, type });
-
     const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${process.env.CLOUDVISIONAPIKEY}`, {
-      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       },
+      method: "POST",
       body: body
     })
 
     const visionData = await visionRequest.json()
 
-    console.log(visionData)
+    if ("localizedObjectAnnotations" in visionData.responses[0]) {
+      let object
+      let formData = new FormData();
+      for (let i = 0; i < visionData.responses[0].localizedObjectAnnotations.length; i++) {
+        object = visionData.responses[0].localizedObjectAnnotations[i]
 
-    const res = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/multi', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    })
+        const croppedImage = await manipulateAsync(
+          manipImage.uri,
+          [{
+            resize: {
+              width: manipImage.width,
+              height: manipImage.height
+            }
+          },
+          {
+            crop: {
+              originX: manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0,
+              originY: manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0,
+              width: (manipImage.width * object.boundingPoly.normalizedVertices[2].x || 0) - (manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0),
+              height: (manipImage.height * object.boundingPoly.normalizedVertices[2].y || 0) - (manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0)
+            }
+          }
+          ],
+          {
+            format: 'jpeg' as SaveFormat,
+            compress: 0.2,
+          }
+        )
+        object.croppedImage = croppedImage.uri
+      }
 
-    const data = await res.json()
+      console.log(visionData.responses[0].localizedObjectAnnotations)
 
-    if (!data.error) {
-      save(data.success, manipImage.uri, windowWidth)
-
+      save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
       setIsLoading(false)
       setUri(manipImage.uri)
-
       navigation.navigate('Home', { screen: "Start" })
     }
-
     else {
-      console.log('an error occurred')
-      navigation.navigate('Home', { screen: "Start" })
+      console.log('empty')
     }
 
   }

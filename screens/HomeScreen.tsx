@@ -10,7 +10,6 @@ import { AntDesign, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-i
 import { osName } from 'expo-device';
 
 import Svg, { Rect } from 'react-native-svg';
-import { isUserLoggedIn, logout } from '../api/auth';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -62,19 +61,12 @@ export default function HomeScreen({ navigation }: any) {
                                     >
                                         {item.multi.map((e:any, index:number)=>{
                                             return (
-                                                <Rect key={index} rx={5} x={imageWidth * e.vertices[0].x} y={imageWidth * e.vertices[0].y} width={imageWidth * e.vertices[2].x-imageWidth * e.vertices[0].x} height={imageWidth * e.vertices[2].y-imageWidth * e.vertices[0].y} stroke="white" strokeWidth="1" />
+                                                <Rect key={index} rx={5} x={imageWidth * e.boundingPoly.normalizedVertices[0].x || 0} y={imageWidth * e.boundingPoly.normalizedVertices[0].y || 0} width={(imageWidth * e.boundingPoly.normalizedVertices[2].x || 0)-(imageWidth * e.boundingPoly.normalizedVertices[0].x || 0)} height={(imageWidth * e.boundingPoly.normalizedVertices[2].y || 0)-(imageWidth * e.boundingPoly.normalizedVertices[0].y || 0)} stroke="white" strokeWidth="1" />
                                             )
                                         })}
                                     </Svg>
                                 </ImageBackground>
                             </TouchableOpacity>
-                            <View style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
-                                {item.multi.map((e:any, index:number)=>{
-                                    return (<View key={index}>
-                                        <Text style={{ color: colorScheme === "dark" ? 'white' : 'black' }}>{e.name}, ({e.mlData.Material})</Text>
-                                    </View>)
-                                })}
-                            </View>
                         </View>
                     </View>
                 </Animated.View>

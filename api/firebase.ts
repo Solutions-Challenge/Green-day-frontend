@@ -73,23 +73,23 @@ export const read_data_hash = async(
   // Collect all the query results together into a single list
 
  // Collect all the query results together into a single list
-Promise.all(promises).then((snapshots) => {
-  const matchingDocs = [];
+  Promise.all(promises).then((snapshots) => {
+    const matchingDocs = [];
 
-  for (const snap of snapshots) {
-    for (const doc of snap.docs) {
-      const lat = doc.get('coordinates').latitude as number;
-      const lng = doc.get('coordinates').longitude as number;
+    for (const snap of snapshots) {
+      for (const doc of snap.docs) {
+        const lat = doc.get('coordinates').latitude as number;
+        const lng = doc.get('coordinates').longitude as number;
 
-      // We have to filter out a few false positives due to GeoHash
-      // accuracy, but most will match
-      const distanceInKm = geofire.distanceBetween([lat, lng], center);
-      const distanceInM = distanceInKm * 1000;
-      if (distanceInM <= radiusInM) {
-        matchingDocs.push(doc.data());
+        // We have to filter out a few false positives due to GeoHash
+        // accuracy, but most will match
+        const distanceInKm = geofire.distanceBetween([lat, lng], center);
+        const distanceInM = distanceInKm * 1000;
+        if (distanceInM <= radiusInM) {
+          matchingDocs.push(doc.data());
+        }
       }
     }
-  }
       setUserData(matchingDocs)
     })
 }

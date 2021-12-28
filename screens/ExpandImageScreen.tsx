@@ -1,10 +1,11 @@
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useRef } from 'react'
-import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react'
+import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
@@ -15,32 +16,78 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
     const { item } = route.params
     const imageWidth = item.width / 3
     const colorScheme = useColorScheme()
+    const [ifMLData, setIfMLData] = useState(!("mlData" in item.multi[0]))
 
     const goBack = () => {
         navigation.navigate('Home')
     }
 
-    return (<View style={{ marginTop: 120, alignItems: 'center', alignSelf: 'center' }}>
-        <ScrollView>
+    const needToProcess = () => {
+        return !("mlData" in item.multi[0])
+    }
 
-            {item.multi.map((e: any, index: number) => {
-                return (<View key={index} style={{ width: windowWidth - 40, backgroundColor: colorScheme === "dark" ? '#181818' : '#fff', marginBottom: 20, borderRadius: 10, flexDirection: 'row' }}>
-                    <ImageBackground key={index} source={{ uri: e.croppedImage }} style={{ width: windowWidth / 3, height: windowWidth / 3 }} imageStyle={{ borderBottomLeftRadius: 10, borderTopLeftRadius: 10 }}>
-                    <Text style={{ color: colorScheme === 'dark' ? 'white' : 'black', fontSize: 20, textAlign: 'center', marginTop: 'auto' }}>{e.mlData.Material}</Text>
-                        <View style={[styles.recycleButton, { alignSelf: 'center', marginBottom: 10}]}>
-                            <Text style={{ color: 'white', textAlign: 'center'}}>{e.mlData.Recyclability}</Text>
+    useEffect(() => {
+        (async () => {
+            if (ifMLData) {
+                let formData = new FormData();
+           
+                for (let i = 0; i < item.multi.length; i++) {
+                    let filename = item.multi[i].croppedImage.split('/').pop();
+                    let match = /\.(\w+)$/.exec(filename as string);
+                    let type = match ? `image/${match[1]}` : `image`;
+                    // @ts-ignore
+                    formData.append('files[]', { uri: item.multi[i].croppedImage, name: filename, type });
+                }
+
+                const MLRequest = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/predict', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'content-type': 'multipart/form-data'
+                    }
+                })
+                const MLdata = await MLRequest.json()
+                
+                for (let i = 0; i < item.multi.length; i++) {
+                    item.multi[i].mlData = MLdata.success[i]
+                }
+                setIfMLData(false)
+            }
+        })();
+    }, []);
+
+    return (
+
+
+        <View style={{ marginTop: 120, alignItems: 'center', alignSelf: 'center' }}>
+            <ScrollView>
+                {item.multi.map((e: any, index: number) => {
+                    return (
+                        <View key={index} style={{ width: windowWidth - 40, backgroundColor: colorScheme === "dark" ? '#181818' : '#fff', marginBottom: 20, borderRadius: 10, flexDirection: 'row' }}>
+                            <ImageBackground source={{ uri: e.croppedImage }} style={{ width: windowWidth / 3, height: windowWidth / 3, borderBottomLeftRadius: 10, borderTopLeftRadius: 10, overflow: 'hidden' }}>
+                                <Text style={{ color: 'white', fontSize: 20, textAlign: 'center', marginTop: 'auto', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>{e.name}</Text>
+                            </ImageBackground>
+
+                            {ifMLData ?
+                                <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" /> :
+
+                               
+                                <Text style={{marginLeft: 'auto', marginRight: 'auto', color: colorScheme === "dark" ? "white":"black"}}>{item.multi[0].mlData.Material}</Text>
+                                
+                            }
+
                         </View>
-                    </ImageBackground>
-                </View>)
-            })}
-        </ScrollView>
+                    )
+                })}
+            </ScrollView>
 
-        <View style={{ position: 'absolute', top: flipPosition - 100, right: 10, backgroundColor: 'black', borderRadius: 15 }}>
-            <TouchableOpacity onPress={goBack}>
-                <MaterialIcons name="cancel" size={30} color="white" />
-            </TouchableOpacity>
+            <View style={{ position: 'absolute', top: flipPosition - 100, right: 10, backgroundColor: 'black', borderRadius: 15 }}>
+                <TouchableOpacity onPress={goBack}>
+                    <MaterialIcons name="cancel" size={30} color="white" />
+                </TouchableOpacity>
+            </View>
         </View>
-    </View>)
+    )
 }
 
 const styles = StyleSheet.create({
