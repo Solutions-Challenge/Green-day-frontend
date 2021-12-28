@@ -47,8 +47,10 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                     }
                 })
                 const MLdata = await MLRequest.json()
+
                 
                 for (let i = 0; i < item.multi.length; i++) {
+                    console.log(MLdata.success[i])
                     item.multi[i].mlData = MLdata.success[i]
                 }
                 setIfMLData(false)
@@ -70,12 +72,8 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
 
                             {ifMLData ?
                                 <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" /> :
-
-                               
-                                <Text style={{marginLeft: 'auto', marginRight: 'auto', color: colorScheme === "dark" ? "white":"black"}}>{item.multi[0].mlData.Material}</Text>
-                                
+                                <Text style={{marginLeft: 'auto', marginRight: 'auto', color: colorScheme === "dark" ? "white":"black"}}>{item.multi[index].mlData.Material}</Text>    
                             }
-
                         </View>
                     )
                 })}

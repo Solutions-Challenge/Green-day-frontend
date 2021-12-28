@@ -18,7 +18,6 @@ import CameraScreen from '../screens/CameraScreen';
 import MapsScreen from '../screens/MapsScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
-import FeedbackScreen from '../screens/FeedbackScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -43,7 +42,6 @@ function RootNavigator() {
       <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
         <Stack.Screen name="Home" component={HomeTabs} />
         <Stack.Screen name="Pic" component={CameraScreen} />
-        <Stack.Screen name="FeedBack" component={FeedbackScreen} />
         <Stack.Screen name="Details" component={ExpandImageScreen} />
       </Stack.Navigator>
   );

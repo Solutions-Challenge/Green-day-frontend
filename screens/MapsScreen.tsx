@@ -176,6 +176,12 @@ export default function App({ navigation }: any) {
     })();
   }, [longitude])
 
+  useEffect(()=>{
+    if (canMap()) {
+      _scrollView?.current?.scrollToIndex({index:0, animated: true, viewOffset: 0.5})
+    }
+  }, [toggle, catIndex])
+
 
   const renderInner = () => (
     <View style={[styles.panel, { paddingBottom: 600, backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
@@ -220,7 +226,7 @@ export default function App({ navigation }: any) {
 
   const keyExtractor = useCallback(
     (item, index) => index.toString(),
-    [mapData]
+    [mapData, toggle, userData]
   )
 
   const getItemLayout = useCallback(
@@ -238,11 +244,11 @@ export default function App({ navigation }: any) {
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-            <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
+              <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
               <TouchableOpacity
-                style={{marginLeft: 'auto'}}
+                style={{ marginLeft: 'auto' }}
                 onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
-              >  
+              >
                 <View
                   style={[styles.chipsItem, { backgroundColor: "white", width: 130 }]}>
                   <Image source={categories[item.imageIndex].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
@@ -250,7 +256,7 @@ export default function App({ navigation }: any) {
                 </View>
               </TouchableOpacity>
             </View>
-            <Text style={[styles.cardDescription, {color: colorScheme === "dark" ? "white" : "black"}]}>{item.description}</Text>
+            <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
           </View>
         </View>
       )
@@ -312,7 +318,7 @@ export default function App({ navigation }: any) {
         showsUserLocation={true}
         showsBuildings={true}
         showsCompass={true}
-        mapType={mapType ? 'standard':'satellite'}
+        mapType={mapType ? 'standard' : 'satellite'}
         customMapStyle={colorScheme === 'dark' ? mapStyleDark : mapStyleLight}
         initialRegion={{
           latitude: latitude,
@@ -358,7 +364,7 @@ export default function App({ navigation }: any) {
                 longitude: e.coordinates.longitude
               }}
               onPress={() => {
-                _scrollView?.current?.scrollToIndex({ index: index, animated: false, viewPosition: 0.5 })
+                _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
               }}
             >
               <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
@@ -462,18 +468,18 @@ export default function App({ navigation }: any) {
           <View style={styles.searchBox}>
             <View style={{ backgroundColor: 'white', width: '50%', borderRadius: 10 }}>
               <TouchableOpacity
-                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9':'white' }}
+                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9' : 'white' }}
                 onPress={() => setMapType(true)}
               >
-                <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white':'black' }}>Standard</Text>
+                <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white' : 'black' }}>Standard</Text>
               </TouchableOpacity>
             </View>
             <View style={{ backgroundColor: "white", width: '50%', borderRadius: 10 }}>
               <TouchableOpacity
-                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9':'white' }}
+                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9' : 'white' }}
                 onPress={() => setMapType(false)}
               >
-                <Text style={{color: !mapType ? 'white':'black'}}>Satellite</Text>
+                <Text style={{ color: !mapType ? 'white' : 'black' }}>Satellite</Text>
               </TouchableOpacity>
             </View>
           </View>

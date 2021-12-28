@@ -1,15 +1,14 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import * as React from 'react'
-import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground } from 'react-native';
+import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
 import ImageContext from '../hooks/imageContext';
-import { SwipeListView } from 'react-native-swipe-list-view';
-import { AntDesign, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 
 import Svg, { Rect } from 'react-native-svg';
+import BouncyCheckbox from "react-native-bouncy-checkbox";
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -22,46 +21,97 @@ export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
+    const [imageWidth, setImageWidth] = useState(windowWidth / 1.5)
 
-    const VisibleItem = (props: any) => {
-        const { data, rowHeightAnimatedValue, removeRow, rightActionState } = props
+    const [checked, setChecked] = useState(new Array(11).fill(false))
+    const [onLongPress, setOnLongPress] = useState(false)
 
-        if (rightActionState) {
-            Animated.timing(rowHeightAnimatedValue, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: false,
-            }).start(() => {
-                removeRow();
-            });
-        }
+    const onLongPressIn = () => {
+        console.log('testing...')
+        setOnLongPress(!onLongPress)
+    }
+
+    const BottomButtons = () => { 
+        console.log(onLongPress)
+        return (
+            onLongPress ?
+                (
+                    <View style={{ marginLeft: 'auto', marginRight: 'auto', bottom: 130, backgroundColor: colorScheme === "dark" ? '#181818' : "white", padding: 20, borderRadius: 10 }}>
+                        <View style={{ flexDirection: 'row' }}>
+                            <TouchableOpacity
+                                onPress={() => { }}
+                            >
+                                <View
+                                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#AAAFB4', marginRight: 5 }]}
+                                >
+                                    <Text style={{ color: '#AAAFB4', fontSize: 20 }}>Cancel</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+
+                                }}
+                            >
+                                <View
+                                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#F07470', marginLeft: 5 }]}
+                                >
+                                    <Text style={{ color: 'white', fontSize: 20 }}>DELETE</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                ) :
+                <View></View>
+
+        )
+    }
+
+    const changeChecked = (index: number) => {
+        let checkedCopy = checked
+        checkedCopy[index] = !checkedCopy[index]
+        setChecked(checkedCopy)
+    }
+
+    const renderItem = useCallback((data: any) => {
 
         const item = data.item
-        const imageWidth = item.width / 3
 
-        return (
-            <TouchableHighlight style={{ marginBottom: 50 }}>
-                {/* @ts-ignore */}
-                <Animated.View style={{ height: rowHeightAnimatedValue }}>
-                    <View style={styles.card}>
-                        <View style={[styles.containerTitle2, { backgroundColor: colorScheme === "dark" ? '#181818' : '#fff' }]}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => { navigation.push('Details', { item }) }}>
+        return (<>
+
+            <View style={[styles.containerTitle2]}>
+
+                <BouncyCheckbox
+                    useNativeDriver={true}
+                    isChecked={checked[data.index]}
+                    fillColor="#246EE9"
+                    onPress={() => { changeChecked(data.index) }}
+                />
+
+                <TouchableHighlight style={{ marginBottom: 50 }}>
+                    {/* @ts-ignore */}
+                    <View style={[styles.card, { height: imageWidth }]}>
+                        <View>
+                            <TouchableOpacity
+                                activeOpacity={1}
+                                onLongPress={() => onLongPressIn()}
+                                onPress={() => { navigation.push('Details', { item }) }}
+                            >
                                 <ImageBackground
                                     source={{ uri: item.uri }}
                                     style={{
                                         height: imageWidth,
                                         width: imageWidth,
                                     }}
-                                    imageStyle={{ borderRadius: 10}}
-                                    >
-                                        
+                                    imageStyle={{ borderRadius: 10 }}
+                                >
+
                                     <Svg
                                         width={imageWidth}
                                         height={imageWidth}
                                     >
-                                        {item.multi.map((e:any, index:number)=>{
+                                        {item.multi.map((e: any, index: number) => {
                                             return (
-                                                <Rect key={index} rx={5} x={imageWidth * e.boundingPoly.normalizedVertices[0].x || 0} y={imageWidth * e.boundingPoly.normalizedVertices[0].y || 0} width={(imageWidth * e.boundingPoly.normalizedVertices[2].x || 0)-(imageWidth * e.boundingPoly.normalizedVertices[0].x || 0)} height={(imageWidth * e.boundingPoly.normalizedVertices[2].y || 0)-(imageWidth * e.boundingPoly.normalizedVertices[0].y || 0)} stroke="white" strokeWidth="1" />
+                                                <Rect key={index} rx={5} x={imageWidth * e.boundingPoly.normalizedVertices[0].x || 0} y={imageWidth * e.boundingPoly.normalizedVertices[0].y || 0} width={(imageWidth * e.boundingPoly.normalizedVertices[2].x || 0) - (imageWidth * e.boundingPoly.normalizedVertices[0].x || 0)} height={(imageWidth * e.boundingPoly.normalizedVertices[2].y || 0) - (imageWidth * e.boundingPoly.normalizedVertices[0].y || 0)} stroke="white" strokeWidth="1" />
                                             )
                                         })}
                                     </Svg>
@@ -69,48 +119,10 @@ export default function HomeScreen({ navigation }: any) {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </Animated.View>
-            </TouchableHighlight>
-        )
-    }
-
-    const HiddenItemWithActions = (props: any) => {
-        const { onDelete, swipeAnimatedValue, rowHeightAnimatedValue } = props
-
-
-        return (<>
-            <Animated.View style={[styles.rowBack, { height: rowHeightAnimatedValue }]}>
-                <Text />
-                <Animated.View style={[styles.backRightBtn, styles.backRightBtnRight, {
-                    width: windowWidth,
-                }]}>
-                    <TouchableOpacity onPress={onDelete} style={[styles.backRightBtn, styles.backRightBtnRight]}>
-                        <Animated.View style={[styles.trash, {
-                            transform: [
-                                {
-                                    scale: swipeAnimatedValue.interpolate({
-                                        inputRange: [-90, -45],
-                                        outputRange: [1, 0],
-                                        extrapolate: 'clamp',
-                                    }),
-                                },
-                            ],
-                        }]}>
-                            <MaterialCommunityIcons name="trash-can-outline" size={50} color={'white'} />
-                        </Animated.View>
-                    </TouchableOpacity>
-                </Animated.View>
-
-            </Animated.View>
+                </TouchableHighlight>
+            </View>
         </>)
-    }
-
-    const renderItem = (data: any, rowMap: any) => {
-        const rowHeightAnimatedValue = new Animated.Value((windowWidth / divNum) + 20)
-        return (
-            <VisibleItem data={data} rowHeightAnimatedValue={rowHeightAnimatedValue} removeRow={() => { deleteRow(rowMap, data.item.key) }} />
-        )
-    }
+    }, [checked])
 
     const closeRow = (rowMap: any, rowKey: any) => {
         if (rowMap[rowKey]) {
@@ -125,19 +137,6 @@ export default function HomeScreen({ navigation }: any) {
         newData.splice(prevIndex, 1)
         setData(newData)
         await AsyncStorage.setItem("multi", JSON.stringify(newData))
-    }
-
-    const renderHiddenItem = (data: any, rowMap: any) => {
-        const rowHeightAnimatedValue = new Animated.Value((windowWidth / divNum) + 20)
-
-        return (
-            <HiddenItemWithActions
-                data={data}
-                rowMap={rowMap}
-                rowHeightAnimatedValue={rowHeightAnimatedValue}
-                onDelete={() => deleteRow(deleteRow, data.item.key)}
-            />
-        )
     }
 
     const load = async () => {
@@ -160,10 +159,6 @@ export default function HomeScreen({ navigation }: any) {
         })();
     }, [uri]);
 
-    const go_to_feedback = () => {
-        navigation.navigate("FeedBack")
-    }
-
     const Root = () => {
         return (<>
             {data.length === 0 ? (<>
@@ -174,28 +169,20 @@ export default function HomeScreen({ navigation }: any) {
                     <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
                 </View>
             </>) : (<>
-                <SwipeListView
+                <FlatList
                     data={data}
+                    extraData={checked}
+                    // @ts-ignore
+                    keyExtractor={(item, index) => item.key}
                     renderItem={renderItem}
-                    renderHiddenItem={renderHiddenItem}
-                    leftOpenValue={75}
-                    disableRightSwipe
-                    leftActivationValue={100}
-                    rightActivationValue={-200}
-                    leftActionValue={0}
-                    rightActionValue={-windowWidth}
                     style={{ marginVertical: 120 }}
-                >
-                </SwipeListView>
+                />
                 <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
                     <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
                 </View>
+
+                <BottomButtons />
             </>)}
-            <View style={{ position: 'absolute', top: flipPosition + 30, right: 20 }}>
-                <TouchableOpacity onPress={go_to_feedback}>
-                    <MaterialIcons name="contact-support" size={30} color={colorScheme === "dark" ? "white" : "black"} />
-                </TouchableOpacity>
-            </View>
         </>
         );
     }
@@ -206,6 +193,13 @@ export default function HomeScreen({ navigation }: any) {
 
 
 const styles = StyleSheet.create({
+    button: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        width: 80,
+        backgroundColor: '#190c8d'
+    },
     containerTitle: {
         padding: 20,
         paddingTop: 40,
@@ -241,8 +235,9 @@ const styles = StyleSheet.create({
     containerTitle2: {
         padding: 10,
         display: 'flex',
+        justifyContent: 'space-evenly',
         flexDirection: 'row',
-        width: windowWidth - 30,
+        width: windowWidth,
         borderTopRightRadius: 10,
         borderBottomRightRadius: 10,
     },
