@@ -23,47 +23,11 @@ export default function HomeScreen({ navigation }: any) {
     const [uri, setUri] = useContext(ImageContext).uri
     const [imageWidth, setImageWidth] = useState(windowWidth / 1.5)
 
-    const [checked, setChecked] = useState(new Array(11).fill(false))
+    const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
 
     const onLongPressIn = () => {
-        console.log('testing...')
-        setOnLongPress(!onLongPress)
-    }
-
-    const BottomButtons = () => { 
-        console.log(onLongPress)
-        return (
-            onLongPress ?
-                (
-                    <View style={{ marginLeft: 'auto', marginRight: 'auto', bottom: 130, backgroundColor: colorScheme === "dark" ? '#181818' : "white", padding: 20, borderRadius: 10 }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <TouchableOpacity
-                                onPress={() => { }}
-                            >
-                                <View
-                                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#AAAFB4', marginRight: 5 }]}
-                                >
-                                    <Text style={{ color: '#AAAFB4', fontSize: 20 }}>Cancel</Text>
-                                </View>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => {
-
-                                }}
-                            >
-                                <View
-                                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#F07470', marginLeft: 5 }]}
-                                >
-                                    <Text style={{ color: 'white', fontSize: 20 }}>DELETE</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                ) :
-                <View></View>
-
-        )
+        setOnLongPress(true)
     }
 
     const changeChecked = (index: number) => {
@@ -80,12 +44,12 @@ export default function HomeScreen({ navigation }: any) {
 
             <View style={[styles.containerTitle2]}>
 
-                <BouncyCheckbox
+                {onLongPress && <BouncyCheckbox
                     useNativeDriver={true}
                     isChecked={checked[data.index]}
                     fillColor="#246EE9"
                     onPress={() => { changeChecked(data.index) }}
-                />
+                />}
 
                 <TouchableHighlight style={{ marginBottom: 50 }}>
                     {/* @ts-ignore */}
@@ -122,19 +86,17 @@ export default function HomeScreen({ navigation }: any) {
                 </TouchableHighlight>
             </View>
         </>)
-    }, [checked])
+    }, [checked, onLongPress])
+    
+    useEffect(()=>{
+        setChecked(Array(data.length).fill(false))
+    }, [data])
 
-    const closeRow = (rowMap: any, rowKey: any) => {
-        if (rowMap[rowKey]) {
-            rowMap[rowKey].closeRow();
+    const deleteRow = async (indices: number[]) => {
+        let newData = [...data]
+        for (let i = 0; i < indices.length; i++) {
+            newData = newData.filter((e, index)=>(index !== indices[i]))
         }
-    };
-
-    const deleteRow = async (rowMap: any, rowKey: any) => {
-        closeRow(rowMap, rowKey)
-        const newData = [...data]
-        const prevIndex = data.findIndex((item: any) => item.key === rowKey)
-        newData.splice(prevIndex, 1)
         setData(newData)
         await AsyncStorage.setItem("multi", JSON.stringify(newData))
     }
@@ -181,7 +143,41 @@ export default function HomeScreen({ navigation }: any) {
                     <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
                 </View>
 
-                <BottomButtons />
+                {onLongPress &&
+                <View style={{ marginLeft: 'auto', marginRight: 'auto', bottom: 130, backgroundColor: colorScheme === "dark" ? '#181818' : "white", padding: 20, borderRadius: 10 }}>
+                    <View style={{ flexDirection: 'row' }}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setChecked(new Array(11).fill(false))
+                                setOnLongPress(false)
+                            }}
+                        >
+                            <View
+                                style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#AAAFB4', marginRight: 5 }]}
+                            >
+                                <Text style={{ color: '#AAAFB4', fontSize: 20 }}>Cancel</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                let indicesToRemove = []
+                                for (let i = 0; i < checked.length; i++) {
+                                    if (checked[i]) {
+                                        indicesToRemove.push(i)
+                                    }
+                                }
+                                deleteRow(indicesToRemove)
+                                setOnLongPress(false)
+                            }}
+                        >
+                            <View
+                                style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#F07470', marginLeft: 5 }]}
+                            >
+                                <Text style={{ color: 'white', fontSize: 20 }}>DELETE</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>}
             </>)}
         </>
         );

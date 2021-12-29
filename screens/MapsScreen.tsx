@@ -165,7 +165,7 @@ export default function App({ navigation }: any) {
             setmapData(item)
           })
         // TODO: Figure out why reading this data gives a strange error on android
-        read_data_hash(latitude, longitude, setUserData)
+        await read_data_hash(latitude, longitude, setUserData)
         _map?.current?.animateToRegion({
           latitude: latitude,
           longitude: longitude,
@@ -176,9 +176,9 @@ export default function App({ navigation }: any) {
     })();
   }, [longitude])
 
-  useEffect(()=>{
-    if (canMap()) {
-      _scrollView?.current?.scrollToIndex({index:0, animated: true, viewOffset: 0.5})
+  useEffect(() => {
+    if (canMap() && userData.length > 0) {
+      _scrollView?.current?.scrollToIndex({ index: 0, animated: true, viewOffset: 0.5 })
     }
   }, [toggle, catIndex])
 
@@ -240,25 +240,26 @@ export default function App({ navigation }: any) {
 
   const renderItemUser = useCallback(
     ({ item }: any) => {
-      return (
-        <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
-          <View style={styles.textContent}>
-            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-              <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
-              <TouchableOpacity
-                style={{ marginLeft: 'auto' }}
-                onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
-              >
-                <View
-                  style={[styles.chipsItem, { backgroundColor: "white", width: 130 }]}>
-                  <Image source={categories[item.imageIndex].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                  <Text>{categories[item.imageIndex].name}</Text>
-                </View>
-              </TouchableOpacity>
+      console.log(userData, 'testing...')
+      return ( 
+          <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+            <View style={styles.textContent}>
+              <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
+                <TouchableOpacity
+                  style={{ marginLeft: 'auto' }}
+                  onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
+                >
+                  <View
+                    style={[styles.chipsItem, { backgroundColor: "white", width: 130 }]}>
+                    <Image source={categories[item.imageIndex].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                    <Text>{categories[item.imageIndex].name}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+              <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
             </View>
-            <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
           </View>
-        </View>
       )
 
     },
@@ -433,7 +434,7 @@ export default function App({ navigation }: any) {
                     // @ts-ignore
                     write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message);
                     setAddingMarker({});
-                    // read_data_hash(latitude, longitude, setUserData) 
+                    read_data_hash(latitude, longitude, setUserData)
                   }
                 }}
               >
@@ -532,7 +533,7 @@ export default function App({ navigation }: any) {
             onScrollToIndexFailed={() => { }}
             data={toggle ? userData : mapData.results}
             keyExtractor={keyExtractor}
-            renderItem={toggle ? renderItemUser : renderItem}
+            renderItem={canMap() && toggle ? renderItemUser : renderItem}
             getItemLayout={getItemLayout}
           >
           </FlatList>

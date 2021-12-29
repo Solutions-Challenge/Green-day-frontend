@@ -156,8 +156,6 @@ export default function CameraScreen({ navigation }: any) {
         object.croppedImage = croppedImage.uri
       }
 
-      console.log(visionData.responses[0].localizedObjectAnnotations)
-
       save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
       setIsLoading(false)
       setUri(manipImage.uri)
@@ -165,6 +163,9 @@ export default function CameraScreen({ navigation }: any) {
     }
     else {
       console.log('empty')
+      setIsLoading(false)
+      setUri(manipImage.uri)
+      navigation.navigate('Home', { screen: "Start" })
     }
 
   }
