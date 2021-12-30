@@ -63,6 +63,7 @@ export default function App({ navigation }: any) {
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
   const [mapType, setMapType] = useState(true)
+  const [switchToConfirm, setSwitchToConfirm] = useState(false)
 
   const [catIndex, setCatIndex] = useState(0)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -240,25 +241,25 @@ export default function App({ navigation }: any) {
   const renderItemUser = useCallback(
     ({ item }: any) => {
       console.log(userData, 'testing...')
-      return ( 
-          <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
-            <View style={styles.textContent}>
-              <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
-                <TouchableOpacity
-                  style={{ marginLeft: 'auto' }}
-                  onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
-                >
-                  <View
-                    style={[styles.chipsItem, { backgroundColor: "white", width: 130 }]}>
-                    <Image source={categories[item.imageIndex].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                    <Text>{categories[item.imageIndex].name}</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-              <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
+      return (
+        <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+          <View style={styles.textContent}>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+              <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
+              <TouchableOpacity
+                style={{ marginLeft: 'auto' }}
+                onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
+              >
+                <View
+                  style={[styles.chipsItem, { backgroundColor: "white", width: 130 }]}>
+                  <Image source={categories[item.imageIndex].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                  <Text>{categories[item.imageIndex].name}</Text>
+                </View>
+              </TouchableOpacity>
             </View>
+            <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
           </View>
+        </View>
       )
 
     },
@@ -327,6 +328,7 @@ export default function App({ navigation }: any) {
           longitudeDelta: longitudeDelta
         }}
         onPress={(e: any) => { !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
+        onLongPress={(e: any) => { (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })); setVisible(false) }}
       >
         {canMap() && JSON.stringify(addingMarker) != '{}' && <Marker
           coordinate={{
@@ -375,9 +377,9 @@ export default function App({ navigation }: any) {
 
       {
         !visible && !("latitude" in addingMarker) && (
-        <View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
-          <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
-        </View>)
+          <View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
+            <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
+          </View>)
       }
 
       {
@@ -393,57 +395,90 @@ export default function App({ navigation }: any) {
           <View
             style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, height: 300, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
           >
-            <View style={{ flexDirection: 'column' }}>
-              <TextInput
-                placeholder={"Title: "}
-                autoComplete={''}
-                error={name === ""}
-                placeholderTextColor={'black'}
-                mode={"outlined"}
-                multiline={false}
-                dense={true}
-                style={styles.inputStyle}
-                onChangeText={(res) => setName(res)} />
-              <TextInput
-                placeholder={"Description: "}
-                autoComplete={''}
-                error={message === ""}
-                placeholderTextColor={'black'}
-                mode={"outlined"}
-                multiline={true}
-                numberOfLines={4}
-                dense={true}
-                style={styles.inputStyle}
-                spellCheck={true}
-                onChangeText={(res) => setMessage(res)} />
-            </View>
+            {switchToConfirm ? <>
+              <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'space-between', justifyContent: 'center' }}>
+                {categories.map((item, index) => {
+                  return (<>
+                    <TouchableOpacity
+                      key={item.key}
+                      onPress={() => {
+                        setCatIndex(item.key)
+                      }}
+                      style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", marginBottom: 10, width: 130 }]}>
+                      <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                      <Text>{item.name}</Text>
+                    </TouchableOpacity>
+                  </>)
+                })}
+              </View>
+
+            </> :
+              <View style={{ flexDirection: 'column' }}>
+                <TextInput
+                  placeholder={"Title: "}
+                  autoComplete={''}
+                  error={name === ""}
+                  placeholderTextColor={'black'}
+                  mode={"outlined"}
+                  multiline={false}
+                  dense={true}
+                  style={styles.inputStyle}
+                  value={name}
+                  onChangeText={(res) => setName(res)} />
+                <TextInput
+                  placeholder={"Description: "}
+                  autoComplete={''}
+                  error={message === ""}
+                  placeholderTextColor={'black'}
+                  mode={"outlined"}
+                  multiline={true}
+                  numberOfLines={4}
+                  dense={true}
+                  style={styles.inputStyle}
+                  spellCheck={true}
+                  value={message}
+                  onChangeText={(res) => setMessage(res)} />
+              </View>}
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity
-                onPress={() => { setVisible(true); setAddingMarker({}) }}
+                onPress={() => {
+                  if (switchToConfirm) {
+                    setSwitchToConfirm(false)
+                  }
+                  else {
+                    setVisible(true); setAddingMarker({}); setCatIndex(-1)
+                  }
+                }}
               >
                 <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: switchToConfirm ? '#246EE9' : '#F07470', marginRight: 5 }]}
                 >
-                  <Text style={{ color: '#F07470', fontSize: 20 }}>Cancel</Text>
+                  <Text style={{ color: switchToConfirm ? '#246EE9' : '#F07470', fontSize: 20 }}>{switchToConfirm ? "Previous" : "Cancel"}</Text>
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
                   if (name !== "" && message !== "") {
 
-                    
-                    // setVisible(true);
-                    // @ts-ignore
-                    // write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message);
-                    // setAddingMarker({});
-                    // read_data_hash(latitude, longitude, setUserData)
+                    if (switchToConfirm) {
+                      setVisible(true);
+                      //@ts-ignore
+                      write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message);
+                      setAddingMarker({});
+                      read_data_hash(latitude, longitude, setUserData)
+                    }
+                    else {
+                      setSwitchToConfirm(true)
+                    }
+
                   }
                 }}
               >
                 <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#246EE9', marginLeft: 5 }]}
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: switchToConfirm ? '#a4d2ac' : '#246EE9', marginLeft: 5 }]}
                 >
-                  <Text style={{ color: 'white', fontSize: 20 }}>Next</Text>
+                  <Text style={{ color: 'white', fontSize: 20 }}>{switchToConfirm ? "Confirm" : "Next"}</Text>
                 </View>
               </TouchableOpacity>
             </View>
