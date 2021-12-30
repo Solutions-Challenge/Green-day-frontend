@@ -51,7 +51,6 @@ export default function App({ navigation }: any) {
   const [longitude, setLongitude] = useState(0)
   const _map = useRef<MapView>(null)
   const _scrollView = useRef<FlatList>(null)
-  const _scrollViewUser = useRef<FlatList>(null)
   const [, setIsLoading] = useContext(ImageContext).isLoading
   const [mapIndex, setMapIndex] = useState(0)
   const isFocused = useIsFocused();
@@ -375,7 +374,8 @@ export default function App({ navigation }: any) {
       </MapView>
 
       {
-        !visible && !("latitude" in addingMarker) && (<View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
+        !visible && !("latitude" in addingMarker) && (
+        <View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
           <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
         </View>)
       }
@@ -430,18 +430,20 @@ export default function App({ navigation }: any) {
               <TouchableOpacity
                 onPress={() => {
                   if (name !== "" && message !== "") {
-                    setVisible(true);
+
+                    
+                    // setVisible(true);
                     // @ts-ignore
-                    write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message);
-                    setAddingMarker({});
-                    read_data_hash(latitude, longitude, setUserData)
+                    // write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message);
+                    // setAddingMarker({});
+                    // read_data_hash(latitude, longitude, setUserData)
                   }
                 }}
               >
                 <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#246EE9', marginLeft: 5 }]}
                 >
-                  <Text style={{ color: 'white', fontSize: 20 }}>Confirm</Text>
+                  <Text style={{ color: 'white', fontSize: 20 }}>Next</Text>
                 </View>
               </TouchableOpacity>
             </View>

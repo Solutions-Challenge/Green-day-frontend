@@ -87,18 +87,27 @@ export default function HomeScreen({ navigation }: any) {
             </View>
         </>)
     }, [checked, onLongPress])
-    
+
     useEffect(()=>{
         setChecked(Array(data.length).fill(false))
     }, [data])
 
     const deleteRow = async (indices: number[]) => {
         let newData = [...data]
-        for (let i = 0; i < indices.length; i++) {
-            newData = newData.filter((e, index)=>(index !== indices[i]))
+
+        let ans:any = []
+        let temp = 0
+
+        for (let i = 0; i < newData.length; i++) {
+            if (indices[temp] === i) {
+                temp += 1
+            }
+            else {
+                ans.push(newData[i])
+            }
         }
-        setData(newData)
-        await AsyncStorage.setItem("multi", JSON.stringify(newData))
+        setData(ans)
+        await AsyncStorage.setItem("multi", JSON.stringify(ans))
     }
 
     const load = async () => {
