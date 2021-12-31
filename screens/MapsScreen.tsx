@@ -62,13 +62,14 @@ export default function App({ navigation }: any) {
   const [visible, setVisible] = useState(true)
   const [addingMarker, setAddingMarker] = useState({})
   const [userData, setUserData] = useState({} as any)
+  const [partialUserData, setPartialUserData] = useState({} as any)
   const [toggle, setToggle] = useState(false)
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
   const [mapType, setMapType] = useState(true)
   const [switchToConfirm, setSwitchToConfirm] = useState(false)
 
-  const [catIndex, setCatIndex] = useState(0)
+  const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
   let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
     setMapIndex(changed[0].key);
@@ -96,8 +97,8 @@ export default function App({ navigation }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: toggle ? userData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
-        longitude: toggle ? userData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
+        latitude: toggle ? partialUserData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? partialUserData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.007,
         longitudeDelta: 0.005
       }, 350)
@@ -229,7 +230,7 @@ export default function App({ navigation }: any) {
 
   const keyExtractor = useCallback(
     (item, index) => index.toString(),
-    [mapData, toggle, userData]
+    [mapData, toggle, userData, catIndex]
   )
 
   const getItemLayout = useCallback(
@@ -241,6 +242,25 @@ export default function App({ navigation }: any) {
     [mapData]
   )
 
+  useEffect(()=>{
+    if (catIndex === -1) {
+      setPartialUserData(userData)
+    }
+    else {
+      let filteredData = userData.filter((e:any)=>{return e.name == categories[catIndex-1].name})
+
+      console.log(filteredData)
+      
+      if (filteredData.length > 0) {
+        setPartialUserData(filteredData)
+      }
+      else {
+        setPartialUserData(userData)
+      }
+    }
+
+  }, [catIndex, userData])
+
   const renderItemUser = useCallback(
     ({ item }: any) => {
       return (
@@ -248,7 +268,7 @@ export default function App({ navigation }: any) {
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
               <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
-              <TouchableOpacity
+              <Touch
                 style={{ marginLeft: 'auto' }}
                 onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`) }}
               >
@@ -257,7 +277,7 @@ export default function App({ navigation }: any) {
                   <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
                   <Text>{item.name}</Text>
                 </View>
-              </TouchableOpacity>
+              </Touch>
             </View>
             <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
           </View>
@@ -282,7 +302,7 @@ export default function App({ navigation }: any) {
 
               {"photos" in item &&
                 <TouchableOpacity
-                  style={styles.button}
+                  style={[styles.button, {backgroundColor: '#246EE9'}]}
                   onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
                   <Text style={{ color: 'white' }}>Details</Text>
                 </TouchableOpacity>}
@@ -359,7 +379,7 @@ export default function App({ navigation }: any) {
           )
         })}
 
-        {canMap() && toggle && userData.map((e: any, index: any) => {
+        {canMap() && toggle && partialUserData.map((e: any, index: any) => {
           return (
             <Marker
               key={index}
@@ -395,7 +415,7 @@ export default function App({ navigation }: any) {
             longitudeDelta: 0.0001
           })}
           <View
-            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, top: 120, width: width - 40, height: 300, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
+            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, top: Platform.OS === 'ios' ? 140 : 120, width: width - 40, height: 300, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
           >
             {switchToConfirm ? <>
               <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
@@ -579,7 +599,7 @@ export default function App({ navigation }: any) {
               paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
             }}
             onScrollToIndexFailed={() => { }}
-            data={toggle ? userData : mapData.results}
+            data={toggle ? partialUserData : mapData.results}
             keyExtractor={keyExtractor}
             renderItem={canMap() && toggle ? renderItemUser : renderItem}
             getItemLayout={getItemLayout}
