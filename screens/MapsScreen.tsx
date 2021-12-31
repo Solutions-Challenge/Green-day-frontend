@@ -3,7 +3,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, Text, View, Dimensions, Linking, FlatList, LogBox } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { TouchableOpacity as Touch } from 'react-native';
-import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
@@ -242,15 +242,13 @@ export default function App({ navigation }: any) {
     [mapData]
   )
 
-  useEffect(()=>{
+  useEffect(() => {
     if (catIndex === -1) {
       setPartialUserData(userData)
     }
     else {
-      let filteredData = userData.filter((e:any)=>{return e.name == categories[catIndex-1].name})
+      let filteredData = userData.filter((e: any) => { return e.name == categories[catIndex - 1].name })
 
-      console.log(filteredData)
-      
       if (filteredData.length > 0) {
         setPartialUserData(filteredData)
       }
@@ -302,7 +300,7 @@ export default function App({ navigation }: any) {
 
               {"photos" in item &&
                 <TouchableOpacity
-                  style={[styles.button, {backgroundColor: '#246EE9'}]}
+                  style={[styles.button, { backgroundColor: '#246EE9' }]}
                   onPress={() => { Linking.openURL(findLink(item.photos[0].html_attributions[0])) }}>
                   <Text style={{ color: 'white' }}>Details</Text>
                 </TouchableOpacity>}
@@ -501,6 +499,7 @@ export default function App({ navigation }: any) {
                     }
                     else {
                       setSwitchToConfirm(true)
+                      setCatIndex(-1)
                     }
 
                   }
@@ -550,7 +549,7 @@ export default function App({ navigation }: any) {
         </View>
       </View>
       {
-        visible && (<>
+        visible && partialUserData.length > 0 && (<>
 
 
           <FlatList
@@ -563,7 +562,8 @@ export default function App({ navigation }: any) {
             data={categories}
             renderItem={({ item }: any) => {
               return (
-                (item.key != 0 ? <TouchableOpacity
+                (item.key != 0 ? <>
+                <TouchableOpacity
                   key={item.key}
                   onPress={() => {
                     setCatIndex(item.key)
@@ -571,7 +571,16 @@ export default function App({ navigation }: any) {
                   style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
                   <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
                   <Text>{item.name}</Text>
-                </TouchableOpacity> : <View key={item.key} />)
+                </TouchableOpacity> 
+                {item.key === catIndex &&
+                    <View style={{ backgroundColor:'white', borderRadius: 15, width: 30, height: 30, top: 3 }}>
+                      <Touch style={{alignSelf: 'center', bottom: 0.5}} onPress={() => { setCatIndex(-1) }}>
+                        <Feather name="x-circle" size={30} color="black" />
+                      </Touch>
+                    </View>
+                  }
+                </>: 
+                <View key={item.key} />)
               )
             }}
           >
