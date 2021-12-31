@@ -32,17 +32,19 @@ const geoData = collection(db, "geoLocation");
 export const write_data_hash = async (
   latitude: number,
   longitude: number,
-  name: string,
+  title: string,
   message: string,
-  imageIndex: number
+  icon: string,
+  name: string
 ) => {
   // Compute the GeoHash for a lat/lng point
   const hash = geofire.geohashForLocation([latitude, longitude]);
 
   addDoc(geoData, {
-    title: name,
+    title: title,
     description: message,
-    imageIndex: imageIndex,
+    icon: icon,
+    name: name,
     coordinates: new GeoPoint(latitude, longitude),
     hash: hash
   });

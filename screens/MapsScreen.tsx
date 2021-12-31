@@ -60,7 +60,7 @@ export default function App({ navigation }: any) {
   const [addingMarker, setAddingMarker] = useState({})
   const [userData, setUserData] = useState({} as any)
   const [toggle, setToggle] = useState(false)
-  const [name, setName] = useState('')
+  const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
   const [mapType, setMapType] = useState(true)
   const [switchToConfirm, setSwitchToConfirm] = useState(false)
@@ -240,7 +240,6 @@ export default function App({ navigation }: any) {
 
   const renderItemUser = useCallback(
     ({ item }: any) => {
-      console.log(userData, 'testing...')
       return (
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
           <View style={styles.textContent}>
@@ -252,8 +251,8 @@ export default function App({ navigation }: any) {
               >
                 <View
                   style={[styles.chipsItem, { backgroundColor: "white", width: 130 }]}>
-                  <Image source={categories[item.imageIndex].icon} style={{ width: 20, height: 20, marginRight: 5 }} />
-                  <Text>{categories[item.imageIndex].name}</Text>
+                  <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
+                  <Text>{item.name}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -393,7 +392,7 @@ export default function App({ navigation }: any) {
             longitudeDelta: 0.0001
           })}
           <View
-            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, width: width - 40, height: 300, top: 50, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
+            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, top: 120, width: width - 40, height: 300, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
           >
             {switchToConfirm ? <>
               <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
@@ -406,7 +405,7 @@ export default function App({ navigation }: any) {
                         setCatIndex(item.key)
                       }}
                       style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white", marginBottom: 10, width: 130 }]}>
-                      <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                      <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
                       <Text>{item.name}</Text>
                     </TouchableOpacity>
                   </>)
@@ -418,14 +417,14 @@ export default function App({ navigation }: any) {
                 <TextInput
                   placeholder={"Title: "}
                   autoComplete={''}
-                  error={name === ""}
+                  error={title === ""}
                   placeholderTextColor={'black'}
                   mode={"outlined"}
                   multiline={false}
                   dense={true}
                   style={styles.inputStyle}
-                  value={name}
-                  onChangeText={(res) => setName(res)} />
+                  value={title}
+                  onChangeText={(res) => setTitle(res)} />
                 <TextInput
                   placeholder={"Description: "}
                   autoComplete={''}
@@ -447,7 +446,11 @@ export default function App({ navigation }: any) {
                     setSwitchToConfirm(false)
                   }
                   else {
-                    setVisible(true); setAddingMarker({}); setCatIndex(-1)
+                    setVisible(true);
+                    setAddingMarker({});
+                    setCatIndex(-1);
+                    setTitle('');
+                    setMessage('')
                   }
                 }}
               >
@@ -459,14 +462,19 @@ export default function App({ navigation }: any) {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  if (name !== "" && message !== "") {
+                  if (title !== "" && message !== "") {
 
-                    if (switchToConfirm) {
+                    if (switchToConfirm && catIndex !== -1) {
                       setVisible(true);
                       //@ts-ignore
-                      write_data_hash(addingMarker.latitude, addingMarker.longitude, name, message);
+                      write_data_hash(addingMarker.latitude, addingMarker.longitude, title, message, categories[catIndex - 1].icon, categories[catIndex - 1].name);
+                      setVisible(true);
                       setAddingMarker({});
-                      read_data_hash(latitude, longitude, setUserData)
+                      setCatIndex(-1);
+                      setTitle('');
+                      setMessage('');
+                      setSwitchToConfirm(false);
+                      read_data_hash(latitude, longitude, setUserData);
                     }
                     else {
                       setSwitchToConfirm(true)
@@ -500,27 +508,27 @@ export default function App({ navigation }: any) {
         </>)
       }
 
+      <View style={styles.searchBox}>
+        <View style={{ backgroundColor: 'white', width: '50%', borderRadius: 10 }}>
+          <TouchableOpacity
+            style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9' : 'white' }}
+            onPress={() => setMapType(true)}
+          >
+            <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white' : 'black' }}>Standard</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ backgroundColor: "white", width: '50%', borderRadius: 10 }}>
+          <TouchableOpacity
+            style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9' : 'white' }}
+            onPress={() => setMapType(false)}
+          >
+            <Text style={{ color: !mapType ? 'white' : 'black' }}>Satellite</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       {
         visible && (<>
 
-          <View style={styles.searchBox}>
-            <View style={{ backgroundColor: 'white', width: '50%', borderRadius: 10 }}>
-              <TouchableOpacity
-                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9' : 'white' }}
-                onPress={() => setMapType(true)}
-              >
-                <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white' : 'black' }}>Standard</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ backgroundColor: "white", width: '50%', borderRadius: 10 }}>
-              <TouchableOpacity
-                style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9' : 'white' }}
-                onPress={() => setMapType(false)}
-              >
-                <Text style={{ color: !mapType ? 'white' : 'black' }}>Satellite</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
 
           <FlatList
             horizontal
@@ -538,7 +546,7 @@ export default function App({ navigation }: any) {
                     setCatIndex(item.key)
                   }}
                   style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
-                  <Image source={item.icon} style={{ width: 20, height: 20, marginRight: 5 }} />
+                  <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
                   <Text>{item.name}</Text>
                 </TouchableOpacity> : <View key={item.key} />)
               )
