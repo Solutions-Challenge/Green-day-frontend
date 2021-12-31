@@ -1,6 +1,8 @@
 import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, Linking, FlatList, LogBox } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Linking, FlatList, LogBox } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity as Touch } from 'react-native';
 import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
@@ -19,6 +21,7 @@ import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
 import { read_data_hash, write_data_hash } from '../api/firebase';
 import { TextInput } from 'react-native-paper'
+
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -455,7 +458,7 @@ export default function App({ navigation }: any) {
                 }}
               >
                 <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: switchToConfirm ? '#246EE9' : '#F07470', marginRight: 5 }]}
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, borderWidth: 1, backgroundColor: 'transparent', borderColor: switchToConfirm ? '#246EE9' : '#F07470', marginRight: 5 }]}
                 >
                   <Text style={{ color: switchToConfirm ? '#246EE9' : '#F07470', fontSize: 20 }}>{switchToConfirm ? "Previous" : "Cancel"}</Text>
                 </View>
@@ -484,7 +487,7 @@ export default function App({ navigation }: any) {
                 }}
               >
                 <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: switchToConfirm ? '#a4d2ac' : '#246EE9', marginLeft: 5 }]}
+                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, backgroundColor: switchToConfirm ? '#a4d2ac' : '#246EE9', marginLeft: 5 }]}
                 >
                   <Text style={{ color: 'white', fontSize: 20 }}>{switchToConfirm ? "Confirm" : "Next"}</Text>
                 </View>
@@ -511,7 +514,7 @@ export default function App({ navigation }: any) {
       <View style={styles.searchBox}>
         <View style={{ backgroundColor: 'white', width: '50%', borderRadius: 10 }}>
           <TouchableOpacity
-            style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9' : 'white' }}
+            style={{ alignSelf: 'center', height: 35, top: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9' : 'white' }}
             onPress={() => setMapType(true)}
           >
             <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white' : 'black' }}>Standard</Text>
@@ -519,10 +522,10 @@ export default function App({ navigation }: any) {
         </View>
         <View style={{ backgroundColor: "white", width: '50%', borderRadius: 10 }}>
           <TouchableOpacity
-            style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9' : 'white' }}
+            style={{ alignSelf: 'center', height: 35, top: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9' : 'white' }}
             onPress={() => setMapType(false)}
           >
-            <Text style={{ color: !mapType ? 'white' : 'black' }}>Satellite</Text>
+            <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: !mapType ? 'white' : 'black' }}>Satellite</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -582,12 +585,12 @@ export default function App({ navigation }: any) {
             getItemLayout={getItemLayout}
           >
           </FlatList>
-          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
+          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
             <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
               <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
             </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
+          </Touch>
+          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
             <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
               {
                 !toggle ?
@@ -595,7 +598,7 @@ export default function App({ navigation }: any) {
                   <Ionicons name="search-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
               }
             </View>
-          </TouchableOpacity>
+          </Touch>
         </>)
       }
 
@@ -698,6 +701,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
+    height: 35,
     width: 80,
     backgroundColor: '#190c8d'
   },
