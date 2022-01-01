@@ -1,9 +1,9 @@
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef, useState } from 'react'
-import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -17,6 +17,8 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
     const imageWidth = item.width / 3
     const colorScheme = useColorScheme()
     const [ifMLData, setIfMLData] = useState(!("mlData" in item.multi[0]))
+    const [catIndex, setCatIndex] = useState(0)
+
 
     const goBack = () => {
         navigation.navigate('Home')
@@ -26,33 +28,61 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
         return !("mlData" in item.multi[0])
     }
 
+    const renderItem: ListRenderItem<any> = useCallback(({ item, index }) => {
+
+        console.log(item)
+        return (
+
+            <TouchableOpacity
+                onPress={() => {
+                    setCatIndex(index)
+                }}
+                key={index}
+                style={[styles.chipsItem, { backgroundColor: index === catIndex ? "#ADD8E6" : "white" }]}>
+                <Text>{item.Material}</Text>
+            </TouchableOpacity>
+
+        )
+    }, [ifMLData, catIndex])
+
     useEffect(() => {
         (async () => {
             if (ifMLData) {
                 let formData = new FormData();
-           
+
+                let temp = 0
                 for (let i = 0; i < item.multi.length; i++) {
                     let filename = item.multi[i].croppedImage.split('/').pop();
                     let match = /\.(\w+)$/.exec(filename as string);
                     let type = match ? `image/${match[1]}` : `image`;
                     // @ts-ignore
                     formData.append('files[]', { uri: item.multi[i].croppedImage, name: filename, type });
-                }
 
-                const MLRequest = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/predict', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'content-type': 'multipart/form-data'
+                    if (i % 2 === 0 && i !== 0 || i+1 == item.multi.length) {
+                        console.log(formData)
+                        const MLRequest = await fetch('http://10.0.0.222:8080/predict', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'content-type': 'multipart/form-data'
+                            }
+                        })
+
+                        const MLdata = await MLRequest.json()
+
+                        for (let j = 0; j <= temp; j ++) {
+                            console.log(i-j)
+                            if (i-j < item.multi.length) {
+                                item.multi[i-j].mlData = MLdata.success[j]
+                            }
+                        }
+
+                        formData = new FormData()
+                        temp = 0
                     }
-                })
-                const MLdata = await MLRequest.json()
-
-                
-                for (let i = 0; i < item.multi.length; i++) {
-                    console.log(MLdata.success[i])
-                    item.multi[i].mlData = MLdata.success[i]
+                    temp+=1
                 }
+
                 setIfMLData(false)
             }
         })();
@@ -70,21 +100,37 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                                 <Text style={{ color: 'white', fontSize: 20, textAlign: 'center', marginTop: 'auto', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>{e.name}</Text>
                             </ImageBackground>
 
-                            {ifMLData ?
+                            { !("mlData" in item.multi[0]) ?
                                 <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" /> :
-                                <Text style={{marginLeft: 'auto', marginRight: 'auto', color: colorScheme === "dark" ? "white":"black"}}>{item.multi[index].mlData.Material}</Text>    
+
+                                <View style={{ flexDirection: 'column', flex: 1 }}>
+                                    <>
+                                        <FlatList
+                                            horizontal
+                                            showsHorizontalScrollIndicator={false}
+                                            contentContainerStyle={{
+                                                paddingRight: 20
+                                            }}
+                                            data={item.multi[index].mlData}
+                                            renderItem={renderItem}
+                                        />
+                                    </>
+                                    {/* <Text>{item.multi[index].mlData[catIndex].Recyclability}</Text> */}
+                                </View>
+
                             }
+
                         </View>
                     )
                 })}
-            </ScrollView>
+            </ScrollView >
 
             <View style={{ position: 'absolute', top: flipPosition - 100, right: 10, backgroundColor: 'black', borderRadius: 15 }}>
                 <TouchableOpacity onPress={goBack}>
                     <MaterialIcons name="cancel" size={30} color="white" />
                 </TouchableOpacity>
             </View>
-        </View>
+        </View >
     )
 }
 
@@ -98,7 +144,21 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         height: 30,
         width: 130
-    }
+    },
+    chipsItem: {
+        flexDirection: "row",
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 8,
+        paddingHorizontal: 20,
+        marginHorizontal: 10,
+        height: 35,
+        shadowColor: '#ccc',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation: 10,
+    },
 })
 
 export default ExpandImageScreen

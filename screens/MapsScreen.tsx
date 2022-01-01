@@ -567,6 +567,7 @@ export default function App({ navigation }: any) {
                   key={item.key}
                   onPress={() => {
                     setCatIndex(item.key)
+                    setToggle(true)
                   }}
                   style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
                   <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
