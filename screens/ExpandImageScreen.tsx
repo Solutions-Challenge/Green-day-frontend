@@ -14,9 +14,19 @@ const windowWidth = Dimensions.get('window').width;
 
 const ExpandImageScreen = ({ route, navigation }: any) => {
     const { item } = route.params
-    const imageWidth = item.width / 3
     const colorScheme = useColorScheme()
-    const [ifMLData, setIfMLData] = useState(!("mlData" in item.multi[0]))
+
+    let copy = []
+    for (let i = 0; i < item.multi.length; i++) {
+        if ("mlData" in item.multi[i]) {
+            copy.push(true)
+        } 
+        else {
+            copy.push(false)
+        }
+    }
+    const [ifMLData, setIfMLData] = useState(copy)
+
     const [catIndex, setCatIndex] = useState(0)
 
 
@@ -24,15 +34,8 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
         navigation.navigate('Home')
     }
 
-    const needToProcess = () => {
-        return !("mlData" in item.multi[0])
-    }
-
     const renderItem: ListRenderItem<any> = useCallback(({ item, index }) => {
-
-        console.log(item)
         return (
-
             <TouchableOpacity
                 onPress={() => {
                     setCatIndex(index)
@@ -47,10 +50,10 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
 
     useEffect(() => {
         (async () => {
-            if (ifMLData) {
+            if (!ifMLData[0]) {
                 let formData = new FormData();
-
                 let temp = 0
+
                 for (let i = 0; i < item.multi.length; i++) {
                     let filename = item.multi[i].croppedImage.split('/').pop();
                     let match = /\.(\w+)$/.exec(filename as string);
@@ -58,9 +61,8 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                     // @ts-ignore
                     formData.append('files[]', { uri: item.multi[i].croppedImage, name: filename, type });
 
-                    if (i % 2 === 0 && i !== 0 || i+1 == item.multi.length) {
-                        console.log(formData)
-                        const MLRequest = await fetch('http://10.0.0.222:8080/predict', {
+                    if (temp == 2 || i + 1 == item.multi.length) {
+                        const MLRequest = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/predict', {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -70,23 +72,35 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
 
                         const MLdata = await MLRequest.json()
 
-                        for (let j = 0; j <= temp; j ++) {
-                            console.log(i-j)
-                            if (i-j < item.multi.length) {
-                                item.multi[i-j].mlData = MLdata.success[j]
-                            }
+                        let ifmlCopy = [...ifMLData]
+                        for (let j = temp; j >= 0; j--) {
+                            item.multi[i - j].mlData = MLdata.success[j]
+                            ifmlCopy[i - j] = true
                         }
 
-                        formData = new FormData()
-                        temp = 0
-                    }
-                    temp+=1
-                }
+                        let k = 0
+                        while (ifmlCopy[k] == false) {
+                            ifmlCopy[k] = true
+                            k++
+                        }
 
-                setIfMLData(false)
+                        setIfMLData(ifmlCopy)
+
+                        temp = -1
+                        formData = new FormData()
+
+                    }
+
+                    temp += 1
+                }
             }
         })();
     }, []);
+
+    const keyExtractor = useCallback(
+        (item, index) => index.toString(),
+        []
+    )
 
     return (
 
@@ -100,9 +114,7 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                                 <Text style={{ color: 'white', fontSize: 20, textAlign: 'center', marginTop: 'auto', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>{e.name}</Text>
                             </ImageBackground>
 
-                            { !("mlData" in item.multi[0]) ?
-                                <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" /> :
-
+                            {ifMLData[index] ?
                                 <View style={{ flexDirection: 'column', flex: 1 }}>
                                     <>
                                         <FlatList
@@ -113,10 +125,13 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                                             }}
                                             data={item.multi[index].mlData}
                                             renderItem={renderItem}
+                                            keyExtractor={keyExtractor}
                                         />
                                     </>
                                     {/* <Text>{item.multi[index].mlData[catIndex].Recyclability}</Text> */}
                                 </View>
+                                :
+                                <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" />
 
                             }
 
@@ -162,3 +177,35 @@ const styles = StyleSheet.create({
 })
 
 export default ExpandImageScreen
+
+
+// if (i % 2 === 0 && i !== 0 || i + 1 == item.multi.length) {
+                    //     const MLRequest = await fetch('http://10.0.0.222:8080/predict', {
+                    //         method: 'POST',
+                    //         body: formData,
+                    //         headers: {
+                    //             'content-type': 'multipart/form-data'
+                    //         }
+                    //     })
+
+                    //     const MLdata = await MLRequest.json()
+
+                    //     for (let j = 0; j <= temp; j++) {
+
+                    //         if (i - j < item.multi.length) {
+                    //             if ("success" in MLdata) {
+                    //                 item.multi[i - j].mlData = MLdata.success[j]
+                    //             }
+                    //             else {
+                    //                 item.multi[i - j].mlData = [{
+                    //                     "Material": "None",
+                    //                     "Recyclability": "None"
+                    //                 }]
+                    //                 console.log(MLdata.error)
+                    //             }
+                    //         }
+                    //     }
+
+                    //     formData = new FormData()
+                    //     temp = 0
+                    // }

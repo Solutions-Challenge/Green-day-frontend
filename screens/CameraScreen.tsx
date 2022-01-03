@@ -245,7 +245,15 @@ export default function CameraScreen({ navigation }: any) {
             width={windowWidth}
             height={windowHeight}
           >
-            <Rect x={0} y={(windowHeight - windowWidth) / 2} width={windowWidth} height={windowWidth} stroke="white" strokeWidth="5" />
+            <Rect
+              x={8}
+              rx={20}
+              y={(windowHeight - windowWidth) / 2}
+              width={windowWidth - 16}
+              height={windowWidth}
+              stroke="rgba(255, 255, 255, .4)"
+              strokeWidth="3"
+            />
           </Svg>
 
         </Camera>}

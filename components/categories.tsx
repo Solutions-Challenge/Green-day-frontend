@@ -37,4 +37,22 @@ const categories = [
   },
 ] 
 
+
+// General Vs. Specific
+
+// General:
+// Recyclable, Bio-compostable, Landfill
+
+// Specific:
+// Batteries, waste Oil, scrap metal (maybe), electronics, glass, cardboard
+
+// Steps:
+
+// 1: Take a picture of a trash can and give options to mark it as a user-generated marker (longest) 
+// 2: Convert (lat, lng) data to address given a certain distance away (low-priority) 
+// 3: (Albert) create a function to determine if valid address 
+// 4: Details: improve the ai to get top 3 predictions
+// 5: how to categorize ML and map data
+
+
 export default categories
