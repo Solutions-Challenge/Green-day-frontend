@@ -1,7 +1,7 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import * as React from 'react'
 import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList } from 'react-native';
-
+import BottomSheet from 'reanimated-bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
 import ImageContext from '../hooks/imageContext';
@@ -9,8 +9,10 @@ import { osName } from 'expo-device';
 
 import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
+import ExpandImageScreen from './ExpandImageScreen';
 
 const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const divNum = windowWidth < 600 ? 4 : 3
 
@@ -22,9 +24,11 @@ export default function HomeScreen({ navigation }: any) {
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
     const [imageWidth, setImageWidth] = useState(windowWidth / 1.5)
+    const [itemData, setItemData] = useState(null)
 
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
+    const bs = useRef<BottomSheet>(null)
 
     const onLongPressIn = () => {
         setOnLongPress(true)
@@ -58,7 +62,12 @@ export default function HomeScreen({ navigation }: any) {
                             <TouchableOpacity
                                 activeOpacity={1}
                                 onLongPress={() => onLongPressIn()}
-                                onPress={() => { navigation.push('Details', { item }) }}
+                                onPress={() => { 
+                                    setItemData(item)
+                                    setTimeout(()=>{
+                                        bs?.current?.snapTo(0)
+                                    }, 300)
+                                }}
                             >
                                 <ImageBackground
                                     source={{ uri: item.uri }}
@@ -88,14 +97,14 @@ export default function HomeScreen({ navigation }: any) {
         </>)
     }, [checked, onLongPress])
 
-    useEffect(()=>{
+    useEffect(() => {
         setChecked(Array(data.length).fill(false))
     }, [data])
 
     const deleteRow = async (indices: number[]) => {
         let newData = [...data]
 
-        let ans:any = []
+        let ans: any = []
         let temp = 0
 
         for (let i = 0; i < newData.length; i++) {
@@ -130,8 +139,30 @@ export default function HomeScreen({ navigation }: any) {
         })();
     }, [uri]);
 
+    const renderHeader = () => (
+        <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+          <View style={styles.panelHeader}>
+            <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
+          </View>
+        </View>
+      )
+
     const Root = () => {
         return (<>
+            <BottomSheet
+                ref={bs}
+                snapPoints={[windowHeight-60, 0]}
+                initialSnap={1}
+                renderContent={() => {
+                    return (
+                        itemData && <ExpandImageScreen item={itemData} />
+                    )
+                }}
+                renderHeader={renderHeader}
+                enabledGestureInteraction={true}
+                enabledInnerScrolling={false}
+                enabledContentGestureInteraction={false}
+            />
             {data.length === 0 ? (<>
                 <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>
@@ -153,40 +184,40 @@ export default function HomeScreen({ navigation }: any) {
                 </View>
 
                 {onLongPress &&
-                <View style={{ marginLeft: 'auto', marginRight: 'auto', bottom: 130, backgroundColor: colorScheme === "dark" ? '#181818' : "white", padding: 20, borderRadius: 10 }}>
-                    <View style={{ flexDirection: 'row' }}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                setChecked(new Array(11).fill(false))
-                                setOnLongPress(false)
-                            }}
-                        >
-                            <View
-                                style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#AAAFB4', marginRight: 5 }]}
+                    <View style={{ marginLeft: 'auto', marginRight: 'auto', bottom: 130, backgroundColor: colorScheme === "dark" ? '#181818' : "white", padding: 20, borderRadius: 10 }}>
+                        <View style={{ flexDirection: 'row' }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setChecked(new Array(11).fill(false))
+                                    setOnLongPress(false)
+                                }}
                             >
-                                <Text style={{ color: '#AAAFB4', fontSize: 20 }}>Cancel</Text>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => {
-                                let indicesToRemove = []
-                                for (let i = 0; i < checked.length; i++) {
-                                    if (checked[i]) {
-                                        indicesToRemove.push(i)
+                                <View
+                                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#AAAFB4', marginRight: 5 }]}
+                                >
+                                    <Text style={{ color: '#AAAFB4', fontSize: 20 }}>Cancel</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    let indicesToRemove = []
+                                    for (let i = 0; i < checked.length; i++) {
+                                        if (checked[i]) {
+                                            indicesToRemove.push(i)
+                                        }
                                     }
-                                }
-                                deleteRow(indicesToRemove)
-                                setOnLongPress(false)
-                            }}
-                        >
-                            <View
-                                style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#F07470', marginLeft: 5 }]}
+                                    deleteRow(indicesToRemove)
+                                    setOnLongPress(false)
+                                }}
                             >
-                                <Text style={{ color: 'white', fontSize: 20 }}>DELETE</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </View>}
+                                <View
+                                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, backgroundColor: '#F07470', marginLeft: 5 }]}
+                                >
+                                    <Text style={{ color: 'white', fontSize: 20 }}>DELETE</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </View>}
             </>)}
         </>
         );
@@ -252,4 +283,50 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 2,
     },
+    panel: {
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+        paddingTop: 20,
+      },
+      header: {
+        backgroundColor: '#FFFFFF',
+        shadowColor: '#333333',
+        shadowOffset: { width: -1, height: -3 },
+        shadowRadius: 2,
+        shadowOpacity: 0.4,
+        paddingTop: 20,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+      },
+      panelHeader: {
+        alignItems: 'center',
+      },
+      panelHandle: {
+        width: 40,
+        height: 8,
+        borderRadius: 4,
+        marginBottom: 10,
+      },
+      panelTitle: {
+        fontSize: 27,
+        height: 35,
+      },
+      panelSubtitle: {
+        fontSize: 14,
+        color: 'gray',
+        height: 30,
+        marginBottom: 10,
+      },
+      panelButton: {
+        padding: 13,
+        borderRadius: 10,
+        backgroundColor: '#FF6347',
+        alignItems: 'center',
+        marginVertical: 7,
+      },
+      panelButtonTitle: {
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: 'white',
+      },
 });

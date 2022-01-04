@@ -12,43 +12,36 @@ let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number
 const windowWidth = Dimensions.get('window').width;
 
 
-const ExpandImageScreen = ({ route, navigation }: any) => {
-    const { item } = route.params
+const ExpandImageScreen = ({ route, navigation, item }: any) => {
     const colorScheme = useColorScheme()
 
     let copy = []
     for (let i = 0; i < item.multi.length; i++) {
         if ("mlData" in item.multi[i]) {
             copy.push(true)
-        } 
+        }
         else {
             copy.push(false)
         }
     }
     const [ifMLData, setIfMLData] = useState(copy)
-
     const [catIndex, setCatIndex] = useState(Array(copy.length).fill(0))
+    const [index, setIndex] = useState(0)
+    const windowHeight = Dimensions.get('window').height;
+    const _scrollView = useRef<any>(null)
+
+    const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 100, })
+    let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
+        setIndex(changed[0].key);
+    })
+
+    const scrollX = new Animated.Value(0)
+    let position = Animated.divide(scrollX, windowWidth)
 
 
     const goBack = () => {
         navigation.navigate('Home')
     }
-
-    const renderItem: ListRenderItem<any> = useCallback(({ item, index }) => {
-        return (
-            <TouchableOpacity
-                onPress={() => {
-                    let catCopy = [...catIndex]
-                    catCopy[item.position] = index
-                    setCatIndex(catCopy)
-                }}
-                key={index}
-                style={[styles.chipsItem, { backgroundColor: index === catIndex[item.position] ? "#ADD8E6" : "white", marginTop: 20 }]}>
-                <Text>{item.Material}</Text>
-            </TouchableOpacity>
-
-        )
-    }, [ifMLData, catIndex])
 
     useEffect(() => {
         (async () => {
@@ -77,8 +70,8 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                         let ifmlCopy = [...ifMLData]
                         for (let j = temp; j >= 0; j--) {
                             item.multi[i - j].mlData = MLdata.success[j]
-                            for (let k = 0; k < item.multi[i-j].mlData.length; k++) {
-                                item.multi[i - j].mlData[k].position = i-j
+                            for (let k = 0; k < item.multi[i - j].mlData.length; k++) {
+                                item.multi[i - j].mlData[k].position = i - j
                             }
                             ifmlCopy[i - j] = true
                         }
@@ -107,50 +100,98 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
         []
     )
 
-    return (
-
-
-        <View style={{ marginTop: 120, alignItems: 'center', alignSelf: 'center' }}>
-            <ScrollView>
-                {item.multi.map((e: any, index: number) => {
-                    return (
-                        <View key={index} style={{ width: windowWidth - 40, backgroundColor: colorScheme === "dark" ? '#181818' : '#fff', marginBottom: 20, borderRadius: 10, flexDirection: 'row' }}>
-                            <ImageBackground source={{ uri: e.croppedImage }} style={{ width: windowWidth / 3, height: windowWidth / 3, borderBottomLeftRadius: 10, borderTopLeftRadius: 10, overflow: 'hidden' }}>
-                                <Text style={{ color: 'white', fontSize: 20, textAlign: 'center', marginTop: 'auto', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>{e.name}</Text>
-                            </ImageBackground>
-
-                            {ifMLData[index] ?
-                                <View style={{ flexDirection: 'column', flex: 1 }}>
-                                    <>
-                                        <FlatList
-                                            horizontal
-                                            showsHorizontalScrollIndicator={false}
-                                            contentContainerStyle={{
-                                                paddingRight: 20
-                                            }}
-                                            data={item.multi[index].mlData}
-                                            renderItem={renderItem}
-                                            keyExtractor={keyExtractor}
-                                        />
-                                    </>
-                                    <Text>{item.multi[index].mlData[catIndex[item.multi[index].mlData[0].position]].Recyclability}</Text>
-                                </View>
-                                :
-                                <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" />
-
-                            }
-
-                        </View>
-                    )
-                })}
-            </ScrollView >
-
-            <View style={{ position: 'absolute', top: flipPosition - 100, right: 10, backgroundColor: 'black', borderRadius: 15 }}>
-                <TouchableOpacity onPress={goBack}>
-                    <MaterialIcons name="cancel" size={30} color="white" />
-                </TouchableOpacity>
+    const renderItem: ListRenderItem<any> = useCallback(({ item, index }) => {
+        return (
+            <View style={styles.cardView}>
+                <Image style={styles.image} source={{ uri: item.croppedImage }} />
+                <View style={styles.textView}>
+                    <Text style={styles.itemTitle}>{item.name}</Text>
+                </View>
             </View>
-        </View >
+        )
+    }, [ifMLData])
+
+    useEffect(()=>{
+        if (ifMLData[index]) {
+            _scrollView?.current?.scrollToIndex({ index: 0, animated: true, viewOffset: 0.5 })
+        }
+    }, [index])
+
+    const chipItem: ListRenderItem<any> = useCallback(({ item, index }) => {
+        return (
+            <TouchableOpacity
+                onPress={() => {
+                    let catCopy = [...catIndex]
+                    catCopy[item.position] = index
+                    setCatIndex(catCopy)
+                }}
+                key={index}
+                style={[styles.chipsItem, { backgroundColor: index === catIndex[item.position] ? "#ADD8E6" : "white", marginTop: 20, marginLeft: 5, marginRight: 5 }]}>
+                <Text>{item.Material}</Text>
+            </TouchableOpacity>
+
+        )
+    }, [ifMLData, catIndex])
+
+
+
+    return (
+        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight }}>
+            <FlatList
+                onViewableItemsChanged={onViewableItemsChanged.current}
+                viewabilityConfig={viewConfigRef.current}
+                data={item.multi}
+                renderItem={renderItem}
+                keyExtractor={keyExtractor}
+                horizontal
+                pagingEnabled
+                scrollEnabled
+                snapToAlignment='center'
+                scrollEventThrottle={16}
+                decelerationRate={'fast'}
+                showsHorizontalScrollIndicator={false}
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                    { useNativeDriver: false }
+                )}
+            />
+
+            <View style={{height: 300, marginBottom: windowHeight - 1.3*(windowWidth) }}>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    {item.multi.map((_: any, i: any) => {
+                        let opacity = position.interpolate({
+                            inputRange: [i - 1, i, i + 1],
+                            outputRange: [0.3, 1, 0.3],
+                            extrapolate: 'clamp'
+                        })
+
+                        return (<>
+                            <Animated.View
+                                key={i}
+                                style={{ opacity, height: 10, width: 10, backgroundColor: '#595959', margin: 8, borderRadius: 5 }}
+                            />
+                        </>)
+                    })}
+                </View>
+
+                {ifMLData[index] ?
+                    <FlatList
+                        horizontal
+                        ref={_scrollView}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{
+                            paddingRight: 20
+                        }}
+                        data={item.multi[index].mlData}
+                        renderItem={chipItem}
+                        keyExtractor={keyExtractor}
+                    />:
+                    <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" />
+
+                }
+            </View >
+        </View>
     )
 }
 
@@ -179,38 +220,49 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
         elevation: 10,
     },
+    cardView: {
+        flex: 1,
+        width: windowWidth - 20,
+        height: windowWidth / 2,
+        backgroundColor: 'white',
+        margin: 10,
+        borderRadius: 10,
+        shadowOffset: { width: 0.5, height: 0.5 },
+        shadowOpacity: 0.5,
+        shadowRadius: 3,
+        elevation: 5
+    },
+    textView: {
+        position: 'absolute',
+        bottom: 10,
+        margin: 10,
+        left: 5
+    },
+    image: {
+        width: windowWidth - 20,
+        height: windowWidth / 2,
+        borderRadius: 10
+    },
+    itemTitle: {
+        color: 'white',
+        fontSize: 22,
+        shadowColor: '#000',
+        shadowOffset: { width: 0.8, height: 0.8 },
+        shadowOpacity: 1,
+        shadowRadius: 3,
+        marginBottom: 5,
+        fontWeight: 'bold',
+        elevation: 5
+    },
+    itemDescription: {
+        color: 'white',
+        fontSize: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0.8, height: 0.8 },
+        shadowOpacity: 1,
+        shadowRadius: 3,
+        elevation: 5
+    }
 })
 
 export default ExpandImageScreen
-
-
-// if (i % 2 === 0 && i !== 0 || i + 1 == item.multi.length) {
-                    //     const MLRequest = await fetch('http://10.0.0.222:8080/predict', {
-                    //         method: 'POST',
-                    //         body: formData,
-                    //         headers: {
-                    //             'content-type': 'multipart/form-data'
-                    //         }
-                    //     })
-
-                    //     const MLdata = await MLRequest.json()
-
-                    //     for (let j = 0; j <= temp; j++) {
-
-                    //         if (i - j < item.multi.length) {
-                    //             if ("success" in MLdata) {
-                    //                 item.multi[i - j].mlData = MLdata.success[j]
-                    //             }
-                    //             else {
-                    //                 item.multi[i - j].mlData = [{
-                    //                     "Material": "None",
-                    //                     "Recyclability": "None"
-                    //                 }]
-                    //                 console.log(MLdata.error)
-                    //             }
-                    //         }
-                    //     }
-
-                    //     formData = new FormData()
-                    //     temp = 0
-                    // }
