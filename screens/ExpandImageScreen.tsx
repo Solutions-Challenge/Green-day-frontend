@@ -27,7 +27,7 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
     }
     const [ifMLData, setIfMLData] = useState(copy)
 
-    const [catIndex, setCatIndex] = useState(0)
+    const [catIndex, setCatIndex] = useState(Array(copy.length).fill(0))
 
 
     const goBack = () => {
@@ -38,10 +38,12 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
         return (
             <TouchableOpacity
                 onPress={() => {
-                    setCatIndex(index)
+                    let catCopy = [...catIndex]
+                    catCopy[item.position] = index
+                    setCatIndex(catCopy)
                 }}
                 key={index}
-                style={[styles.chipsItem, { backgroundColor: index === catIndex ? "#ADD8E6" : "white" }]}>
+                style={[styles.chipsItem, { backgroundColor: index === catIndex[item.position] ? "#ADD8E6" : "white", marginTop: 20 }]}>
                 <Text>{item.Material}</Text>
             </TouchableOpacity>
 
@@ -75,6 +77,9 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                         let ifmlCopy = [...ifMLData]
                         for (let j = temp; j >= 0; j--) {
                             item.multi[i - j].mlData = MLdata.success[j]
+                            for (let k = 0; k < item.multi[i-j].mlData.length; k++) {
+                                item.multi[i - j].mlData[k].position = i-j
+                            }
                             ifmlCopy[i - j] = true
                         }
 
@@ -128,7 +133,7 @@ const ExpandImageScreen = ({ route, navigation }: any) => {
                                             keyExtractor={keyExtractor}
                                         />
                                     </>
-                                    {/* <Text>{item.multi[index].mlData[catIndex].Recyclability}</Text> */}
+                                    <Text>{item.multi[index].mlData[catIndex[item.multi[index].mlData[0].position]].Recyclability}</Text>
                                 </View>
                                 :
                                 <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" />
