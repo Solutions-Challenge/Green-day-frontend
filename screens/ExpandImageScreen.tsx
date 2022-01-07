@@ -39,9 +39,9 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
     let position = Animated.divide(scrollX, windowWidth)
 
 
-    const goBack = () => {
+    const goBack = (name: string) => {
         navigation.navigate('Maps', {
-            material: "Plastic"
+            material: name
         })
     }
 
@@ -59,7 +59,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                     formData.append('files[]', { uri: item.multi[i].croppedImage, name: filename, type });
 
                     if (temp == 2 || i + 1 == item.multi.length) {
-                        const MLRequest = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/predict', {
+                        const MLRequest = await fetch('http://10.0.0.222:8080/predict', {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -190,8 +190,14 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                             renderItem={chipItem}
                             keyExtractor={keyExtractor}
                         />
-                        <TouchableOpacity onPress={()=>goBack()}>
-                            <Text style={{ color: 'white', fontSize: 30 }}>Testing...</Text>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                goBack(item.multi[index].mlData[catIndex[index]].mapData.name)
+                            }}
+                            style={[styles.chipsItem, { backgroundColor: "white", alignSelf: 'center', marginTop: 20, height: 60 }]}>
+                            <Image source={{ uri: item.multi[index].mlData[catIndex[index]].mapData.icon }} style={{ width: 40, height: 40, marginRight: 15, marginTop: 'auto', marginBottom: 'auto' }} />
+                            <Text style={{marginTop: 'auto', marginBottom: "auto"}}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
                         </TouchableOpacity>
                     </View>
                     :
