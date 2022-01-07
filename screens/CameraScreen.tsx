@@ -150,7 +150,7 @@ export default function CameraScreen({ navigation }: any) {
           ],
           {
             format: 'jpeg' as SaveFormat,
-            compress: 0.2,
+            compress: 1,
           }
         )
         object.croppedImage = croppedImage.uri

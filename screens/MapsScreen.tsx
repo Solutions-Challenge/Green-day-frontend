@@ -13,6 +13,7 @@ import { Platform } from 'expo-modules-core';
 import { Image } from 'react-native'
 import StarRating from '../components/StarRating';
 import fetchData from '../api/googleMaps'
+import fetchCategoryData from '../components/categories';
 import categories from '../components/categories'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageContext from '../hooks/imageContext';
@@ -48,7 +49,7 @@ function deg2rad(deg: number) {
   return deg * (Math.PI / 180)
 }
 
-export default function App({ navigation }: any) {
+export default function App({ navigation, route }: any) {
   const colorScheme = useColorScheme();
   const [latitude, setLatitude] = useState(0)
   const [longitude, setLongitude] = useState(0)
@@ -68,6 +69,8 @@ export default function App({ navigation }: any) {
   const [message, setMessage] = useState('')
   const [mapType, setMapType] = useState(true)
   const [switchToConfirm, setSwitchToConfirm] = useState(false)
+  const _categoryView = useRef<FlatList>(null)
+  const [categories, setCategories] = useState([] as any)
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -186,7 +189,6 @@ export default function App({ navigation }: any) {
     }
   }, [toggle, catIndex])
 
-
   const renderInner = () => (
     <View style={[styles.panel, { paddingBottom: 600, backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
       <View style={{ alignItems: 'center' }}>
@@ -242,6 +244,16 @@ export default function App({ navigation }: any) {
     [mapData]
   )
 
+  const getItemLayoutCategory = useCallback(
+    (item, index) => ({
+      length: 130,
+      offset: (130 * index) + (20 * index),
+      index
+    }),
+    [userData]
+  )
+
+
   useEffect(() => {
     if (catIndex === -1) {
       setPartialUserData(userData)
@@ -256,8 +268,32 @@ export default function App({ navigation }: any) {
         setPartialUserData(userData)
       }
     }
-
   }, [catIndex, userData])
+
+  useEffect(() => {
+
+    (async () => {
+      
+      const data = await fetchCategoryData()
+      setCategories(data)
+  
+      const { material } = route.params;
+      if (canMap() && material != "") {
+        for (let i = 0; i < categories.length; i++) {
+          if (categories[i].name === material) {
+            setCatIndex(i + 1)
+            setToggle(true)
+            _categoryView.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.5 })
+  
+            navigation.setParams({
+              material: ''
+            });
+          }
+        }
+      }
+    })();
+
+  }, [isFocused, userData])
 
   const renderItemUser = useCallback(
     ({ item }: any) => {
@@ -418,7 +454,7 @@ export default function App({ navigation }: any) {
             {switchToConfirm ? <>
               <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'space-between', justifyContent: 'center' }}>
-                {categories.map((item, index) => {
+                {categories.map((item:any, index:any) => {
                   return (<>
                     <TouchableOpacity
                       key={item.key}
@@ -553,8 +589,10 @@ export default function App({ navigation }: any) {
 
 
           <FlatList
+            ref={_categoryView}
             horizontal
             showsHorizontalScrollIndicator={false}
+            getItemLayout={getItemLayoutCategory}
             style={styles.chipsScrollView}
             contentContainerStyle={{
               paddingRight: 20
@@ -563,25 +601,25 @@ export default function App({ navigation }: any) {
             renderItem={({ item }: any) => {
               return (
                 (item.key != 0 ? <>
-                <TouchableOpacity
-                  key={item.key}
-                  onPress={() => {
-                    setCatIndex(item.key)
-                    setToggle(true)
-                  }}
-                  style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
-                  <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
-                  <Text>{item.name}</Text>
-                </TouchableOpacity> 
-                {item.key === catIndex &&
-                    <View style={{ backgroundColor:'white', borderRadius: 15, width: 30, height: 30, top: 3 }}>
-                      <Touch style={{alignSelf: 'center', bottom: 0.5}} onPress={() => { setCatIndex(-1) }}>
+                  <TouchableOpacity
+                    key={item.key}
+                    onPress={() => {
+                      setCatIndex(item.key)
+                      setToggle(true)
+                    }}
+                    style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
+                    <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
+                    <Text>{item.name}</Text>
+                  </TouchableOpacity>
+                  {item.key === catIndex &&
+                    <View style={{ backgroundColor: 'white', borderRadius: 15, width: 30, height: 30, top: 3 }}>
+                      <Touch style={{ alignSelf: 'center', bottom: 0.5 }} onPress={() => { setCatIndex(-1) }}>
                         <Feather name="x-circle" size={30} color="black" />
                       </Touch>
                     </View>
                   }
-                </>: 
-                <View key={item.key} />)
+                </> :
+                  <View key={item.key} />)
               )
             }}
           >

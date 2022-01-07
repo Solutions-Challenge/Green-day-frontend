@@ -40,7 +40,9 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
 
 
     const goBack = () => {
-        navigation.navigate('Home')
+        navigation.navigate('Maps', {
+            material: "Plastic"
+        })
     }
 
     useEffect(() => {
@@ -111,7 +113,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
         )
     }, [ifMLData])
 
-    useEffect(()=>{
+    useEffect(() => {
         if (ifMLData[index]) {
             _scrollView?.current?.scrollToIndex({ index: 0, animated: true, viewOffset: 0.5 })
         }
@@ -136,7 +138,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
 
 
     return (
-        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight }}>
+        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white" }}>
             <FlatList
                 onViewableItemsChanged={onViewableItemsChanged.current}
                 viewabilityConfig={viewConfigRef.current}
@@ -156,7 +158,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                 )}
             />
 
-            <View style={{height: 300, marginBottom: windowHeight - 1.3*(windowWidth) }}>
+            <View style={{ marginBottom: windowHeight - 1.3 * (windowWidth) }}>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                     {item.multi.map((_: any, i: any) => {
@@ -176,17 +178,23 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                 </View>
 
                 {ifMLData[index] ?
-                    <FlatList
-                        horizontal
-                        ref={_scrollView}
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{
-                            paddingRight: 20
-                        }}
-                        data={item.multi[index].mlData}
-                        renderItem={chipItem}
-                        keyExtractor={keyExtractor}
-                    />:
+                    <View>
+                        <FlatList
+                            horizontal
+                            ref={_scrollView}
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{
+                                paddingRight: 20
+                            }}
+                            data={item.multi[index].mlData}
+                            renderItem={chipItem}
+                            keyExtractor={keyExtractor}
+                        />
+                        <TouchableOpacity onPress={()=>goBack()}>
+                            <Text style={{ color: 'white', fontSize: 30 }}>Testing...</Text>
+                        </TouchableOpacity>
+                    </View>
+                    :
                     <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" />
 
                 }
@@ -240,8 +248,9 @@ const styles = StyleSheet.create({
     },
     image: {
         width: windowWidth - 20,
-        height: windowWidth / 2,
-        borderRadius: 10
+        borderRadius: 10,
+        flex: 1,
+        resizeMode: 'cover'
     },
     itemTitle: {
         color: 'white',

@@ -129,6 +129,8 @@ const HomeTabs = ({ navigation }: any) => {
       <BottomTab.Screen
         name="Maps"
         component={MapsScreen}
+        // @ts-ignore
+        initialParams={{material: ""}}
         options={() => ({
           title: 'Maps',
           tabBarIcon: ({ focused }) => {

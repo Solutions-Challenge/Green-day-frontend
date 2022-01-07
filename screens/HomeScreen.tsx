@@ -29,6 +29,7 @@ export default function HomeScreen({ navigation }: any) {
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
     const bs = useRef<BottomSheet>(null)
+    const _scrollView = useRef<FlatList>(null)
 
     const onLongPressIn = () => {
         setOnLongPress(true)
@@ -62,11 +63,12 @@ export default function HomeScreen({ navigation }: any) {
                             <TouchableOpacity
                                 activeOpacity={1}
                                 onLongPress={() => onLongPressIn()}
-                                onPress={() => { 
+                                onPress={() => {
                                     setItemData(item)
-                                    setTimeout(()=>{
+                                    setTimeout(() => {
                                         bs?.current?.snapTo(0)
-                                    }, 300)
+                                        _scrollView.current?.scrollToIndex({ index: data.index, animated: false, viewPosition: 0 })
+                                    }, 200)
                                 }}
                             >
                                 <ImageBackground
@@ -141,21 +143,21 @@ export default function HomeScreen({ navigation }: any) {
 
     const renderHeader = () => (
         <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
-          <View style={styles.panelHeader}>
-            <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
-          </View>
+            <View style={styles.panelHeader}>
+                <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
+            </View>
         </View>
-      )
+    )
 
     const Root = () => {
         return (<>
             <BottomSheet
                 ref={bs}
-                snapPoints={[windowHeight-60, 0]}
+                snapPoints={[windowHeight / 1.5, 0]}
                 initialSnap={1}
                 renderContent={() => {
                     return (
-                        itemData && <ExpandImageScreen item={itemData} />
+                        itemData && <ExpandImageScreen navigation={navigation} item={itemData} />
                     )
                 }}
                 renderHeader={renderHeader}
@@ -174,6 +176,10 @@ export default function HomeScreen({ navigation }: any) {
                 <FlatList
                     data={data}
                     extraData={checked}
+                    ref={_scrollView}
+                    onScrollToIndexFailed={(err)=>{console.log(err)}}
+                    // viewabilityConfig={viewConfigRef.current}
+                    // onViewableItemsChanged={onViewableItemsChanged.current}
                     // @ts-ignore
                     keyExtractor={(item, index) => item.key}
                     renderItem={renderItem}
@@ -287,8 +293,8 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#FFFFFF',
         paddingTop: 20,
-      },
-      header: {
+    },
+    header: {
         backgroundColor: '#FFFFFF',
         shadowColor: '#333333',
         shadowOffset: { width: -1, height: -3 },
@@ -297,36 +303,36 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-      },
-      panelHeader: {
+    },
+    panelHeader: {
         alignItems: 'center',
-      },
-      panelHandle: {
+    },
+    panelHandle: {
         width: 40,
         height: 8,
         borderRadius: 4,
         marginBottom: 10,
-      },
-      panelTitle: {
+    },
+    panelTitle: {
         fontSize: 27,
         height: 35,
-      },
-      panelSubtitle: {
+    },
+    panelSubtitle: {
         fontSize: 14,
         color: 'gray',
         height: 30,
         marginBottom: 10,
-      },
-      panelButton: {
+    },
+    panelButton: {
         padding: 13,
         borderRadius: 10,
         backgroundColor: '#FF6347',
         alignItems: 'center',
         marginVertical: 7,
-      },
-      panelButtonTitle: {
+    },
+    panelButtonTitle: {
         fontSize: 17,
         fontWeight: 'bold',
         color: 'white',
-      },
+    },
 });
