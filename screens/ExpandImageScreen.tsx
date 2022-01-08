@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 
 const ExpandImageScreen = ({ route, navigation, item }: any) => {
@@ -27,7 +28,6 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
     const [ifMLData, setIfMLData] = useState(copy)
     const [catIndex, setCatIndex] = useState(Array(copy.length).fill(0))
     const [index, setIndex] = useState(0)
-    const windowHeight = Dimensions.get('window').height;
     const _scrollView = useRef<any>(null)
 
     const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 100, })
@@ -59,7 +59,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                     formData.append('files[]', { uri: item.multi[i].croppedImage, name: filename, type });
 
                     if (temp == 2 || i + 1 == item.multi.length) {
-                        const MLRequest = await fetch('http://10.0.0.222:8080/predict', {
+                        const MLRequest = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/predict', {
                             method: 'POST',
                             body: formData,
                             headers: {
@@ -138,7 +138,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
 
 
     return (
-        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white" }}>
+        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight / 1.5 }}>
             <FlatList
                 onViewableItemsChanged={onViewableItemsChanged.current}
                 viewabilityConfig={viewConfigRef.current}
@@ -158,24 +158,24 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                 )}
             />
 
-            <View style={{ marginBottom: windowHeight - 1.3 * (windowWidth) }}>
+            <View style={{ position: 'absolute', top: windowHeight / 4 + 20, alignSelf: 'center', flexDirection: 'row' }}>
+                {item.multi.map((_: any, i: any) => {
+                    let opacity = position.interpolate({
+                        inputRange: [i - 1, i, i + 1],
+                        outputRange: [0.3, 1, 0.3],
+                        extrapolate: 'clamp'
+                    })
 
-                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                    {item.multi.map((_: any, i: any) => {
-                        let opacity = position.interpolate({
-                            inputRange: [i - 1, i, i + 1],
-                            outputRange: [0.3, 1, 0.3],
-                            extrapolate: 'clamp'
-                        })
+                    return (<>
+                        <Animated.View
+                            key={i}
+                            style={{ opacity, height: 10, width: 10, backgroundColor: '#595959', margin: 8, borderRadius: 5 }}
+                        />
+                    </>)
+                })}
+            </View>
 
-                        return (<>
-                            <Animated.View
-                                key={i}
-                                style={{ opacity, height: 10, width: 10, backgroundColor: '#595959', margin: 8, borderRadius: 5 }}
-                            />
-                        </>)
-                    })}
-                </View>
+            <View style={{ marginBottom: (windowHeight / 1.5) - (windowHeight / 4) - 170 }}>
 
                 {ifMLData[index] ?
                     <View>
@@ -197,7 +197,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                             }}
                             style={[styles.chipsItem, { backgroundColor: "white", alignSelf: 'center', marginTop: 20, height: 60 }]}>
                             <Image source={{ uri: item.multi[index].mlData[catIndex[index]].mapData.icon }} style={{ width: 40, height: 40, marginRight: 15, marginTop: 'auto', marginBottom: 'auto' }} />
-                            <Text style={{marginTop: 'auto', marginBottom: "auto"}}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
+                            <Text style={{ marginTop: 'auto', marginBottom: "auto" }}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
                         </TouchableOpacity>
                     </View>
                     :
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     cardView: {
         flex: 1,
         width: windowWidth - 20,
-        height: windowWidth / 2,
+        height: windowHeight / 4,
         backgroundColor: 'white',
         margin: 10,
         borderRadius: 10,

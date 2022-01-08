@@ -153,7 +153,7 @@ export default function HomeScreen({ navigation }: any) {
         return (<>
             <BottomSheet
                 ref={bs}
-                snapPoints={[windowHeight / 1.3, 0]}
+                snapPoints={[windowHeight / 1.5, 0]}
                 initialSnap={1}
                 renderContent={() => {
                     return (

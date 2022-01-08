@@ -273,6 +273,9 @@ export default function App({ navigation, route }: any) {
   useEffect(() => {
 
     (async () => {
+
+      setCatIndex(-1)
+      setToggle(false)
       
       const data = await fetchCategoryData()
       setCategories(data)
