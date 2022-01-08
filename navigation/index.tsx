@@ -19,9 +19,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-
-const windowWidth = Dimensions.get('window').width;
+import ImageContext from '../hooks/imageContext';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -67,7 +65,7 @@ const HomeTabs = ({ navigation }: any) => {
           borderRadius: 15,
           left: 20,
           right: 20,
-          position: 'absolute',
+          position: 'absolute'
         }
       }}
     >

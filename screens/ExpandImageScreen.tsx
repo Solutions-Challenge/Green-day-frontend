@@ -1,11 +1,13 @@
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ImageContext from '../hooks/imageContext';
+import { useIsFocused } from '@react-navigation/native';
 
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
@@ -25,6 +27,8 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
             copy.push(false)
         }
     }
+    
+
     const [ifMLData, setIfMLData] = useState(copy)
     const [catIndex, setCatIndex] = useState(Array(copy.length).fill(0))
     const [index, setIndex] = useState(0)
@@ -175,7 +179,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                 })}
             </View>
 
-            <View style={{ marginBottom: (windowHeight / 1.5) - (windowHeight / 4) - 170 }}>
+            <View style={{ marginBottom: 150 }}>
 
                 {ifMLData[index] ?
                     <View>

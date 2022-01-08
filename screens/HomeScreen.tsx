@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef, createRef } from 'react';
 import * as React from 'react'
 import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList } from 'react-native';
 import BottomSheet from 'reanimated-bottom-sheet'
@@ -30,6 +30,14 @@ export default function HomeScreen({ navigation }: any) {
     const [onLongPress, setOnLongPress] = useState(false)
     const bs = useRef<BottomSheet>(null)
     const _scrollView = useRef<FlatList>(null)
+
+    const callbackNode = useRef(new Animated.Value(1))
+
+    let onCallback = ([value]:any) => {
+        
+        console.log(1 - value ) // this is something varies from 0-1
+        
+    };
 
     const onLongPressIn = () => {
         setOnLongPress(true)
@@ -177,7 +185,7 @@ export default function HomeScreen({ navigation }: any) {
                     data={data}
                     extraData={checked}
                     ref={_scrollView}
-                    onScrollToIndexFailed={(err)=>{console.log(err)}}
+                    onScrollToIndexFailed={(err) => { console.log(err) }}
                     // viewabilityConfig={viewConfigRef.current}
                     // onViewableItemsChanged={onViewableItemsChanged.current}
                     // @ts-ignore
