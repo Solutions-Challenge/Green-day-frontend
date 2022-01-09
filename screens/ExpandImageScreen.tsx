@@ -2,7 +2,7 @@ import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
+import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem, Platform } from 'react-native';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -142,7 +142,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
 
 
     return (
-        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight / 1.5 }}>
+        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight / 1.5, display: 'flex' }}>
             <FlatList
                 onViewableItemsChanged={onViewableItemsChanged.current}
                 viewabilityConfig={viewConfigRef.current}
@@ -179,7 +179,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                 })}
             </View>
 
-            <View style={{ marginBottom: 150 }}>
+            <View style={{ position: 'absolute', top: windowHeight / 4 + 40, flexDirection: 'row' }}>
 
                 {ifMLData[index] ?
                     <View>
@@ -199,13 +199,13 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
                             onPress={() => {
                                 goBack(item.multi[index].mlData[catIndex[index]].mapData.name)
                             }}
-                            style={[styles.chipsItem, { backgroundColor: "white", alignSelf: 'center', marginTop: 20, height: 60 }]}>
+                            style={[styles.chipsItem, { backgroundColor: "white", marginTop: 20, height: 60, width: 170, marginLeft: windowWidth / 2 - 170/2, paddingLeft: 30}]}>
                             <Image source={{ uri: item.multi[index].mlData[catIndex[index]].mapData.icon }} style={{ width: 40, height: 40, marginRight: 15, marginTop: 'auto', marginBottom: 'auto' }} />
-                            <Text style={{ marginTop: 'auto', marginBottom: "auto" }}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
+                            <Text style={{ marginTop: 'auto', marginBottom: "auto", width: 130 }}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
                         </TouchableOpacity>
                     </View>
                     :
-                    <ActivityIndicator style={{ marginLeft: 'auto', marginRight: 'auto', alignSelf: 'center' }} size="large" color="#246EE9" />
+                    <ActivityIndicator style={{ marginLeft: windowWidth / 2 - 18, marginTop: 30 }} size="large" color="#246EE9" />
 
                 }
             </View >
