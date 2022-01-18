@@ -11,6 +11,8 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import { PinchGestureHandler } from 'react-native-gesture-handler';
 import Svg, { Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../environment';
+const { CLOUDVISIONAPIKEY } = getEnvVars();
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -93,7 +95,7 @@ export default function CameraScreen({ navigation }: any) {
       ],
       {
         format: 'jpeg' as SaveFormat,
-        compress: 0.5,
+        compress: 1,
         base64: true
       }
     )
@@ -114,7 +116,7 @@ export default function CameraScreen({ navigation }: any) {
       ]
     })
 
-    const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${process.env.CLOUDVISIONAPIKEY}`, {
+    const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${CLOUDVISIONAPIKEY}`, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'

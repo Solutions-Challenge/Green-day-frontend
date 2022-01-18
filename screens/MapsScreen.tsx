@@ -1,6 +1,6 @@
 import React, { useCallback, useContext } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Text, View, Dimensions, Linking, FlatList, LogBox } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Linking, FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { TouchableOpacity as Touch } from 'react-native';
 import { AntDesign, Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -14,7 +14,6 @@ import { Image } from 'react-native'
 import StarRating from '../components/StarRating';
 import fetchData from '../api/googleMaps'
 import fetchCategoryData from '../components/categories';
-import categories from '../components/categories'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';

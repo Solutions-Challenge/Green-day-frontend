@@ -1,21 +1,15 @@
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { osName } from 'expo-device';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { Dimensions, ImageBackground, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem, Platform } from 'react-native';
-import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Dimensions, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import ImageContext from '../hooks/imageContext';
-import { useIsFocused } from '@react-navigation/native';
 
 
-let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 
-const ExpandImageScreen = ({ route, navigation, item }: any) => {
+const ExpandImageScreen = ({ navigation, item }: any) => {
     const colorScheme = useColorScheme()
 
     let copy = []
@@ -35,7 +29,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
     const _scrollView = useRef<any>(null)
 
     const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 100, })
-    let onViewableItemsChanged = useRef(({ viewableItems, changed }: any) => {
+    let onViewableItemsChanged = useRef(({ changed }: any) => {
         setIndex(changed[0].key);
     })
 
@@ -106,7 +100,7 @@ const ExpandImageScreen = ({ route, navigation, item }: any) => {
         []
     )
 
-    const renderItem: ListRenderItem<any> = useCallback(({ item, index }) => {
+    const renderItem: ListRenderItem<any> = useCallback(({ item }) => {
         return (
             <View style={styles.cardView}>
                 <Image style={styles.image} source={{ uri: item.croppedImage }} />
