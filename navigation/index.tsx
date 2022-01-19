@@ -19,7 +19,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import ExpandImageScreen from '../screens/ExpandImageScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ImageContext from '../hooks/imageContext';
+import LoginScreen from '../screens/Auth/LoginScreen';
+import RegisterScreen from '../screens/Auth/RegisterScreen';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -37,10 +38,12 @@ const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
   return (
-      <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
+      <Stack.Navigator initialRouteName={false ? "Home":"Register"} screenOptions={{headerShown: false}}>
         <Stack.Screen name="Home" component={HomeTabs} />
         <Stack.Screen name="Pic" component={CameraScreen} />
         <Stack.Screen name="Details" component={ExpandImageScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
       </Stack.Navigator>
   );
 }

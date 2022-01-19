@@ -7,6 +7,7 @@ import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import ImageContext from './hooks/imageContext';
 import Loading from './components/Loading';
+import { SafeAreaView } from "react-native-safe-area-context"
 console.disableYellowBox = true;
 
 
@@ -43,7 +44,7 @@ export default function App() {
   if (!isLoadingComplete) {
     return null;
   } else {
-    return ( 
+    return (
       <ImageContext.Provider value={store}>
         <SafeAreaProvider>
           <Loading />

@@ -1,19 +1,18 @@
 import React, { Component, useContext } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Image } from 'react-native';
 // @ts-ignore
 import Spinner from 'react-native-loading-spinner-overlay';
 import ImageContext from '../hooks/imageContext';
 
 const Loading = () => {
   const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
-  return (
-    
-      <Spinner
-        visible={isLoading}
-        textContent={'Loading...'}
-        textStyle={styles.spinnerTextStyle}
-      />
-  
+  return (<>
+    <Spinner
+      visible={isLoading}
+      textContent={'Loading...'}
+      textStyle={styles.spinnerTextStyle}
+    />
+  </>
   );
 }
 

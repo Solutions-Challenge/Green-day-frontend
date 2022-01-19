@@ -10,6 +10,7 @@ import { osName } from 'expo-device';
 import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
+import { CommonActions } from '@react-navigation/native';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -32,12 +33,6 @@ export default function HomeScreen({ navigation }: any) {
     const _scrollView = useRef<FlatList>(null)
 
     const callbackNode = useRef(new Animated.Value(1))
-
-    let onCallback = ([value]:any) => {
-        
-        console.log(1 - value ) // this is something varies from 0-1
-        
-    };
 
     const onLongPressIn = () => {
         setOnLongPress(true)
