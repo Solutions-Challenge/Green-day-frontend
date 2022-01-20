@@ -1,38 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Input, NativeBaseProvider, Button, Icon, Box, Image, AspectRatio, Pressable, useColorMode, extendTheme } from 'native-base';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { useNavigation, CommonActions } from '@react-navigation/native';
-import * as Google from "expo-google-app-auth"
+import React from 'react';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { Input, NativeBaseProvider, Button, Icon, Box, Image, AspectRatio, Pressable, extendTheme } from 'native-base';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { handleGoogleSignIn } from '../../api/Auth';
+import AuthButton from '../../components/AuthButton';
 
 export default function LoginScreen() {
   const navigation = useNavigation()
-
-
-  const handleGoogleSignIn = async () => {
-    const config = {
-      androidClientId: "816316595942-qdl7p7g6cqgf6mem4c33q52u64tmmk73.apps.googleusercontent.com",
-      scopes: ["profile", "email"]
-    }
-
-    await Google.logInAsync(config)
-    .then((res)=>{
-      // @ts-ignore
-      const {type, user} = res 
-      if (type === "success") {
-        console.log("success")
-        const {email, name, photoUrl} = user
-        console.log(email, name, photoUrl)
-      }
-      else {
-        console.log("canceled")
-      }
-    })
-    .catch((err)=>{
-      console.log(err)
-    })
-  }
 
   return (
     <NativeBaseProvider>
@@ -52,7 +28,7 @@ export default function LoginScreen() {
             <Input
               InputLeftElement={
                 <Icon
-                  as={<FontAwesome5 name="user-secret" />}
+                  as={<FontAwesome name="user" />}
                   size="sm"
                   m={2}
                   _light={{
@@ -131,102 +107,9 @@ export default function LoginScreen() {
 
         {/* Box */}
         <View style={styles.boxStyle}>
-
-          <Pressable onPress={() => { handleGoogleSignIn() }} >
-
-            <Box
-              style={{ height: 80, width: 80 }}
-              shadow={3}
-              _light={{
-                backgroundColor: "gray.50",
-              }}
-              _dark={{
-                backgroundColor: "gray.700",
-              }}
-            >
-              <AspectRatio ratio={1 / 1}>
-                <Image
-                  roundedTop="lg"
-                  source={{
-                    uri: "https://www.transparentpng.com/thumb/google-logo/colorful-google-logo-transparent-clipart-download-u3DWLj.png",
-                  }}
-                  alt="image"
-                />
-              </AspectRatio>
-            </Box>
-          </Pressable>
-
-          <Pressable onPress={() => navigation.navigate("#")} >
-            <Box
-              style={styles.imageStyle}
-              shadow={3}
-              _light={{
-                backgroundColor: "gray.50",
-              }}
-              _dark={{
-                backgroundColor: "gray.700",
-              }}
-            >
-              <AspectRatio ratio={1 / 1}>
-                <Image
-
-                  roundedTop="lg"
-                  source={{
-                    uri: "https://www.transparentpng.com/thumb/facebook-logo-png/photo-facebook-logo-png-hd-25.png",
-                  }}
-                  alt="image"
-                />
-              </AspectRatio>
-            </Box>
-          </Pressable>
-
-          <Pressable onPress={() => navigation.navigate("#")}>
-            <Box
-              style={styles.imageStyle}
-              shadow={3}
-              _light={{
-                backgroundColor: "gray.50",
-              }}
-              _dark={{
-                backgroundColor: "gray.700",
-              }}
-            >
-              <AspectRatio ratio={1 / 1}>
-                <Image
-
-                  roundedTop="lg"
-                  source={{
-                    uri: "https://www.transparentpng.com/thumb/twitter/bird-twitter-socialmedia-icons-png-5.png",
-                  }}
-                  alt="image"
-                />
-              </AspectRatio>
-            </Box>
-          </Pressable>
-
-          <Pressable onPress={() => navigation.navigate("#")}>
-            <Box
-              style={styles.imageStyle}
-              shadow={3}
-              _light={{
-                backgroundColor: "gray.50",
-              }}
-              _dark={{
-                backgroundColor: "gray.700",
-              }}
-            >
-              <AspectRatio ratio={1 / 1}>
-                <Image
-
-                  roundedTop="lg"
-                  source={{
-                    uri: "https://www.transparentpng.com/thumb/apple-logo/RRgURB-apple-logo-clipart-hd.png",
-                  }}
-                  alt="image"
-                />
-              </AspectRatio>
-            </Box>
-          </Pressable>
+          <View style={{ flexDirection: 'column' }}>
+            <AuthButton uri={"https://www.transparentpng.com/thumb/google-logo/colorful-google-logo-transparent-clipart-download-u3DWLj.png"} text={"Sign in with Google"} funct={handleGoogleSignIn} />
+          </View>
         </View>
         <StatusBar style="auto" />
       </View>
