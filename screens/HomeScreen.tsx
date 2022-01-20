@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useCallback, useRef, createRef } from 'react';
 import * as React from 'react'
-import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList } from 'react-native';
+import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList, TouchableWithoutFeedback } from 'react-native';
 import BottomSheet from 'reanimated-bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
@@ -10,7 +10,6 @@ import { osName } from 'expo-device';
 import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
-import { CommonActions } from '@react-navigation/native';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -32,7 +31,7 @@ export default function HomeScreen({ navigation }: any) {
     const bs = useRef<BottomSheet>(null)
     const _scrollView = useRef<FlatList>(null)
 
-    const callbackNode = useRef(new Animated.Value(1))
+    const [ifOpen, setIfOpen] = useState(false)
 
     const onLongPressIn = () => {
         setOnLongPress(true)
@@ -67,11 +66,17 @@ export default function HomeScreen({ navigation }: any) {
                                 activeOpacity={1}
                                 onLongPress={() => onLongPressIn()}
                                 onPress={() => {
-                                    setItemData(item)
-                                    setTimeout(() => {
-                                        bs?.current?.snapTo(0)
-                                        _scrollView.current?.scrollToIndex({ index: data.index, animated: false, viewPosition: 0 })
-                                    }, 200)
+                                    if (ifOpen) {
+                                        bs?.current?.snapTo(1)
+                                    }
+                                    else {
+                                        setItemData(item)
+                                        setTimeout(() => {
+                                            bs?.current?.snapTo(0)
+                                            _scrollView.current?.scrollToIndex({ index: data.index, animated: false, viewPosition: 0 })
+                                        }, 200)
+                                    }
+                                    setIfOpen(!ifOpen) 
                                 }}
                             >
                                 <ImageBackground
@@ -100,7 +105,7 @@ export default function HomeScreen({ navigation }: any) {
                 </TouchableHighlight>
             </View>
         </>)
-    }, [checked, onLongPress])
+    }, [checked, onLongPress, ifOpen])
 
     useEffect(() => {
         setChecked(Array(data.length).fill(false))
@@ -176,21 +181,22 @@ export default function HomeScreen({ navigation }: any) {
                     <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
                 </View>
             </>) : (<>
-                <FlatList
-                    data={data}
-                    extraData={checked}
-                    ref={_scrollView}
-                    onScrollToIndexFailed={(err) => { console.log(err) }}
-                    // viewabilityConfig={viewConfigRef.current}
-                    // onViewableItemsChanged={onViewableItemsChanged.current}
-                    // @ts-ignore
-                    keyExtractor={(item, index) => item.key}
-                    renderItem={renderItem}
-                    style={{ marginVertical: 120 }}
-                />
-                <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
-                    <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
-                </View>
+                <TouchableWithoutFeedback onPress={() => { bs.current?.snapTo(1) }}>
+                    <View>
+                        <FlatList
+                            data={data}
+                            extraData={checked}
+                            ref={_scrollView}
+                            onScrollToIndexFailed={(err) => { console.log(err) }}
+                            keyExtractor={(item,) => item.key}
+                            renderItem={renderItem}
+                            style={{ marginVertical: 120 }}
+                        />
+                        <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
+                            <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
 
                 {onLongPress &&
                     <View style={{ marginLeft: 'auto', marginRight: 'auto', bottom: 130, backgroundColor: colorScheme === "dark" ? '#181818' : "white", padding: 20, borderRadius: 10 }}>
@@ -226,7 +232,8 @@ export default function HomeScreen({ navigation }: any) {
                                 </View>
                             </TouchableOpacity>
                         </View>
-                    </View>}
+                    </View>
+                }
             </>)}
         </>
         );

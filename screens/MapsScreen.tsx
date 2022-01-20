@@ -370,7 +370,8 @@ export default function App({ navigation, route }: any) {
       enabledInnerScrolling={false}
       enabledContentGestureInteraction={false}
     />
-    {isFocused && <SafeAreaView style={{ flex: 1 }}>
+    {isFocused &&   
+    <SafeAreaView style={{ flex: 1 }}>
       <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
         ref={_map}
         provider={PROVIDER_GOOGLE}
@@ -385,7 +386,8 @@ export default function App({ navigation, route }: any) {
           latitudeDelta: latitudeDelta,
           longitudeDelta: longitudeDelta
         }}
-        onPress={(e: any) => { !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
+        onPanDrag={()=>{bs.current?.snapTo(1);}}
+        onPress={(e: any) => { bs.current?.snapTo(1); !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
         onLongPress={(e: any) => { (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })); setVisible(false) }}
       >
         {canMap() && JSON.stringify(addingMarker) != '{}' && <Marker
