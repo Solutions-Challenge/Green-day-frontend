@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import {
   getFirestore,
   orderBy,
@@ -31,6 +31,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth();
 const db = getFirestore(app);
 const geoData = collection(db, "geoLocation");
+const provider = new GoogleAuthProvider();
 
 export const write_data_hash = async (
   latitude: number,
@@ -99,3 +100,77 @@ export const read_data_hash = async(
     })
 }
 
+export function login(email:string, password:string) {
+  signInWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+      // Signed in 
+      const user = userCredential.user;
+      return user;
+      // ...
+  })
+  .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      return error.code;
+  });
+}
+
+export function signin(email:string, password:string, passwordC:string) {
+  if (password !== passwordC)
+  {
+    return "Password isn't the same";
+  }
+  
+  createUserWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+    // Signed in 
+    const user = userCredential.user;
+    return user;
+    // ...
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    return errorCode;
+    // ..
+  });
+}
+
+export function checkAuth(user:JSON) {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in, see docs for a list of available properties
+      // https://firebase.google.com/docs/reference/js/firebase.User
+      const uid = user.uid;
+      return "User is logged in"
+      // ...
+    } else {
+      // User is signed out
+      // ...
+      return "Use is not logged in"
+    }
+  });
+}
+
+export function googleLogin() {
+  signInWithPopup(auth, provider)
+  .then((result) => {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    // @ts-ignore
+    const token = credential.accessToken;
+
+    // The signed-in user info.
+    const user = result.user;
+    // ...
+  }).catch((error) => {
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // The email of the user's account used.
+    const email = error.email;
+    // The AuthCredential type that was used.
+    const credential = GoogleAuthProvider.credentialFromError(error);
+    // ...
+  });
+}

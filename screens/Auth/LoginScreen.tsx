@@ -6,6 +6,7 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { handleGoogleSignIn } from '../../api/Auth';
 import AuthButton from '../../components/AuthButton';
+import { login } from '../../api/firebase';
 
 export default function LoginScreen() {
   const navigation = useNavigation()
