@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { handleGoogleSignIn } from '../../api/Auth';
-import AuthButton from '../../components/AuthButton';
 import { GeneralSignIn, PasswordSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import AuthButtons from '../../components/AuthButton';
 
 export default function RegisterScreen() {
   const navigation = useNavigation()
@@ -15,9 +14,10 @@ export default function RegisterScreen() {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [reveal, setReveal] = useState(false)
+  const [remember, setRemember] = useState(false)
 
   return (
-    
+
     <View style={styles.container}>
       <KeyboardAwareScrollView>
         <View style={styles.Middle}>
@@ -34,7 +34,7 @@ export default function RegisterScreen() {
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} />
         <PasswordSignIn placeholder={"Confirm Password: "} reveal={reveal} setReveal={setReveal} setPassword={setConfirmPassword} />
 
-        <SubmitButton submission={"Register"} username={username} email={email} password={password} confirmPassword={confirmPassword} />
+        <SubmitButton submission={"Register"} username={username} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} />
 
         <View style={styles.lineStyle}>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
@@ -43,14 +43,11 @@ export default function RegisterScreen() {
           </View>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
         </View>
-  
-        <View style={styles.boxStyle}>
-          <View style={{ flexDirection: 'column' }}>
-            <AuthButton uri={"https://i.imgur.com/Fq9Jab5.jpg"} text={"Sign in with Google"} funct={handleGoogleSignIn} />
-          </View>
-        </View>
-        </KeyboardAwareScrollView>
-      </View>
+
+        <AuthButtons navigation={navigation} />
+
+      </KeyboardAwareScrollView>
+    </View>
 
   );
 }
@@ -75,7 +72,8 @@ const styles = StyleSheet.create({
     paddingTop: 5
   },
   signupText: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    color: "#026efd" 
   },
   emailField: {
     marginTop: 30,
@@ -106,12 +104,5 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     marginLeft: 20,
-  },
-  boxStyle: {
-    flexDirection: 'row',
-    marginTop: 30,
-    marginLeft: 15,
-    marginRight: 15,
-    justifyContent: 'space-around'
-  },
+  }
 });

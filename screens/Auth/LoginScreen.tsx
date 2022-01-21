@@ -1,12 +1,9 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, KeyboardAvoidingView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { handleGoogleSignIn } from '../../api/Auth';
-import AuthButton from '../../components/AuthButton';
-import { login } from '../../api/firebase';
 import { PasswordSignIn, GeneralSignIn, SubmitButton } from '../../components/TextInputSignIn';
+import AuthButtons from '../../components/AuthButton';
 
 export default function LoginScreen() {
   const navigation = useNavigation()
@@ -14,6 +11,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("")
   const [username, setUsername] = useState("")
   const [reveal, setReveal] = useState(false)
+  const [remember, setRemember] = useState(false)
   
   return (
 
@@ -33,7 +31,7 @@ export default function LoginScreen() {
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} />
       </KeyboardAvoidingView>
 
-      <SubmitButton submission={"Login"} userNameOrEmail={username} password={password} />
+      <SubmitButton submission={"Login"} userNameOrEmail={username} password={password} setRemember={setRemember} remember={remember} />
 
       <View style={styles.lineStyle}>
         <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
@@ -43,12 +41,7 @@ export default function LoginScreen() {
         <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
       </View>
 
-      <View style={styles.boxStyle}>
-        <View style={{ flexDirection: 'column' }}>
-          <AuthButton uri={"https://www.transparentpng.com/thumb/google-logo/colorful-google-logo-transparent-clipart-download-u3DWLj.png"} text={"Sign in with Google"} funct={handleGoogleSignIn} />
-        </View>
-      </View>
-      <StatusBar style="auto" />
+      <AuthButtons />
     </View>
   );
 }
@@ -74,7 +67,8 @@ const styles = StyleSheet.create({
     paddingTop: 5
   },
   signupText: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    color: "#026efd" 
   },
   emailField: {
     marginTop: 30,

@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native"
 import React from "react"
 import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, View, Text } from "react-native"
+import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { TextInput } from "react-native-paper"
 
 export const PasswordSignIn = ({ placeholder, reveal, setReveal, setPassword }: any) => {
@@ -44,21 +45,32 @@ export const GeneralSignIn = ({ placeholder, set, icon }: any) => {
     )
 }
 
-export const SubmitButton = (props:any) => {
-    const navigation = useNavigation()
-    return (
+export const SubmitButton = (props: any) => {
+    return (<>
         <View style={styles.buttonStyle}>
             <TouchableOpacity style={styles.buttonDesign} onPress={() => {
-                if (props.submission==="Register") {
+                if (props.submission === "Register") {
                     console.log(props)
-                } else if (props.submission==="Login") {
+                } else if (props.submission === "Login") {
                     console.log(props)
                 }
             }}>
-                <Text style={{ marginTop: 'auto', marginBottom: 'auto', color: 'white' }}>REGISTER NOW</Text>
+                <Text style={{ marginTop: 'auto', marginBottom: 'auto', color: 'white' }}>{props.submission === "Register" ? "REGISTER":"LOGIN"}</Text>
             </TouchableOpacity>
         </View>
-    )
+        <View style={styles.checkBox}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <BouncyCheckbox
+                    iconStyle={{ borderRadius: 5 }}
+                    fillColor="#026efd"
+                    size={20}
+                    onPress={(isChecked:boolean)=>{props.setRemember(isChecked)}}
+                />
+                <Text>Remember Me</Text>
+            </View>
+            <Text style={{ alignContent: 'flex-end', color: "#026efd" }}>Forgot Password</Text>
+        </View>
+    </>)
 }
 
 const styles = StyleSheet.create({
@@ -77,4 +89,12 @@ const styles = StyleSheet.create({
         marginLeft: 15,
         marginRight: 15
     },
+    checkBox: {
+        marginTop: 20,
+        flexDirection: "row",
+        alignItems: 'center',
+        marginLeft: 15,
+        marginRight: 15,
+        justifyContent: "space-between"
+      }
 })

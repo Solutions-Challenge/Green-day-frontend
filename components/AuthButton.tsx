@@ -1,6 +1,7 @@
+import { useNavigation } from "@react-navigation/native"
 import React from "react"
-import { TouchableOpacity, Text, View, Image } from "react-native"
-
+import { TouchableOpacity, Text, View, Image, StyleSheet } from "react-native"
+import { handleGoogleSignIn } from "../api/Auth"
 
 const AuthButton = ({ uri, text, funct }: any) => {
     return (
@@ -9,7 +10,7 @@ const AuthButton = ({ uri, text, funct }: any) => {
                 height: 60,
                 flexDirection: 'row',
                 paddingHorizontal: 20,
-                justifyContent: 'center',
+
                 alignItems: 'center',
                 borderRadius: 10,
                 backgroundColor: '#fff',
@@ -32,4 +33,33 @@ const AuthButton = ({ uri, text, funct }: any) => {
     )
 }
 
-export default AuthButton
+
+const AuthButtons = ({navigation}:any) => {
+    const signInGuest = () => {
+        navigation.navigate("Home")
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Home' }],
+        });
+    }
+    return (
+        <View style={styles.boxStyle}>
+            <View style={{ flexDirection: 'column' }}>
+                <AuthButton uri={"https://i.imgur.com/Fq9Jab5.jpg"} text={"Sign in with Google"} funct={handleGoogleSignIn} />
+                <AuthButton uri={"https://i.imgur.com/JEMgjOK.png"} text={"Sign in as Guest"} funct={signInGuest} />
+            </View>
+        </View>
+    )
+}
+
+const styles = StyleSheet.create({
+    boxStyle: {
+        flexDirection: 'row',
+        marginTop: 30,
+        marginLeft: 15,
+        marginRight: 15,
+        justifyContent: 'space-around'
+    }
+})
+
+export default AuthButtons
