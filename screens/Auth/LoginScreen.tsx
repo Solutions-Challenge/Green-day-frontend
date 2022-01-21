@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, KeyboardAvoidingView } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { PasswordSignIn, GeneralSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import AuthButtons from '../../components/AuthButton';
@@ -9,10 +9,10 @@ export default function LoginScreen() {
   const navigation = useNavigation()
 
   const [password, setPassword] = useState("")
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [reveal, setReveal] = useState(false)
   const [remember, setRemember] = useState(false)
-  
+
   return (
 
     <View style={styles.container}>
@@ -27,11 +27,11 @@ export default function LoginScreen() {
       </View>
 
       <KeyboardAvoidingView>
-        <GeneralSignIn placeholder={"Username or Email: "} icon={<FontAwesome name={'user'} size={24} />} set={setUsername} />
+        <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} />
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} />
       </KeyboardAvoidingView>
 
-      <SubmitButton submission={"Login"} userNameOrEmail={username} password={password} setRemember={setRemember} remember={remember} />
+      <SubmitButton submission={"Login"} email={email} password={password} setRemember={setRemember} remember={remember} />
 
       <View style={styles.lineStyle}>
         <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   signupText: {
     fontWeight: 'bold',
-    color: "#026efd" 
+    color: "#026efd"
   },
   emailField: {
     marginTop: 30,

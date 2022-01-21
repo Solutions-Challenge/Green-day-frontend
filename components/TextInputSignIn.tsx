@@ -47,7 +47,7 @@ export const GeneralSignIn = ({ placeholder, set, icon }: any) => {
 
 export const SubmitButton = (props: any) => {
     return (<>
-        <View style={styles.buttonStyle}>
+        <View style={[styles.buttonStyle, {marginBottom: 0}]}>
             <TouchableOpacity style={styles.buttonDesign} onPress={() => {
                 if (props.submission === "Register") {
                     console.log(props)
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     buttonStyle: {
-        marginTop: 30,
+        marginBottom: 20,
         marginLeft: 15,
         marginRight: 15
     },

@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { GeneralSignIn, PasswordSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AuthButtons from '../../components/AuthButton';
+import UserProfile from '../../components/UserProfile';
+import ImageContext from '../../hooks/imageContext';
 
 export default function RegisterScreen() {
   const navigation = useNavigation()
 
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [reveal, setReveal] = useState(false)
   const [remember, setRemember] = useState(false)
+  const [uri, setUri] = useContext(ImageContext).uri
 
   return (
-
     <View style={styles.container}>
       <KeyboardAwareScrollView>
         <View style={styles.Middle}>
@@ -28,13 +29,13 @@ export default function RegisterScreen() {
           <TouchableOpacity onPress={() => navigation.navigate("Login")} ><Text style={styles.signupText}> Login </Text></TouchableOpacity>
         </View>
 
+        <UserProfile uri={uri === "" ? "https://i.imgur.com/v5z3Anl.png":uri} navigation={navigation} />
 
-        <GeneralSignIn placeholder={"Username: "} icon={<FontAwesome name={'user'} size={24} />} set={setUsername} />
         <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} />
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} />
         <PasswordSignIn placeholder={"Confirm Password: "} reveal={reveal} setReveal={setReveal} setPassword={setConfirmPassword} />
 
-        <SubmitButton submission={"Register"} username={username} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} />
+        <SubmitButton submission={"Register"} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} />
 
         <View style={styles.lineStyle}>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />

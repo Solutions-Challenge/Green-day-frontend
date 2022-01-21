@@ -4,7 +4,7 @@ export const auth = getAuth();
 
 const provider = new GoogleAuthProvider();
 
-export const handleGoogleSignIn = async () => {
+export const handleGoogleSignIn = async (setUri:any) => {
   const config = {
     androidClientId:
       "816316595942-qdl7p7g6cqgf6mem4c33q52u64tmmk73.apps.googleusercontent.com",
@@ -19,8 +19,8 @@ export const handleGoogleSignIn = async () => {
       const { type, user } = res;
       if (type === "success") {
         console.log("success");
-        const { email, name, photoUrl } = user;
-        console.log(email, name, photoUrl);
+        setUri(user.photoUrl)
+        return user
       } else {
         console.log("canceled");
       }
@@ -45,9 +45,9 @@ export function login(email: string, password: string) {
     });
 }
 
-export function signin(email: string, password: string, passwordC: string) {
-  if (password !== passwordC) {
-    return "Password isn't the same";
+export function signin(email: string, password: string, confirmPassword: string) {
+  if (password !== confirmPassword) {
+    return "Password isn't the same"; 
   }
 
   createUserWithEmailAndPassword(auth, email, password)

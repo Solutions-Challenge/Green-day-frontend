@@ -1,16 +1,20 @@
-import { useNavigation } from "@react-navigation/native"
-import React from "react"
+import React, { useContext } from "react"
 import { TouchableOpacity, Text, View, Image, StyleSheet } from "react-native"
 import { handleGoogleSignIn } from "../api/Auth"
+import ImageContext from "../hooks/imageContext"
 
 const AuthButton = ({ uri, text, funct }: any) => {
+    const [u, setU] = useContext(ImageContext).uri
     return (
-        <TouchableOpacity onPress={() => { funct() }} style={{ marginBottom: 20 }} >
+        <TouchableOpacity onPress={() => { 
+            if (funct.name === "handleGoogleSignIn") {
+                funct(setU)
+            }
+            }} style={{ marginBottom: 20 }} >
             <View style={{
                 height: 60,
                 flexDirection: 'row',
                 paddingHorizontal: 20,
-
                 alignItems: 'center',
                 borderRadius: 10,
                 backgroundColor: '#fff',

@@ -26,7 +26,7 @@ function uuid() {
   });
 }
 
-export default function CameraScreen({ navigation }: any) {
+export default function CameraScreen({ navigation, route }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0)
@@ -34,6 +34,8 @@ export default function CameraScreen({ navigation }: any) {
   const [uri, setUri] = useContext(ImageContext).uri
 
   const isFocused = useIsFocused();
+
+  const { purpose } = route.params
 
   const save = async (data: any, uri: string, windowWidth: number) => {
 
@@ -100,75 +102,88 @@ export default function CameraScreen({ navigation }: any) {
       }
     )
 
-    const body = JSON.stringify({
-      requests: [
-        {
-          image: {
-            content: manipImage.base64
-          },
-          features: [
-            {
-              type: "OBJECT_LOCALIZATION",
-              maxResults: 10
-            }
-          ]
-        }
-      ]
-    })
-
-    const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${CLOUDVISIONAPIKEY}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      method: "POST",
-      body: body
-    })
-
-    const visionData = await visionRequest.json()
-
-    if ("localizedObjectAnnotations" in visionData.responses[0]) {
-      let object
-      let formData = new FormData();
-      for (let i = 0; i < visionData.responses[0].localizedObjectAnnotations.length; i++) {
-        object = visionData.responses[0].localizedObjectAnnotations[i]
-
-        const croppedImage = await manipulateAsync(
-          manipImage.uri,
-          [{
-            resize: {
-              width: manipImage.width,
-              height: manipImage.height
-            }
-          },
-          {
-            crop: {
-              originX: manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0,
-              originY: manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0,
-              width: (manipImage.width * object.boundingPoly.normalizedVertices[2].x || 0) - (manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0),
-              height: (manipImage.height * object.boundingPoly.normalizedVertices[2].y || 0) - (manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0)
-            }
-          }
-          ],
-          {
-            format: 'jpeg' as SaveFormat,
-            compress: 1,
-          }
-        )
-        object.croppedImage = croppedImage.uri
-      }
-
-      save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
+    if (purpose === "update user picture") {
       setIsLoading(false)
       setUri(manipImage.uri)
-      navigation.navigate('Home', { screen: "Start" })
+      navigation.navigate('Register')
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Register' }],
+      });
     }
+
     else {
-      console.log('empty')
-      setIsLoading(false)
-      setUri(manipImage.uri)
-      navigation.navigate('Home', { screen: "Start" })
+      const body = JSON.stringify({
+        requests: [
+          {
+            image: {
+              content: manipImage.base64
+            },
+            features: [
+              {
+                type: "OBJECT_LOCALIZATION",
+                maxResults: 10
+              }
+            ]
+          }
+        ]
+      })
+
+      const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${CLOUDVISIONAPIKEY}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: body
+      })
+
+      const visionData = await visionRequest.json()
+
+      if ("localizedObjectAnnotations" in visionData.responses[0]) {
+        let object
+        let formData = new FormData();
+        for (let i = 0; i < visionData.responses[0].localizedObjectAnnotations.length; i++) {
+          object = visionData.responses[0].localizedObjectAnnotations[i]
+
+          const croppedImage = await manipulateAsync(
+            manipImage.uri,
+            [{
+              resize: {
+                width: manipImage.width,
+                height: manipImage.height
+              }
+            },
+            {
+              crop: {
+                originX: manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0,
+                originY: manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0,
+                width: (manipImage.width * object.boundingPoly.normalizedVertices[2].x || 0) - (manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0),
+                height: (manipImage.height * object.boundingPoly.normalizedVertices[2].y || 0) - (manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0)
+              }
+            }
+            ],
+            {
+              format: 'jpeg' as SaveFormat,
+              compress: 1,
+            }
+          )
+          object.croppedImage = croppedImage.uri
+        }
+
+        save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
+        setIsLoading(false)
+        setUri(manipImage.uri)
+        navigation.navigate('Home', { screen: "Start" })
+      }
+      else {
+        console.log('empty')
+        setIsLoading(false)
+        setUri(manipImage.uri)
+        navigation.navigate('Home', { screen: "Start" })
+      }
     }
+
 
   }
 
