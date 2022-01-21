@@ -31,11 +31,12 @@ export const handleGoogleSignIn = async (setUri:any) => {
     });
 };
 
-export function login(email: string, password: string) {
-  signInWithEmailAndPassword(auth, email, password)
+export const login = async (email: string, password: string) => {
+  await signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
+      
       return user;
       // ...
     })
@@ -46,21 +47,23 @@ export function login(email: string, password: string) {
     });
 }
 
-export function signin(email: string, password: string, confirmPassword: string) {
+export const signin = async (email: string, password: string, confirmPassword: string) => {
   if (password !== confirmPassword) {
     return "Password isn't the same"; 
   }
 
-  createUserWithEmailAndPassword(auth, email, password)
+  await createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
       const user = userCredential.user;
+
       return user;
       // ...
     })
     .catch((error) => {
       const errorCode = error.code;
       const errorMessage = error.message;
+
       return errorCode;
       // ..
     });
@@ -72,12 +75,12 @@ export function checkAuth(user: JSON) {
       // User is signed in, see docs for a list of available properties
       // https://firebase.google.com/docs/reference/js/firebase.User
       const uid = user.uid;
-      return "User is logged in";
+      return true;
       // ...
     } else {
       // User is signed out
       // ...
-      return "Use is not logged in";
+      return false;
     }
   });
 }

@@ -3,6 +3,7 @@ import React from "react"
 import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, View, Text } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { TextInput } from "react-native-paper"
+import { login, signin } from '../api/Auth';
 
 export const PasswordSignIn = ({ placeholder, reveal, setReveal, setPassword }: any) => {
     return (
@@ -48,12 +49,15 @@ export const GeneralSignIn = ({ placeholder, set, icon }: any) => {
 export const SubmitButton = (props: any) => {
     return (<>
         <View style={[styles.buttonStyle, {marginBottom: 0}]}>
-            <TouchableOpacity style={styles.buttonDesign} onPress={() => {
+            <TouchableOpacity style={styles.buttonDesign} onPress={async () => {
                 if (props.submission === "Register") {
                     console.log(props)
+                    await signin(props.email, props.password, props.confirmPassword)
                 } else if (props.submission === "Login") {
                     console.log(props)
+                    await login(props.email, props.password)
                 }
+                
             }}>
                 <Text style={{ marginTop: 'auto', marginBottom: 'auto', color: 'white' }}>{props.submission === "Register" ? "REGISTER":"LOGIN"}</Text>
             </TouchableOpacity>

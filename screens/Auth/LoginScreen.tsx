@@ -4,6 +4,7 @@ import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { PasswordSignIn, GeneralSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import AuthButtons from '../../components/AuthButton';
+import { login } from '../../api/Auth';
 
 export default function LoginScreen() {
   const navigation = useNavigation()
