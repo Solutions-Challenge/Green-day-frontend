@@ -188,7 +188,7 @@ export default function CameraScreen({ navigation, route }: any) {
   }
 
   const goBack = () => {
-    navigation.navigate('Home', { screen: "Start" })
+    navigation.goBack()
   }
 
   useEffect(() => {

@@ -9,6 +9,8 @@ const AuthButton = ({ uri, text, funct }: any) => {
         <TouchableOpacity onPress={() => { 
             if (funct.name === "handleGoogleSignIn") {
                 funct(setU)
+            } else {
+                funct()
             }
             }} style={{ marginBottom: 20 }} >
             <View style={{

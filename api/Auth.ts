@@ -20,6 +20,7 @@ export const handleGoogleSignIn = async (setUri:any) => {
       if (type === "success") {
         console.log("success");
         setUri(user.photoUrl)
+        console.log(user)
         return user
       } else {
         console.log("canceled");
