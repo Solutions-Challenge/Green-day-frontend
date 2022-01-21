@@ -1,5 +1,5 @@
 import * as Google from "expo-google-app-auth";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail, deleteUser, signOut, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 export const auth = getAuth();
 
 const provider = new GoogleAuthProvider();
@@ -47,6 +47,45 @@ export const login = async (email: string, password: string) => {
     });
 }
 
+
+export const logout = async () => {
+  signOut(auth).then(() => {
+    // Sign-out successful.
+    return "Success"
+  }).catch((error) => {
+    // An error happened.
+    return error
+  });
+}
+
+export const passwordReset = async (email:string) => {
+  sendPasswordResetEmail(auth, email)
+  .then(() => {
+    // Password reset email sent!
+    // ..
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // ..
+  });
+}
+
+// Important: To delete a user, the user must have signed in recently.
+export const deleteMe = async (email:string, password:string) => {
+  const auth = getAuth();
+  const user = auth.currentUser;  
+
+  //@ts-ignore
+  deleteUser(user).then(() => {
+    // User deleted.
+  }).catch((error) => {
+    // An error ocurred
+    // ...
+    return error.code;
+  });
+  
+}
 export const signin = async (email: string, password: string, confirmPassword: string) => {
   if (password !== confirmPassword) {
     return "Password isn't the same"; 
