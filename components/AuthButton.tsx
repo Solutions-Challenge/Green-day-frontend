@@ -1,34 +1,33 @@
 import React from "react"
-import { TouchableOpacity, Text } from "react-native"
-import { Box, Image, AspectRatio } from 'native-base';
+import { TouchableOpacity, Text, View, Image } from "react-native"
 
 
-const AuthButton = ({ uri, text, funct }:any) => {
+const AuthButton = ({ uri, text, funct }: any) => {
     return (
-        <TouchableOpacity onPress={() => { funct() }} style={{marginBottom: 20}} >
-
-            <Box
-                style={{ height: 60, flexDirection: 'row', paddingHorizontal: 20, justifyContent: 'center' }}
-                shadow={3}
-                _light={{
-                    backgroundColor: "gray.50",
-                }}
-                _dark={{
-                    backgroundColor: "gray.700",
-                }}
-            >
-                <AspectRatio ratio={1 / 1}>
-                    <Image
-                        roundedTop="lg"
-                        size="sm"
-                        source={{
-                            uri: uri,
-                        }}
-                        alt="image"
-                    />
-                </AspectRatio>
+        <TouchableOpacity onPress={() => { funct() }} style={{ marginBottom: 20 }} >
+            <View style={{
+                height: 60,
+                flexDirection: 'row',
+                paddingHorizontal: 20,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 10,
+                backgroundColor: '#fff',
+                shadowColor: "#000",
+                shadowRadius: 5,
+                shadowOpacity: 0.3,
+                shadowOffset: { width: 2, height: -2 },
+                elevation: 5
+            }}>
+                <Image
+                    source={{
+                        uri: uri,
+                    }}
+                    style={{ width: 40, height: 40 }}
+                />
                 <Text style={{ textAlignVertical: 'center', marginLeft: 20, color: "#757575", fontSize: 14, fontWeight: "500" }}>{text}</Text>
-            </Box>
+
+            </View>
         </TouchableOpacity>
     )
 }

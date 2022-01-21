@@ -51,6 +51,7 @@
     "react-native-fast-image": "^8.5.11",
     "react-native-gesture-handler": "~1.10.2",
     "react-native-image-crop-picker": "^0.37.2",
+    "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-loading-spinner-overlay": "^2.0.0",
     "react-native-maps": "0.28.1",
     "react-native-paper": "^4.11.1",

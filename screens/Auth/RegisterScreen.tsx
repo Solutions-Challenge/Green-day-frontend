@@ -1,19 +1,25 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Input, NativeBaseProvider, Button, Icon, Box, Image, AspectRatio, Pressable } from 'native-base';
-import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { handleGoogleSignIn } from '../../api/Auth';
 import AuthButton from '../../components/AuthButton';
+import { GeneralSignIn, PasswordSignIn, SubmitButton } from '../../components/TextInputSignIn';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 export default function RegisterScreen() {
   const navigation = useNavigation()
 
-  return (
-    <NativeBaseProvider>
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
+  const [reveal, setReveal] = useState(false)
 
-      <View style={styles.container}>
+  return (
+    
+    <View style={styles.container}>
+      <KeyboardAwareScrollView>
         <View style={styles.Middle}>
           <Text style={styles.LoginText}>Signup</Text>
         </View>
@@ -22,144 +28,14 @@ export default function RegisterScreen() {
           <TouchableOpacity onPress={() => navigation.navigate("Login")} ><Text style={styles.signupText}> Login </Text></TouchableOpacity>
         </View>
 
-        {/* Username or Email Input Field */}
-        <View style={styles.buttonStyle}>
 
-          <View style={styles.emailInput}>
-            <Input
-              InputLeftElement={
-                <Icon
-                  as={<FontAwesome name="user" />}
-                  size="sm"
-                  m={2}
-                  _light={{
-                    color: "black",
-                  }}
-                  _dark={{
-                    color: "gray.300",
-                  }}
-                />
-              }
-              variant="outline"
-              placeholder="Username"
-              _light={{
-                placeholderTextColor: "blueGray.400",
-              }}
-              _dark={{
-                placeholderTextColor: "blueGray.50",
-              }}
+        <GeneralSignIn placeholder={"Username: "} icon={<FontAwesome name={'user'} size={24} />} set={setUsername} />
+        <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} />
+        <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} />
+        <PasswordSignIn placeholder={"Confirm Password: "} reveal={reveal} setReveal={setReveal} setPassword={setConfirmPassword} />
 
-            />
-          </View>
-        </View>
+        <SubmitButton submission={"Register"} username={username} email={email} password={password} confirmPassword={confirmPassword} />
 
-        {/* Username or Email Input Field */}
-        <View style={styles.buttonStyleX}>
-
-          <View style={styles.emailInput}>
-            <Input
-              InputLeftElement={
-                <Icon
-                  as={<MaterialCommunityIcons name="email" />}
-                  size="sm"
-                  m={2}
-                  _light={{
-                    color: "black",
-                  }}
-                  _dark={{
-                    color: "gray.300",
-                  }}
-                />
-              }
-              variant="outline"
-              placeholder="Email"
-              _light={{
-                placeholderTextColor: "blueGray.400",
-              }}
-              _dark={{
-                placeholderTextColor: "blueGray.50",
-              }}
-
-            />
-          </View>
-        </View>
-
-        {/* Password Input Field */}
-        <View style={styles.buttonStyleX}>
-
-          <View style={styles.emailInput}>
-            <Input
-              InputLeftElement={
-                <Icon
-                  as={<FontAwesome5 name="key" />}
-                  size="sm"
-                  m={2}
-                  _light={{
-                    color: "black",
-                  }}
-                  _dark={{
-                    color: "gray.300",
-                  }}
-                />
-              }
-              variant="outline"
-              secureTextEntry={true}
-              placeholder="Password"
-              _light={{
-                placeholderTextColor: "blueGray.400",
-              }}
-              _dark={{
-                placeholderTextColor: "blueGray.50",
-              }}
-            />
-          </View>
-        </View>
-
-        {/* Password Input Field */}
-        <View style={styles.buttonStyleX}>
-
-          <View style={styles.emailInput}>
-            <Input
-              InputLeftElement={
-                <Icon
-                  as={<FontAwesome5 name="key" />}
-                  size="sm"
-                  m={2}
-                  _light={{
-                    color: "black",
-                  }}
-                  _dark={{
-                    color: "gray.300",
-                  }}
-                />
-              }
-              variant="outline"
-              secureTextEntry={true}
-              placeholder="Confirm Password"
-              _light={{
-                placeholderTextColor: "blueGray.400",
-              }}
-              _dark={{
-                placeholderTextColor: "blueGray.50",
-              }}
-            />
-          </View>
-        </View>
-
-        {/* Button */}
-        <View style={styles.buttonStyle}>
-          <Button style={styles.buttonDesign} onPress={() => {
-            navigation.navigate("Home")
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Home' }],
-            });
-          }}>
-            REGISTER NOW
-          </Button>
-        </View>
-
-        {/* Line */}
         <View style={styles.lineStyle}>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
           <View>
@@ -167,16 +43,15 @@ export default function RegisterScreen() {
           </View>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
         </View>
-
-        {/* Box */}
+  
         <View style={styles.boxStyle}>
           <View style={{ flexDirection: 'column' }}>
-            <AuthButton uri={"https://www.transparentpng.com/thumb/google-logo/colorful-google-logo-transparent-clipart-download-u3DWLj.png"} text={"Sign in with Google"} funct={handleGoogleSignIn} />
+            <AuthButton uri={"https://i.imgur.com/Fq9Jab5.jpg"} text={"Sign in with Google"} funct={handleGoogleSignIn} />
           </View>
         </View>
-        <StatusBar style="auto" />
+        </KeyboardAwareScrollView>
       </View>
-    </NativeBaseProvider>
+
   );
 }
 
@@ -219,9 +94,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginLeft: 15,
     marginRight: 15
-  },
-  buttonDesign: {
-    backgroundColor: '#026efd'
   },
   lineStyle: {
     flexDirection: 'row',
