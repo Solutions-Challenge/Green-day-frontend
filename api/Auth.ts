@@ -1,10 +1,20 @@
 import * as Google from "expo-google-app-auth";
-import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail, deleteUser, signOut, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  deleteUser,
+  signOut,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 export const auth = getAuth();
 
 const provider = new GoogleAuthProvider();
 
-export const handleGoogleSignIn = async (setUri:any) => {
+export const handleGoogleSignIn = async (setUri: any) => {
   const config = {
     androidClientId:
       "816316595942-qdl7p7g6cqgf6mem4c33q52u64tmmk73.apps.googleusercontent.com",
@@ -18,12 +28,7 @@ export const handleGoogleSignIn = async (setUri:any) => {
       // @ts-ignore
       const { type, user } = res;
       if (type === "success") {
-        console.log("success");
-        setUri(user.photoUrl)
-        console.log(user)
-        return user
-      } else {
-        console.log("canceled");
+        setUri(user.photoUrl);
       }
     })
     .catch((err) => {
@@ -32,81 +37,95 @@ export const handleGoogleSignIn = async (setUri:any) => {
 };
 
 export const login = async (email: string, password: string) => {
+  let user = {} as any;
+  let error = {} as any;
+
   await signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
-      const user = userCredential.user;
-      
-      return user;
+      user = userCredential.user;
       // ...
+    })
+    .catch((err) => {
+      error = err.code;
+      console.log(error)
+    });
+  return {
+    user: user,
+    error: error,
+  };
+};
+
+export const logout = async () => {
+  signOut(auth)
+    .then(() => {
+      // Sign-out successful.
+      return "Success";
+    })
+    .catch((error) => {
+      // An error happened.
+      return error;
+    });
+};
+
+export const passwordReset = async (email: string) => {
+  sendPasswordResetEmail(auth, email)
+    .then(() => {
+      // Password reset email sent!
+      // ..
     })
     .catch((error) => {
       const errorCode = error.code;
       const errorMessage = error.message;
-      return error.code;
+      // ..
     });
-}
-
-
-export const logout = async () => {
-  signOut(auth).then(() => {
-    // Sign-out successful.
-    return "Success"
-  }).catch((error) => {
-    // An error happened.
-    return error
-  });
-}
-
-export const passwordReset = async (email:string) => {
-  sendPasswordResetEmail(auth, email)
-  .then(() => {
-    // Password reset email sent!
-    // ..
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // ..
-  });
-}
+};
 
 // Important: To delete a user, the user must have signed in recently.
-export const deleteMe = async (email:string, password:string) => {
+export const deleteMe = async (email: string, password: string) => {
   const auth = getAuth();
-  const user = auth.currentUser;  
+  const user = auth.currentUser;
 
   //@ts-ignore
-  deleteUser(user).then(() => {
-    // User deleted.
-  }).catch((error) => {
-    // An error ocurred
-    // ...
-    return error.code;
-  });
-  
-}
-export const signin = async (email: string, password: string, confirmPassword: string) => {
+  deleteUser(user)
+    .then(() => {
+      // User deleted.
+    })
+    .catch((error) => {
+      // An error ocurred
+      // ...
+      return error.code;
+    });
+};
+export const signin = async (
+  email: string,
+  password: string,
+  confirmPassword: string
+) => {
+  let user = {} as any;
+  let error = {} as any;
+
   if (password !== confirmPassword) {
-    return "Password isn't the same"; 
+    error = "auth/passwords-not-same"
+    return {
+      user,
+      error
+    }
   }
 
   await createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in
-      const user = userCredential.user;
-
-      return user;
-      // ...
+      user = userCredential.user;
     })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-
-      return errorCode;
-      // ..
+    .catch((err) => {
+      error = err.code;
     });
-}
+  return {
+    user: user,
+    error: error,
+  };
+};
 
 export function checkAuth(user: JSON) {
   onAuthStateChanged(auth, (user) => {

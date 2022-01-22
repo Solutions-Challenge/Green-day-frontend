@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, KeyboardAvoidingView } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { PasswordSignIn, GeneralSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import AuthButtons from '../../components/AuthButton';
 import { login } from '../../api/Auth';
+import ImageContext from '../../hooks/imageContext';
 
 export default function LoginScreen() {
   const navigation = useNavigation()
@@ -13,6 +14,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [reveal, setReveal] = useState(false)
   const [remember, setRemember] = useState(false)
+  const [error, setError] = useContext(ImageContext).error
 
   return (
 
@@ -22,17 +24,17 @@ export default function LoginScreen() {
       </View>
       <View style={styles.text2}>
         <Text>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Register")} >
+        <TouchableOpacity onPress={() => {setError(""); navigation.navigate("Register")}} >
           <Text style={styles.signupText}> Sign up</Text>
         </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView>
-        <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} />
-        <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} />
+        <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} error={error} />
+        <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} error={error} />
       </KeyboardAvoidingView>
 
-      <SubmitButton submission={"Login"} email={email} password={password} setRemember={setRemember} remember={remember} />
+      <SubmitButton submission={"Login"} email={email} password={password} setRemember={setRemember} remember={remember} setError={setError} />
 
       <View style={styles.lineStyle}>
         <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />

@@ -1,6 +1,6 @@
-import { Feather, MaterialIcons } from "@expo/vector-icons"
+import { Feather, Ionicons, Zocial } from "@expo/vector-icons"
 import React from "react"
-import { Image, ImageBackground, View, Text } from "react-native"
+import { ImageBackground, View } from "react-native"
 import { TouchableOpacity } from "react-native-gesture-handler"
 
 const UserProfile = ({ uri, navigation }: any) => {
@@ -13,10 +13,11 @@ const UserProfile = ({ uri, navigation }: any) => {
                     source={{
                         uri: uri,
                     }}
-                    style={{ width: 120, height: 120, borderRadius: 60, overflow: 'hidden' }}
+                    style={{ width: 120, height: 120, borderRadius: 60, overflow: 'hidden', borderColor: "black", borderWidth: uri==="guest" ? 2:0 }}
                     resizeMode="cover"
-
                 >
+                    {uri==="guest" && <Ionicons name="person-sharp" color="black" size={120} style={{marginLeft: 2}} />}
+
                     <View style={{ marginTop: 'auto', height: 35, backgroundColor: 'rgba(0, 0, 0, 0.5)', alignItems: 'center' }}>
                         <Feather name="camera" size={27} color="white" />
                     </View>

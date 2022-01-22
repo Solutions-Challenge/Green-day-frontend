@@ -17,6 +17,7 @@ export default function RegisterScreen() {
   const [reveal, setReveal] = useState(false)
   const [remember, setRemember] = useState(false)
   const [uri, setUri] = useContext(ImageContext).uri
+  const [error, setError] = useContext(ImageContext).error
 
   return (
     <View style={styles.container}>
@@ -26,16 +27,16 @@ export default function RegisterScreen() {
         </View>
         <View style={styles.text2}>
           <Text>Already have account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")} ><Text style={styles.signupText}> Login </Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => {setError(""); navigation.navigate("Login")}} ><Text style={styles.signupText}> Login </Text></TouchableOpacity>
         </View>
 
-        <UserProfile uri={uri === "" ? "https://i.imgur.com/v5z3Anl.png":uri} navigation={navigation} />
+        <UserProfile uri={uri === "" ? "guest":uri} navigation={navigation} />
 
-        <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} />
-        <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} />
-        <PasswordSignIn placeholder={"Confirm Password: "} reveal={reveal} setReveal={setReveal} setPassword={setConfirmPassword} />
+        <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} error={error} />
+        <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} error={error} />
+        <PasswordSignIn placeholder={"Confirm Password: "} reveal={reveal} setReveal={setReveal} setPassword={setConfirmPassword} error={error} />
 
-        <SubmitButton submission={"Register"} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} />
+        <SubmitButton submission={"Register"} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} setError={setError} />
 
         <View style={styles.lineStyle}>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
