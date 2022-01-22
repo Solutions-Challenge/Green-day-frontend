@@ -5,9 +5,10 @@
  */
 import { AntDesign, Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, useNavigation } from '@react-navigation/native';
 import * as React from 'react';
 import { ColorSchemeName, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
@@ -21,15 +22,17 @@ import ExpandImageScreen from '../screens/ExpandImageScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
+import ForgetPasswordScreen from '../screens/Auth/ForgetPasswordScreen';
+import { useEffect, useState } from 'react';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
-      <NavigationContainer
+    <NavigationContainer
       linking={LinkingConfiguration}
       theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-     
-        <RootNavigator />
-      
+
+      <RootNavigator />
+
     </NavigationContainer>
   );
 }
@@ -37,14 +40,29 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
 const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
+  const navigation = useNavigation()
+  useEffect(() => {
+    (async () => {
+        const user = await AsyncStorage.getItem("user")
+        if (user === null) {
+          navigation.navigate("Register")
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Register' }],
+        });
+        }
+    })();
+  }, []);
+
   return (
-      <Stack.Navigator initialRouteName={false ? "Home":"Register"} screenOptions={{headerShown: false}}>
-        <Stack.Screen name="Home" component={HomeTabs} />
-        <Stack.Screen name="Pic" component={CameraScreen} />
-        <Stack.Screen name="Details" component={ExpandImageScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-      </Stack.Navigator>
+    <Stack.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Home" component={HomeTabs} />
+      <Stack.Screen name="Pic" component={CameraScreen} initialParams={{purpose: ""}} />
+      <Stack.Screen name="Details" component={ExpandImageScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
+    </Stack.Navigator>
   );
 }
 
@@ -64,7 +82,7 @@ const HomeTabs = ({ navigation }: any) => {
         headerShown: false,
         tabBarStyle: {
           height: 70,
-          bottom: Platform.OS === "android" ? 30:60,
+          bottom: Platform.OS === "android" ? 30 : 60,
           borderRadius: 15,
           left: 20,
           right: 20,
@@ -79,7 +97,7 @@ const HomeTabs = ({ navigation }: any) => {
           title: 'Start',
           tabBarIcon: ({ focused }) =>
             <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
-              <AntDesign name="home" size={30} color={focused ? colorScheme === "dark" ? '#fff': '#e32f45' : '#748c94'} />
+              <AntDesign name="home" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
             </View>
         })}
       />
@@ -87,8 +105,10 @@ const HomeTabs = ({ navigation }: any) => {
       <BottomTab.Screen
         name="Pic"
         component={CameraScreen}
+        // @ts-ignore
+        initialParams={{ purpose: "" }}
         options={() => ({
-          
+
           title: 'Pic',
           tabBarIcon: () => {
             return (
@@ -99,7 +119,7 @@ const HomeTabs = ({ navigation }: any) => {
                     shadowOffset: { width: 0, height: 10 },
                     shadowOpacity: 0.25,
                     shadowRadius: 3.5,
-                    elevation: 5 
+                    elevation: 5
                   }}
                 >
                   <View
@@ -131,13 +151,13 @@ const HomeTabs = ({ navigation }: any) => {
         name="Maps"
         component={MapsScreen}
         // @ts-ignore
-        initialParams={{material: ""}}
+        initialParams={{ material: "" }}
         options={() => ({
           title: 'Maps',
           tabBarIcon: ({ focused }) => {
             return (
-              <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}> 
-                  <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff': '#e32f45' : '#748c94'} />
+              <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
+                <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
               </View>
             )
           }

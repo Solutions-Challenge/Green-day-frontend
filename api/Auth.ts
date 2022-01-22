@@ -15,6 +15,9 @@ export const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
 export const handleGoogleSignIn = async (setUri: any) => {
+  let user = {} as any
+  let error = {} as any
+  
   const config = {
     androidClientId:
       "816316595942-qdl7p7g6cqgf6mem4c33q52u64tmmk73.apps.googleusercontent.com",
@@ -26,19 +29,38 @@ export const handleGoogleSignIn = async (setUri: any) => {
   await Google.logInAsync(config)
     .then((res) => {
       // @ts-ignore
-      const { type, user } = res;
-      if (type === "success") {
-        setUri(user.photoUrl);
+      if (res.type === "success") {
+        user = res.user
       }
     })
     .catch((err) => {
-      console.log(err);
+      error = err.code
     });
+
+    return {
+      user: user,
+      error: error
+    }
 };
 
 export const login = async (email: string, password: string) => {
   let user = {} as any;
   let error = {} as any;
+
+  if (email === "") {
+    error = "auth/no-email";
+    return {
+      user,
+      error,
+    };
+  }
+  if (password === "") {
+    error = "auth/no-password";
+    return {
+      user,
+      error,
+    };
+  }
 
   await signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
@@ -48,7 +70,7 @@ export const login = async (email: string, password: string) => {
     })
     .catch((err) => {
       error = err.code;
-      console.log(error)
+      console.log(error);
     });
   return {
     user: user,
@@ -69,16 +91,12 @@ export const logout = async () => {
 };
 
 export const passwordReset = async (email: string) => {
+  let error = {} as any
   sendPasswordResetEmail(auth, email)
-    .then(() => {
-      // Password reset email sent!
-      // ..
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // ..
+    .catch((err) => {
+      error = err
     });
+  return error
 };
 
 // Important: To delete a user, the user must have signed in recently.
@@ -106,11 +124,26 @@ export const signin = async (
   let error = {} as any;
 
   if (password !== confirmPassword) {
-    error = "auth/passwords-not-same"
+    error = "auth/passwords-not-same";
     return {
       user,
-      error
-    }
+      error,
+    };
+  }
+
+  if (email === "") {
+    error = "auth/no-email";
+    return {
+      user,
+      error,
+    };
+  }
+  if (password === "") {
+    error = "auth/no-password";
+    return {
+      user,
+      error,
+    };
   }
 
   await createUserWithEmailAndPassword(auth, email, password)

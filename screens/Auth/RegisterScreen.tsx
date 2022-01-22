@@ -36,7 +36,7 @@ export default function RegisterScreen() {
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} error={error} />
         <PasswordSignIn placeholder={"Confirm Password: "} reveal={reveal} setReveal={setReveal} setPassword={setConfirmPassword} error={error} />
 
-        <SubmitButton submission={"Register"} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} setError={setError} />
+        <SubmitButton submission={"Register"} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} setError={setError} navigation={navigation} />
 
         <View style={styles.lineStyle}>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
@@ -46,7 +46,7 @@ export default function RegisterScreen() {
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
         </View>
 
-        <AuthButtons navigation={navigation} />
+        <AuthButtons navigation={navigation} remember={remember} />
 
       </KeyboardAwareScrollView>
     </View>

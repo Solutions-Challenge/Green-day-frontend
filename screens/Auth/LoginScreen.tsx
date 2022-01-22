@@ -1,10 +1,9 @@
 import React, { useContext, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, KeyboardAvoidingView } from 'react-native';
-import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { PasswordSignIn, GeneralSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import AuthButtons from '../../components/AuthButton';
-import { login } from '../../api/Auth';
 import ImageContext from '../../hooks/imageContext';
 
 export default function LoginScreen() {
@@ -34,7 +33,7 @@ export default function LoginScreen() {
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} error={error} />
       </KeyboardAvoidingView>
 
-      <SubmitButton submission={"Login"} email={email} password={password} setRemember={setRemember} remember={remember} setError={setError} />
+      <SubmitButton submission={"Login"} email={email} password={password} setRemember={setRemember} remember={remember} setError={setError} navigation={navigation} />
 
       <View style={styles.lineStyle}>
         <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
@@ -44,7 +43,7 @@ export default function LoginScreen() {
         <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />
       </View>
 
-      <AuthButtons />
+      <AuthButtons navigation={navigation} remember={remember} />
     </View>
   );
 }

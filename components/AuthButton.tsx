@@ -1,18 +1,27 @@
 import React, { useContext } from "react"
 import { TouchableOpacity, Text, View, Image, StyleSheet } from "react-native"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleGoogleSignIn } from "../api/Auth"
 import ImageContext from "../hooks/imageContext"
 
-const AuthButton = ({ uri, text, funct }: any) => {
+const AuthButton = ({ uri, text, funct, remember, navigation }: any) => {
     const [u, setU] = useContext(ImageContext).uri
     return (
-        <TouchableOpacity onPress={() => { 
+        <TouchableOpacity onPress={async () => {
             if (funct.name === "handleGoogleSignIn") {
-                funct(setU)
+                const data = await funct(setU);
+                if (Object.keys(data.error).length === 0) {
+                    await AsyncStorage.setItem("user", JSON.stringify(data.user))
+                    navigation.navigate("Home")
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Home' }],
+                    });
+                }
             } else {
                 funct()
             }
-            }} style={{ marginBottom: 20 }} >
+        }} style={{ marginBottom: 20 }} >
             <View style={{
                 height: 60,
                 flexDirection: 'row',
@@ -40,7 +49,7 @@ const AuthButton = ({ uri, text, funct }: any) => {
 }
 
 
-const AuthButtons = ({navigation}:any) => {
+const AuthButtons = ({ navigation, remember }: any) => {
     const signInGuest = () => {
         navigation.navigate("Home")
         navigation.reset({
@@ -51,8 +60,8 @@ const AuthButtons = ({navigation}:any) => {
     return (
         <View style={styles.boxStyle}>
             <View style={{ flexDirection: 'column' }}>
-                <AuthButton uri={"https://i.imgur.com/Fq9Jab5.jpg"} text={"Sign in with Google"} funct={handleGoogleSignIn} />
-                <AuthButton uri={"https://i.imgur.com/JEMgjOK.png"} text={"Sign in as Guest"} funct={signInGuest} />
+                <AuthButton uri={"https://i.imgur.com/Fq9Jab5.jpg"} text={"Sign in with Google"} funct={handleGoogleSignIn} remember={remember} navigation={navigation} />
+                <AuthButton uri={"https://i.imgur.com/JEMgjOK.png"} text={"Sign in as Guest"} funct={signInGuest} remember={remember} navigation={navigation} />
             </View>
         </View>
     )
