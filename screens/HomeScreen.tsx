@@ -165,18 +165,6 @@ export default function HomeScreen({ navigation }: any) {
                 enabledInnerScrolling={false}
                 enabledContentGestureInteraction={false}
             />
-            <View style={{ position: 'absolute', right: flipPosition, top: flipPosition+30, backgroundColor: 'white', width: 130, height: 30, borderRadius: 60, elevation: 5 }}>
-                <TouchableOpacity onPress={() => {
-                    AsyncStorage.removeItem("user")
-                    navigation.navigate("Register")
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Register' }],
-                    });
-                }}>
-                    <Text style={{alignSelf: 'center', marginTop: 3}}>LogOut (temp)</Text>
-                </TouchableOpacity>
-            </View>
             {data.length === 0 ? (<>
                 <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>
@@ -236,6 +224,18 @@ export default function HomeScreen({ navigation }: any) {
                         </View>
                     </View>
                 }
+                <View style={{ position: 'absolute', right: flipPosition, top: flipPosition + 30, backgroundColor: 'white', width: 130, height: 30, borderRadius: 60, elevation: 5 }}>
+                    <TouchableOpacity onPress={() => {
+                        AsyncStorage.removeItem("user")
+                        navigation.navigate("Register")
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Register' }],
+                        });
+                    }}>
+                        <Text style={{ alignSelf: 'center', marginTop: 3 }}>LogOut (temp)</Text>
+                    </TouchableOpacity>
+                </View>
             </>)}
         </>
         );

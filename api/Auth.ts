@@ -12,6 +12,7 @@ import {
   sendEmailVerification,
   updateProfile,
   User,
+  signInWithCredential,
 } from "firebase/auth";
 export const auth = getAuth();
 
@@ -23,25 +24,32 @@ export const handleGoogleSignIn = async (setUri: any) => {
 
   const config = {
     androidClientId:
-      "816316595942-qdl7p7g6cqgf6mem4c33q52u64tmmk73.apps.googleusercontent.com",
+      "15765189134-2uvjibunbcdje9ehscg1fcqi0k3j0v43.apps.googleusercontent.com",
     iosClientId:
-      "816316595942-1t8utcje5adcq2meiur0peup5o99qp15.apps.googleusercontent.com",
+      "15765189134-u5vlkk5ncmkl0lceg3pkd5t85rur7026.apps.googleusercontent.com",
     scopes: ["profile", "email"],
   };
 
   await Google.logInAsync(config)
     .then((res) => {
-      // @ts-ignore
-      if (res.type === "success") {
-        user = res.user;
+      if (res.type === 'success') {
+        const { idToken, accessToken } = res;
+        const credential = GoogleAuthProvider.credential(
+            idToken,
+            accessToken
+        );
+        signInWithCredential(auth, credential);
+        user = res.user
       }
-      if (res.type === "cancel") {
-        user = res.type;
+      else if (res.type === "cancel") {
+        user = user.type
       }
     })
     .catch((err) => {
       error = err.code;
     });
+  
+  console.log(user)
 
   return {
     user: user,
@@ -164,16 +172,16 @@ export const signin = async (
   };
 };
 
-export const currentUser = ():User => {
-  return auth.currentUser as User
-}
-
-export const updateUriAndName = (url:string) => {
+export const currentUser = (): User => {
+  return auth.currentUser as User;
+};
+ 
+export const updateUriAndName = (url: string) => {
   updateProfile(currentUser(), {
     photoURL: url,
-    displayName: "Test 2"
-  })
-}
+    displayName: "Test 2",
+  });
+};
 
 export function checkAuth(user: JSON) {
   onAuthStateChanged(auth, (user) => {
