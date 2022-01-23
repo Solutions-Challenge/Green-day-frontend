@@ -30,8 +30,9 @@ export default function CameraScreen({ navigation, route }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0)
-  const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
+  const [, setIsLoading] = useContext(ImageContext).isLoading
   const [uri, setUri] = useContext(ImageContext).uri
+  const [, setProfileUri] = useContext(ImageContext).profileUri
 
   const isFocused = useIsFocused();
 
@@ -104,7 +105,7 @@ export default function CameraScreen({ navigation, route }: any) {
 
     if (purpose === "update user picture") {
       setIsLoading(false)
-      setUri(manipImage.uri)
+      setProfileUri(manipImage.uri)
       navigation.navigate('Register')
       navigation.reset({
         index: 0,

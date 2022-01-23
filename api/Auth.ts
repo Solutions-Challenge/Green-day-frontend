@@ -9,15 +9,18 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  sendEmailVerification,
+  updateProfile,
+  User,
 } from "firebase/auth";
 export const auth = getAuth();
 
 const provider = new GoogleAuthProvider();
 
 export const handleGoogleSignIn = async (setUri: any) => {
-  let user = {} as any
-  let error = {} as any
-  
+  let user = {} as any;
+  let error = {} as any;
+
   const config = {
     androidClientId:
       "816316595942-qdl7p7g6cqgf6mem4c33q52u64tmmk73.apps.googleusercontent.com",
@@ -30,17 +33,20 @@ export const handleGoogleSignIn = async (setUri: any) => {
     .then((res) => {
       // @ts-ignore
       if (res.type === "success") {
-        user = res.user
+        user = res.user;
+      }
+      if (res.type === "cancel") {
+        user = res.type;
       }
     })
     .catch((err) => {
-      error = err.code
+      error = err.code;
     });
 
-    return {
-      user: user,
-      error: error
-    }
+  return {
+    user: user,
+    error: error,
+  };
 };
 
 export const login = async (email: string, password: string) => {
@@ -91,12 +97,11 @@ export const logout = async () => {
 };
 
 export const passwordReset = async (email: string) => {
-  let error = {} as any
-  sendPasswordResetEmail(auth, email)
-    .catch((err) => {
-      error = err
-    });
-  return error
+  let error = {} as any;
+  sendPasswordResetEmail(auth, email).catch((err) => {
+    error = err;
+  });
+  return error;
 };
 
 // Important: To delete a user, the user must have signed in recently.
@@ -110,8 +115,6 @@ export const deleteMe = async (email: string, password: string) => {
       // User deleted.
     })
     .catch((error) => {
-      // An error ocurred
-      // ...
       return error.code;
     });
 };
@@ -148,17 +151,29 @@ export const signin = async (
 
   await createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
-      // Signed in
       user = userCredential.user;
+      sendEmailVerification(user);
     })
     .catch((err) => {
       error = err.code;
     });
+
   return {
-    user: user,
-    error: error,
+    user,
+    error,
   };
 };
+
+export const currentUser = ():User => {
+  return auth.currentUser as User
+}
+
+export const updateUriAndName = (url:string) => {
+  updateProfile(currentUser(), {
+    photoURL: url,
+    displayName: "Test 2"
+  })
+}
 
 export function checkAuth(user: JSON) {
   onAuthStateChanged(auth, (user) => {

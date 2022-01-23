@@ -3,7 +3,7 @@ import React from "react"
 import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, View, Text } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { HelperText, TextInput } from "react-native-paper"
-import { login, passwordReset, signin } from '../api/Auth';
+import { currentUser, login, passwordReset, signin, updateUriAndName } from '../api/Auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const errorCodesforPasswords = {
@@ -89,23 +89,43 @@ export const SubmitButton = (props: any) => {
                 let data = {} as any
                 if (props.submission === "Register") {
                     data = await signin(props.email, props.password, props.confirmPassword)
-                } else if (props.submission === "Login") {
+                } else if (props.submission === "Login" || props.submission === "Verify") {
                     data = await login(props.email, props.password)
                 } else if (props.submission === "Submit") {
                     data = await passwordReset(props.email)
                 }
                 props.setError(data.error)
 
-                if (Object.keys(data.error).length === 0 && props.submission !== "Submit") {
-                    if (props.remember === true) {
-                        console.log(data.user)
-                        await AsyncStorage.setItem("user", JSON.stringify(data.user))
+                if (Object.keys(data.error).length === 0) {
+                    if (props.submission === "Register" || props.submission === "Login") {
+                        if (!currentUser().emailVerified) {
+                            props.navigation.navigate("Verify", { password: props.password, remember: props.remember })
+                        }
+                        else {
+                            if (props.remember === true) {
+                                await AsyncStorage.setItem("user", JSON.stringify(currentUser()))
+                            }
+                            props.navigation.navigate("Home")
+                            props.navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Home' }],
+                            });
+                        }
                     }
-                    props.navigation.navigate("Home")
-                    props.navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Home' }],
-                    });
+                    if (props.submission === "Verify") {
+                        if (currentUser().emailVerified) {
+                            await updateUriAndName(props.profileUri)
+                            console.log(currentUser())
+                            if (props.remember === true) {
+                                await AsyncStorage.setItem("user", JSON.stringify(currentUser()))
+                            }
+                            props.navigation.navigate("Home")
+                            props.navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Home' }],
+                            });
+                        }
+                    }
 
                 }
             }}>
@@ -113,7 +133,7 @@ export const SubmitButton = (props: any) => {
             </TouchableOpacity>
         </View>
         {
-            props.submission !== "Submit" &&
+            props.submission !== "Submit" || props.submission !== "Verify"  &&
             <View style={styles.checkBox}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <BouncyCheckbox
@@ -145,7 +165,7 @@ const styles = StyleSheet.create({
     },
     buttonStyle: {
         marginLeft: 15,
-        marginRight: 15,
+        marginRight: 15
     },
     checkBox: {
         marginTop: 20,

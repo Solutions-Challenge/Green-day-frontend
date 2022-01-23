@@ -24,6 +24,7 @@ import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ForgetPasswordScreen from '../screens/Auth/ForgetPasswordScreen';
 import { useEffect, useState } from 'react';
+import VerifyScreen from '../screens/Auth/VerifyScreen';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -62,6 +63,7 @@ function RootNavigator() {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
+      <Stack.Screen name="Verify" component={VerifyScreen} />
     </Stack.Navigator>
   );
 }

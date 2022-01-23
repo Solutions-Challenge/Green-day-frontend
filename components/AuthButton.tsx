@@ -4,13 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleGoogleSignIn } from "../api/Auth"
 import ImageContext from "../hooks/imageContext"
 
-const AuthButton = ({ uri, text, funct, remember, navigation }: any) => {
+const AuthButton = ({ uri, text, funct, navigation }: any) => {
     const [u, setU] = useContext(ImageContext).uri
     return (
         <TouchableOpacity onPress={async () => {
             if (funct.name === "handleGoogleSignIn") {
                 const data = await funct(setU);
-                if (Object.keys(data.error).length === 0) {
+                if (Object.keys(data.error).length === 0 && data.user !== "cancel") {
                     await AsyncStorage.setItem("user", JSON.stringify(data.user))
                     navigation.navigate("Home")
                     navigation.reset({
@@ -18,7 +18,8 @@ const AuthButton = ({ uri, text, funct, remember, navigation }: any) => {
                         routes: [{ name: 'Home' }],
                     });
                 }
-            } else {
+            }
+            else if (funct.name === "signInGuest") {
                 funct()
             }
         }} style={{ marginBottom: 20 }} >

@@ -1,17 +1,19 @@
 import { Feather, Ionicons, Zocial } from "@expo/vector-icons"
-import React from "react"
+import React, { useContext } from "react"
 import { ImageBackground, View } from "react-native"
 import { TouchableOpacity } from "react-native-gesture-handler"
+import ImageContext from "../hooks/imageContext"
 
 const UserProfile = ({ uri, navigation }: any) => {
+    const [profileUri,] = useContext(ImageContext).profileUri
     return (
         <View style={{ alignItems: 'center', marginVertical: 20 }}>
             <TouchableOpacity onPress={() => {
-                navigation.navigate("Pic", { purpose: "update user picture" })
+                navigation.navigate("Pic", { purpose: "update user picture"  })
             }}> 
                 <ImageBackground
                     source={{
-                        uri: uri,
+                        uri: profileUri,
                     }}
                     style={{ width: 120, height: 120, borderRadius: 60, overflow: 'hidden', borderColor: "black", borderWidth: uri==="guest" ? 2:0 }}
                     resizeMode="cover"

@@ -16,7 +16,7 @@ const Pic = {
   uri: '',
   width: 0,
   error: "",
-  hideTabBar: false,
+  profileUri: "",
   isLoading: false,
 }
 
@@ -27,7 +27,7 @@ export default function App() {
   const colorScheme = useColorScheme();
   const [material, setMaterial] = useState(Pic.material)
   const [uri, setUri] = useState(Pic.uri)
-  const [hideTabBar, setHideTabBar] = useState(Pic.hideTabBar)
+  const [profileUri, setProfileUri] = useState(Pic.profileUri)
   const [width, setWidth] = useState(Pic.width)
   const [error, setError] = useState(Pic.error)
   const [isLoading, setIsLoading] = useState(Pic.isLoading)
@@ -38,7 +38,7 @@ export default function App() {
     uri: [uri, setUri],
     material: [material, setMaterial],
     isLoading: [isLoading, setIsLoading],
-    hideTabBar: [hideTabBar, setHideTabBar]
+    profileUri: [profileUri, setProfileUri]
   }
 
   if (!isLoadingComplete) {
