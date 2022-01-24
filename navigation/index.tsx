@@ -7,7 +7,7 @@ import { AntDesign, Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs"
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs"
-import { NavigationContainer, DefaultTheme, DarkTheme, useNavigation } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, useNavigation, useRoute } from '@react-navigation/native';
 import * as React from 'react';
 import { ColorSchemeName, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,18 +25,17 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ForgetPasswordScreen from '../screens/Auth/ForgetPasswordScreen';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import VerifyScreen from '../screens/Auth/VerifyScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
+import ImageContext from '../hooks/imageContext';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
     <NavigationContainer
       linking={LinkingConfiguration}
       theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-
       <RootNavigator />
-
     </NavigationContainer>
   );
 }
@@ -45,6 +44,7 @@ const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
   const navigation = useNavigation()
+  const [showPicButton,] = useContext(ImageContext).showPicButton
   useEffect(() => {
     (async () => {
       const user = await AsyncStorage.getItem("user")
@@ -58,7 +58,7 @@ function RootNavigator() {
     })();
   }, []);
 
-  return (
+  return (<>
     <Stack.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={MaterialTabs} />
       <Stack.Screen name="Pic" component={CameraScreen} initialParams={{ purpose: "" }} />
@@ -68,7 +68,40 @@ function RootNavigator() {
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
       <Stack.Screen name="Verify" component={VerifyScreen} />
     </Stack.Navigator>
-  );
+    {  showPicButton &&
+      <View style={{ justifyContent: 'center', position: 'absolute', bottom: 60, right: 20 }}>
+        <TouchableOpacity onPress={() => { navigation.navigate("Pic") }}
+          style={{
+            shadowColor: '#7F5DF0',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.5,
+            elevation: 5
+          }}
+        >
+          <View
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: 35,
+              backgroundColor: "#246EE9",
+            }}
+          >
+            <Feather
+              name="camera"
+              size={40}
+              color="white"
+              style={{
+                alignSelf: 'center',
+                marginTop: 'auto',
+                marginBottom: 'auto'
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+      </View>
+    }
+  </>);
 }
 
 
@@ -111,7 +144,7 @@ const MaterialTabs = ({ navigation }: any) => {
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => {
             return (
-              <AntDesign name="user" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'}s />
+              <AntDesign name="user" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} s />
             )
           }
         }}

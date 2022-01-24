@@ -7,7 +7,6 @@ import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import ImageContext from './hooks/imageContext';
 import Loading from './components/Loading';
-import { SafeAreaView } from "react-native-safe-area-context"
 console.disableYellowBox = true;
 
 
@@ -18,6 +17,7 @@ const Pic = {
   error: "",
   profileUri: "",
   isLoading: false,
+  showPicButton: true
 }
 
 
@@ -31,6 +31,7 @@ export default function App() {
   const [width, setWidth] = useState(Pic.width)
   const [error, setError] = useState(Pic.error)
   const [isLoading, setIsLoading] = useState(Pic.isLoading)
+  const [showPicButton, setShowPicButton] = useState(Pic.showPicButton)
 
   const store = {
     error: [error, setError],
@@ -38,7 +39,8 @@ export default function App() {
     uri: [uri, setUri],
     material: [material, setMaterial],
     isLoading: [isLoading, setIsLoading],
-    profileUri: [profileUri, setProfileUri]
+    profileUri: [profileUri, setProfileUri],
+    showPicButton: [showPicButton, setShowPicButton]
   }
 
   if (!isLoadingComplete) {

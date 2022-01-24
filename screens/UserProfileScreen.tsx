@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from "@react-navigation/native"
+import { useIsFocused, useNavigation } from "@react-navigation/native"
 import React, { useContext, useEffect, useState } from "react"
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { deleteMe } from '../api/Auth';
@@ -11,8 +11,10 @@ const UserProfileScreen = () => {
     const navigation = useNavigation()
     const ColorScheme = useColorScheme()
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
+    const [, setShowPicButton] = useContext(ImageContext).showPicButton
     const [name, setName] = useState("")
     const textColor = ColorScheme === "dark" ? "white" : "black"
+    const isFocused = useIsFocused()
 
     useEffect(() => {
         (async () => {
@@ -22,6 +24,10 @@ const UserProfileScreen = () => {
             setName(data.name)
         })();
     }, []);
+
+    useEffect(()=>{
+        setShowPicButton(true)
+    }, [isFocused])
 
     return (
         <View style={styles.container}>

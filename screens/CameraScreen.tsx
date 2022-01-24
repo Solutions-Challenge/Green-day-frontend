@@ -33,6 +33,8 @@ export default function CameraScreen({ navigation, route }: any) {
   const [, setIsLoading] = useContext(ImageContext).isLoading
   const [uri, setUri] = useContext(ImageContext).uri
   const [, setProfileUri] = useContext(ImageContext).profileUri
+  const [,setShowPicButton] = useContext(ImageContext).showPicButton
+
 
   const isFocused = useIsFocused();
 
@@ -184,8 +186,7 @@ export default function CameraScreen({ navigation, route }: any) {
         navigation.navigate('Home', { screen: "Start" })
       }
     }
-
-
+    setShowPicButton(true)
   }
 
   const goBack = () => {
@@ -195,6 +196,7 @@ export default function CameraScreen({ navigation, route }: any) {
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
+      setShowPicButton(false)
       if (status !== 'granted') {
         navigation.navigate('Home', { screen: "Start" })
       }

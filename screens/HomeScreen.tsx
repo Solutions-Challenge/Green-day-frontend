@@ -10,6 +10,7 @@ import { osName } from 'expo-device';
 import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
+import { useIsFocused } from '@react-navigation/native';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -23,6 +24,8 @@ export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
+    const [, setShowPicButton] = useContext(ImageContext).showPicButton
+    const isFocused = useIsFocused()
     const [imageWidth,] = useState(windowWidth / 1.5)
     const [itemData, setItemData] = useState(null)
 
@@ -102,6 +105,10 @@ export default function HomeScreen({ navigation }: any) {
     useEffect(() => {
         setChecked(Array(data.length).fill(false))
     }, [data])
+
+    useEffect(()=>{
+        setShowPicButton(true)
+    }, [isFocused])
 
     const deleteRow = async (indices: number[]) => {
         let newData = [...data]

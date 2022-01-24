@@ -70,6 +70,7 @@ export default function App({ navigation, route }: any) {
   const [switchToConfirm, setSwitchToConfirm] = useState(false)
   const _categoryView = useRef<FlatList>(null)
   const [categories, setCategories] = useState([] as any)
+  const [, setShowPicButton] = useContext(ImageContext).showPicButton
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -272,7 +273,7 @@ export default function App({ navigation, route }: any) {
   useEffect(() => {
 
     (async () => {
-
+      setShowPicButton(true)
       setCatIndex(-1)
       setToggle(false)
       
