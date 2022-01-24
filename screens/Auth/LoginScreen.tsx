@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, KeyboardAvoidingView } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { PasswordSignIn, GeneralSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import AuthButtons from '../../components/AuthButton';
 import ImageContext from '../../hooks/imageContext';
@@ -16,7 +16,12 @@ export default function LoginScreen() {
   const [remember, setRemember] = useState(false)
   const [error, setError] = useContext(ImageContext).error
 
-  const textColor = ColorScheme === "dark" ? "white":"black"
+  const textColor = ColorScheme === "dark" ? "white" : "black"
+  const isFocused = useIsFocused()
+  const [, setShowPicButton] = useContext(ImageContext).showPicButton
+  useEffect(() => {
+    setShowPicButton(false)
+  }, [isFocused])
 
   return (
 
@@ -26,7 +31,7 @@ export default function LoginScreen() {
       </View>
       <View style={styles.text2}>
         <Text>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => {setError(""); navigation.navigate("Register")}} >
+        <TouchableOpacity onPress={() => { setError(""); navigation.navigate("Register") }} >
           <Text style={styles.signupText}> Sign up</Text>
         </TouchableOpacity>
       </View>

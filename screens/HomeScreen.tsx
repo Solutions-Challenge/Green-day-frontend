@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useCallback, useRef, createRef } from 'react';
 import * as React from 'react'
-import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList, TouchableWithoutFeedback, ScrollView, Modal } from 'react-native';
 import BottomSheet from 'reanimated-bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
@@ -49,6 +49,7 @@ export default function HomeScreen({ navigation }: any) {
         const item = data.item
 
         return (<>
+            
 
             <View style={[styles.containerTitle2]}>
 
@@ -99,6 +100,7 @@ export default function HomeScreen({ navigation }: any) {
                     </View>
                 </TouchableHighlight>
             </View>
+           
         </>)
     }, [checked, onLongPress])
 
@@ -106,7 +108,7 @@ export default function HomeScreen({ navigation }: any) {
         setChecked(Array(data.length).fill(false))
     }, [data])
 
-    useEffect(()=>{
+    useEffect(() => {
         setShowPicButton(true)
     }, [isFocused])
 
@@ -158,9 +160,10 @@ export default function HomeScreen({ navigation }: any) {
 
     const Root = () => {
         return (<>
+
             <BottomSheet
                 ref={bs}
-                snapPoints={[windowHeight / 1.5, 0]}
+                snapPoints={[windowHeight / 1.9, 0]}
                 initialSnap={1}
                 renderContent={() => {
                     return (
@@ -172,6 +175,7 @@ export default function HomeScreen({ navigation }: any) {
                 enabledInnerScrolling={false}
                 enabledContentGestureInteraction={false}
             />
+
             {data.length === 0 ? (<>
                 <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>

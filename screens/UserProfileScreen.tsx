@@ -19,9 +19,11 @@ const UserProfileScreen = () => {
     useEffect(() => {
         (async () => {
             let data: any = await AsyncStorage.getItem("user")
-            data = JSON.parse(data as string)
-            setProfileUri(data.photoUrl)
-            setName(data.name)
+            if (data !== null) {
+                data = JSON.parse(data as string)
+                setProfileUri(data.photoUrl)
+                setName(data.name)
+            }
         })();
     }, []);
 

@@ -9,7 +9,7 @@ const UserProfile = ({ uri, navigation }: any) => {
     return (
         <View style={{ alignItems: 'center', marginVertical: 20 }}>
             <TouchableOpacity onPress={() => {
-                navigation.navigate("Pic", { purpose: "update user picture"  })
+                navigation.navigate("Pic", { purpose: "update user picture" })
             }}> 
                 <ImageBackground
                     source={{

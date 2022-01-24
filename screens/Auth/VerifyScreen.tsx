@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons"
-import { useNavigation, useRoute } from "@react-navigation/native"
+import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native"
 import { osName } from "expo-device"
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, KeyboardAvoidingView } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { currentUser, login } from "../../api/Auth"
@@ -21,11 +21,17 @@ const VerifyScreen = () => {
         navigation.goBack()
     }
 
+    const isFocused = useIsFocused()
+    const [, setShowPicButton] = useContext(ImageContext).showPicButton
+    useEffect(() => {
+        setShowPicButton(false)
+    }, [isFocused])
+
     const currentEmail = currentUser().email as string
     const [error, setError] = useState("")
     return (<>
         <View style={styles.container}>
-            <View style={[styles.Middle, {marginBottom: 20}]}>
+            <View style={[styles.Middle, { marginBottom: 20 }]}>
                 <Text style={styles.LoginText}>Verify Email</Text>
                 <Text style={[styles.LoginText, { fontSize: 20, fontWeight: 'normal', paddingHorizontal: 30 }]}>
                     We've sent an email to <Text style={{ color: "#026efd" }}>{currentEmail}</Text> to verify your email address and activate your account.

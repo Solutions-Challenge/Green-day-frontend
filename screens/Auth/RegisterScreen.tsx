@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { GeneralSignIn, PasswordSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AuthButtons from '../../components/AuthButton';
@@ -18,6 +18,12 @@ export default function RegisterScreen() {
   const [remember, setRemember] = useState(false)
   const [profileUri,] = useContext(ImageContext).profileUri
   const [error, setError] = useContext(ImageContext).error
+
+  const isFocused = useIsFocused()
+    const [,setShowPicButton] = useContext(ImageContext).showPicButton
+    useEffect(()=>{
+        setShowPicButton(false)
+    }, [isFocused])
 
   return (
     <View style={styles.container}>

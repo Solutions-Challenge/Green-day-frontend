@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
 import { osName } from "expo-device";
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, KeyboardAvoidingView } from "react-native"
 import { GeneralSignIn, SubmitButton } from "../../components/TextInputSignIn";
 import ImageContext from "../../hooks/imageContext";
@@ -8,13 +9,18 @@ import ImageContext from "../../hooks/imageContext";
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
 const ForgetPasswordScreen = ({ navigation }: any) => {
-
     const goBack = () => {
         navigation.goBack()
     }
-
+    
     const [email, setEmail] = useState("")
     const [error, setError] = useContext(ImageContext).error
+    
+    const isFocused = useIsFocused()
+    const [,setShowPicButton] = useContext(ImageContext).showPicButton
+    useEffect(()=>{
+        setShowPicButton(false)
+    }, [isFocused])
 
     return (<>
         <View style={styles.container}>

@@ -38,7 +38,7 @@ export default function CameraScreen({ navigation, route }: any) {
 
   const isFocused = useIsFocused();
 
-  const { purpose } = route.params
+  const { purpose, screen } = route.params
 
   const save = async (data: any, uri: string, windowWidth: number) => {
 
@@ -108,11 +108,7 @@ export default function CameraScreen({ navigation, route }: any) {
     if (purpose !== "") {
       setIsLoading(false)
       setProfileUri(manipImage.uri)
-      navigation.navigate('Register')
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Register' }],
-      });
+      navigation.goBack()
     }
 
     else {
