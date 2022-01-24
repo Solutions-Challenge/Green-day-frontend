@@ -5,6 +5,8 @@
  */
 import { AntDesign, Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs"
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs"
 import { NavigationContainer, DefaultTheme, DarkTheme, useNavigation } from '@react-navigation/native';
 import * as React from 'react';
 import { ColorSchemeName, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
@@ -23,8 +25,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ForgetPasswordScreen from '../screens/Auth/ForgetPasswordScreen';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import VerifyScreen from '../screens/Auth/VerifyScreen';
+import UserProfileScreen from '../screens/UserProfileScreen';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -44,21 +47,21 @@ function RootNavigator() {
   const navigation = useNavigation()
   useEffect(() => {
     (async () => {
-        const user = await AsyncStorage.getItem("user")
-        if (user === null) {
-          navigation.navigate("Register")
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Register' }],
+      const user = await AsyncStorage.getItem("user")
+      if (user === null) {
+        navigation.navigate("Register")
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Register' }],
         });
-        }
+      }
     })();
   }, []);
 
   return (
     <Stack.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={HomeTabs} />
-      <Stack.Screen name="Pic" component={CameraScreen} initialParams={{purpose: ""}} />
+      <Stack.Screen name="Home" component={MaterialTabs} />
+      <Stack.Screen name="Pic" component={CameraScreen} initialParams={{ purpose: "" }} />
       <Stack.Screen name="Details" component={ExpandImageScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
@@ -66,6 +69,72 @@ function RootNavigator() {
       <Stack.Screen name="Verify" component={VerifyScreen} />
     </Stack.Navigator>
   );
+}
+
+
+const MaterialTab = createMaterialTopTabNavigator()
+
+const MaterialTabs = ({ navigation }: any) => {
+  const colorScheme = useColorScheme();
+  return (
+    <MaterialTab.Navigator
+      initialRouteName='Start'
+      tabBarPosition='bottom'
+      style={{ marginTop: 0 }}
+      initialLayout={{
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").height
+      }}
+      screenOptions={{
+        tabBarIconStyle: { height: 30, width: 30 }
+      }}
+    >
+      <MaterialTab.Screen
+        name="Start"
+        component={HomeScreen}
+        options={{
+          tabBarShowLabel: false,
+          tabBarIcon: ({ focused }) => {
+            return (
+              <AntDesign name="home" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
+            )
+          }
+        }}
+      />
+
+      <MaterialTab.Screen
+        name="UserProfile"
+        component={UserProfileScreen}
+        initialParams={{ material: "" }}
+        options={{
+          title: 'User Profile',
+          tabBarShowLabel: false,
+          tabBarIcon: ({ focused }) => {
+            return (
+              <AntDesign name="user" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'}s />
+            )
+          }
+        }}
+      />
+
+      <MaterialTab.Screen
+        name="Maps"
+        component={MapsScreen}
+        initialParams={{ material: "" }}
+        options={{
+          title: 'Map',
+          swipeEnabled: false,
+          tabBarShowLabel: false,
+          tabBarIcon: ({ focused }) => {
+            return (
+              <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
+            )
+          }
+        }}
+      />
+
+    </MaterialTab.Navigator>
+  )
 }
 
 /**

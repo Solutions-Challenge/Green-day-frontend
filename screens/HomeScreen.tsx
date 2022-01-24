@@ -23,7 +23,7 @@ export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
-    const [imageWidth, setImageWidth] = useState(windowWidth / 1.5)
+    const [imageWidth,] = useState(windowWidth / 1.5)
     const [itemData, setItemData] = useState(null)
 
     const [checked, setChecked] = useState([false])
@@ -224,18 +224,6 @@ export default function HomeScreen({ navigation }: any) {
                         </View>
                     </View>
                 }
-                <View style={{ position: 'absolute', right: flipPosition, top: flipPosition + 30, backgroundColor: 'white', width: 130, height: 30, borderRadius: 60, elevation: 5 }}>
-                    <TouchableOpacity onPress={() => {
-                        AsyncStorage.removeItem("user")
-                        navigation.navigate("Register")
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'Register' }],
-                        });
-                    }}>
-                        <Text style={{ alignSelf: 'center', marginTop: 3 }}>LogOut (temp)</Text>
-                    </TouchableOpacity>
-                </View>
             </>)}
         </>
         );

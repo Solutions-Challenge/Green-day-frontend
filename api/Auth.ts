@@ -113,7 +113,7 @@ export const passwordReset = async (email: string) => {
 };
 
 // Important: To delete a user, the user must have signed in recently.
-export const deleteMe = async (email: string, password: string) => {
+export const deleteMe = async () => {
   const auth = getAuth();
   const user = auth.currentUser;
 

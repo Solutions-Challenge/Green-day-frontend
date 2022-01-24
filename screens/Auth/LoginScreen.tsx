@@ -5,15 +5,18 @@ import { useNavigation } from '@react-navigation/native';
 import { PasswordSignIn, GeneralSignIn, SubmitButton } from '../../components/TextInputSignIn';
 import AuthButtons from '../../components/AuthButton';
 import ImageContext from '../../hooks/imageContext';
+import useColorScheme from '../../hooks/useColorScheme';
 
 export default function LoginScreen() {
   const navigation = useNavigation()
-
+  const ColorScheme = useColorScheme()
   const [password, setPassword] = useState("")
   const [email, setEmail] = useState("")
   const [reveal, setReveal] = useState(false)
   const [remember, setRemember] = useState(false)
   const [error, setError] = useContext(ImageContext).error
+
+  const textColor = ColorScheme === "dark" ? "white":"black"
 
   return (
 
@@ -52,7 +55,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white'
   },
   LoginText: {
     marginTop: 100,

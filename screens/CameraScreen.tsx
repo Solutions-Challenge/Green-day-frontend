@@ -103,7 +103,7 @@ export default function CameraScreen({ navigation, route }: any) {
       }
     )
 
-    if (purpose === "update user picture") {
+    if (purpose !== "") {
       setIsLoading(false)
       setProfileUri(manipImage.uri)
       navigation.navigate('Register')

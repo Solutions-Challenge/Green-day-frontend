@@ -657,12 +657,12 @@ export default function App({ navigation, route }: any) {
             getItemLayout={getItemLayout}
           >
           </FlatList>
-          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
+          <Touch style={{ position: 'absolute', bottom: 170 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
             <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
               <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
             </View>
           </Touch>
-          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
+          <Touch style={{ position: 'absolute', bottom: 170 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
             <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
               {
                 !toggle ?
@@ -742,7 +742,7 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     width: CARD_WIDTH,
     overflow: "hidden",
-    marginBottom: 100 + (Platform.OS === "android" ? 0 : 30)
+    marginBottom: 20 + (Platform.OS === "android" ? 0 : 30)
   },
   cardImage: {
     flex: 3,

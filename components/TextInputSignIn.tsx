@@ -3,7 +3,7 @@ import React from "react"
 import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, View, Text } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { HelperText, TextInput } from "react-native-paper"
-import { currentUser, emailVerify, login, passwordReset, signin, updateUriAndName } from '../api/Auth';
+import { currentUser, login, passwordReset, signin, updateUriAndName } from '../api/Auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const errorCodesforPasswords = {
@@ -89,7 +89,6 @@ export const SubmitButton = (props: any) => {
                 let data = {} as any
                 if (props.submission === "Register") {
                     data = await signin(props.email, props.password, props.confirmPassword)
-                    emailVerify()
                 } else if (props.submission === "Login" || props.submission === "Verify") {
                     data = await login(props.email, props.password)
                 } else if (props.submission === "Submit") {
