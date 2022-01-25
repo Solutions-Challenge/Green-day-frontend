@@ -16,13 +16,6 @@ export default function LoginScreen() {
   const [remember, setRemember] = useState(false)
   const [error, setError] = useContext(ImageContext).error
 
-  const textColor = ColorScheme === "dark" ? "white" : "black"
-  const isFocused = useIsFocused()
-  const [, setShowPicButton] = useContext(ImageContext).showPicButton
-  useEffect(() => {
-    setShowPicButton(false)
-  }, [isFocused])
-
   return (
 
     <View style={styles.container}>

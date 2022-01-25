@@ -14,10 +14,10 @@ const AuthButton = ({ uri, text, funct, navigation }: any) => {
                 if (Object.keys(data.error).length === 0 && data.user !== "cancel") {
                     await signin(data.user.email, data.user.password, data.user.password)
                     await AsyncStorage.setItem("user", JSON.stringify(data.user))
-                    navigation.navigate("Home")
+                    navigation.navigate("Drawer")
                     navigation.reset({
                         index: 0,
-                        routes: [{ name: 'Home' }],
+                        routes: [{ name: 'Drawer' }],
                     });
                 }
             }
@@ -54,10 +54,10 @@ const AuthButton = ({ uri, text, funct, navigation }: any) => {
 
 const AuthButtons = ({ navigation, remember }: any) => {
     const signInGuest = () => {
-        navigation.navigate("Home")
+        navigation.navigate("Drawer")
         navigation.reset({
             index: 0,
-            routes: [{ name: 'Home' }],
+            routes: [{ name: 'Drawer' }],
         });
     }
     return (

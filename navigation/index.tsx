@@ -3,15 +3,13 @@
  * https://reactnavigation.org/docs/getting-started
  *
  */
-import { AntDesign, Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs"
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs"
-import { NavigationContainer, DefaultTheme, DarkTheme, useNavigation, useRoute } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, useNavigation } from '@react-navigation/native';
 import * as React from 'react';
-import { ColorSchemeName, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
+import { ColorSchemeName, Platform, TouchableOpacity, View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer"
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import { RootTabParamList } from '../types';
@@ -28,6 +26,7 @@ import ForgetPasswordScreen from '../screens/Auth/ForgetPasswordScreen';
 import { useContext, useEffect } from 'react';
 import VerifyScreen from '../screens/Auth/VerifyScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
+import UserProfile from '../components/UserProfile';
 import ImageContext from '../hooks/imageContext';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -44,7 +43,6 @@ const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
   const navigation = useNavigation()
-  const [showPicButton,] = useContext(ImageContext).showPicButton
   useEffect(() => {
     (async () => {
       const user = await AsyncStorage.getItem("user")
@@ -59,8 +57,8 @@ function RootNavigator() {
   }, []);
 
   return (<>
-    <Stack.Navigator initialRouteName={"Home"} screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={MaterialTabs} />
+    <Stack.Navigator initialRouteName='Drawer' screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Drawer" component={DrawerTabs} />
       <Stack.Screen name="Pic" component={CameraScreen} initialParams={{ purpose: "" }} />
       <Stack.Screen name="Details" component={ExpandImageScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -68,105 +66,35 @@ function RootNavigator() {
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
       <Stack.Screen name="Verify" component={VerifyScreen} />
     </Stack.Navigator>
-    {  showPicButton &&
-      <View style={{ justifyContent: 'center', position: 'absolute', bottom: 60, right: 20 }}>
-        <TouchableOpacity onPress={() => { navigation.navigate("Pic") }}
-          style={{
-            shadowColor: '#7F5DF0',
-            shadowOffset: { width: 0, height: 10 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.5,
-            elevation: 5
-          }}
-        >
-          <View
-            style={{
-              width: 60,
-              height: 60,
-              borderRadius: 35,
-              backgroundColor: "#246EE9",
-            }}
-          >
-            <Feather
-              name="camera"
-              size={40}
-              color="white"
-              style={{
-                alignSelf: 'center',
-                marginTop: 'auto',
-                marginBottom: 'auto'
-              }}
-            />
-          </View>
-        </TouchableOpacity>
-      </View>
-    }
   </>);
 }
 
+const Drawer = createDrawerNavigator();
 
-const MaterialTab = createMaterialTopTabNavigator()
+const DrawerTabs = () => {
 
-const MaterialTabs = ({ navigation }: any) => {
-  const colorScheme = useColorScheme();
+  const [profileUri,] = useContext(ImageContext).profileUri
+
   return (
-    <MaterialTab.Navigator
-      initialRouteName='Start'
-      tabBarPosition='bottom'
-      style={{ marginTop: 0 }}
-      initialLayout={{
-        width: Dimensions.get("window").width,
-        height: Dimensions.get("window").height
-      }}
-      screenOptions={{
-        tabBarIconStyle: { height: 30, width: 30 }
-      }}
-    >
-      <MaterialTab.Screen
-        name="Start"
-        component={HomeScreen}
-        options={{
-          tabBarShowLabel: false,
-          tabBarIcon: ({ focused }) => {
-            return (
-              <AntDesign name="home" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
-            )
-          }
-        }}
-      />
+    <Drawer.Navigator screenOptions={{ headerShown: false, drawerType: "front", swipeEdgeWidth: 100 }} drawerContent={(props) => {
+      return (
+        <DrawerContentScrollView {...props}>
+          <UserProfile uri={profileUri} width={60} height={60} hideCameraEdit={true} />
+          <DrawerItemList {...props} />
+        </DrawerContentScrollView>
+      )
+    }} >
+      <Drawer.Screen name={"Home"} component={HomeTabs} />
+      <Drawer.Screen name={"Profile"} component={UserProfileScreen} />
+    </Drawer.Navigator>
+  )
+}
 
-      <MaterialTab.Screen
-        name="UserProfile"
-        component={UserProfileScreen}
-        initialParams={{ material: "" }}
-        options={{
-          title: 'User Profile',
-          tabBarShowLabel: false,
-          tabBarIcon: ({ focused }) => {
-            return (
-              <AntDesign name="user" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} s />
-            )
-          }
-        }}
-      />
-
-      <MaterialTab.Screen
-        name="Maps"
-        component={MapsScreen}
-        initialParams={{ material: "" }}
-        options={{
-          title: 'Map',
-          swipeEnabled: false,
-          tabBarShowLabel: false,
-          tabBarIcon: ({ focused }) => {
-            return (
-              <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
-            )
-          }
-        }}
-      />
-
-    </MaterialTab.Navigator>
+const Drawer2 = () => {
+  return (
+    <View>
+      <Text>Drawer 2</Text>
+    </View>
   )
 }
 
@@ -200,8 +128,8 @@ const HomeTabs = ({ navigation }: any) => {
         options={() => ({
           title: 'Start',
           tabBarIcon: ({ focused }) =>
-            <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
-              <AntDesign name="home" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
+            <View style={{ marginTop: Platform.OS === "ios" ? 12 : 0 }}>
+              <Ionicons name="home-outline" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
             </View>
         })}
       />
@@ -216,7 +144,7 @@ const HomeTabs = ({ navigation }: any) => {
           title: 'Pic',
           tabBarIcon: () => {
             return (
-              <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
+              <View style={{ marginTop: Platform.OS === "ios" ? 12 : 0 }}>
                 <TouchableOpacity onPress={() => { navigation.navigate('Pic') }}
                   style={{
                     shadowColor: '#7F5DF0',
@@ -260,7 +188,7 @@ const HomeTabs = ({ navigation }: any) => {
           title: 'Maps',
           tabBarIcon: ({ focused }) => {
             return (
-              <View style={{ justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
+              <View style={{ marginTop: Platform.OS === "ios" ? 12 : 0 }}>
                 <MaterialCommunityIcons name="google-maps" size={30} color={focused ? colorScheme === "dark" ? '#fff' : '#e32f45' : '#748c94'} />
               </View>
             )

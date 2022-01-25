@@ -105,10 +105,10 @@ export const SubmitButton = (props: any) => {
                             if (props.remember === true) {
                                 await AsyncStorage.setItem("user", JSON.stringify(currentUser()))
                             }
-                            props.navigation.navigate("Home")
+                            props.navigation.navigate("Drawer")
                             props.navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'Home' }],
+                                routes: [{ name: 'Drawer' }],
                             });
                         }
                     }
@@ -118,10 +118,10 @@ export const SubmitButton = (props: any) => {
                             if (props.remember === true) {
                                 await AsyncStorage.setItem("user", JSON.stringify(currentUser()))
                             }
-                            props.navigation.navigate("Home")
+                            props.navigation.navigate("Drawer")
                             props.navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'Home' }],
+                                routes: [{ name: 'Drawer' }],
                             });
                         }
                     }

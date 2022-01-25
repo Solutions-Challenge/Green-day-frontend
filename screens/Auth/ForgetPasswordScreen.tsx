@@ -15,12 +15,6 @@ const ForgetPasswordScreen = ({ navigation }: any) => {
     
     const [email, setEmail] = useState("")
     const [error, setError] = useContext(ImageContext).error
-    
-    const isFocused = useIsFocused()
-    const [,setShowPicButton] = useContext(ImageContext).showPicButton
-    useEffect(()=>{
-        setShowPicButton(false)
-    }, [isFocused])
 
     return (<>
         <View style={styles.container}>

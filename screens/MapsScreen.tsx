@@ -70,7 +70,6 @@ export default function App({ navigation, route }: any) {
   const [switchToConfirm, setSwitchToConfirm] = useState(false)
   const _categoryView = useRef<FlatList>(null)
   const [categories, setCategories] = useState([] as any)
-  const [, setShowPicButton] = useContext(ImageContext).showPicButton
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -271,9 +270,7 @@ export default function App({ navigation, route }: any) {
   }, [catIndex, userData])
 
   useEffect(() => {
-
     (async () => {
-      setShowPicButton(true)
       setCatIndex(-1)
       setToggle(false)
       
@@ -591,8 +588,6 @@ export default function App({ navigation, route }: any) {
       </View>
       {
         visible && partialUserData.length > 0 && (<>
-
-
           <FlatList
             ref={_categoryView}
             horizontal
@@ -658,12 +653,12 @@ export default function App({ navigation, route }: any) {
             getItemLayout={getItemLayout}
           >
           </FlatList>
-          <Touch style={{ position: 'absolute', bottom: 170 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
+          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
             <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
               <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
             </View>
           </Touch>
-          <Touch style={{ position: 'absolute', bottom: 170 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
+          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
             <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
               {
                 !toggle ?
@@ -722,7 +717,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     position: "absolute",
-    bottom: 0,
+    bottom: 80,
     left: 0,
     right: 0,
     paddingVertical: 10,

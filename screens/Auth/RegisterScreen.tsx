@@ -19,12 +19,6 @@ export default function RegisterScreen() {
   const [profileUri,] = useContext(ImageContext).profileUri
   const [error, setError] = useContext(ImageContext).error
 
-  const isFocused = useIsFocused()
-    const [,setShowPicButton] = useContext(ImageContext).showPicButton
-    useEffect(()=>{
-        setShowPicButton(false)
-    }, [isFocused])
-
   return (
     <View style={styles.container}>
       <KeyboardAwareScrollView>
@@ -36,7 +30,7 @@ export default function RegisterScreen() {
           <TouchableOpacity onPress={() => {setError(""); navigation.navigate("Login")}} ><Text style={styles.signupText}> Login </Text></TouchableOpacity>
         </View>
 
-        <UserProfile uri={profileUri === "" ? "guest":profileUri} navigation={navigation} />
+        <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={false} />
 
         <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} error={error} />
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} error={error} />

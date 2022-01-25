@@ -21,12 +21,6 @@ const VerifyScreen = () => {
         navigation.goBack()
     }
 
-    const isFocused = useIsFocused()
-    const [, setShowPicButton] = useContext(ImageContext).showPicButton
-    useEffect(() => {
-        setShowPicButton(false)
-    }, [isFocused])
-
     const currentEmail = currentUser().email as string
     const [error, setError] = useState("")
     return (<>

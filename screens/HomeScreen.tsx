@@ -11,6 +11,7 @@ import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
 import { useIsFocused } from '@react-navigation/native';
+import UserProfile from '../components/UserProfile';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -24,10 +25,10 @@ export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
-    const [, setShowPicButton] = useContext(ImageContext).showPicButton
     const isFocused = useIsFocused()
     const [imageWidth,] = useState(windowWidth / 1.5)
     const [itemData, setItemData] = useState(null)
+    const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
 
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
@@ -44,13 +45,21 @@ export default function HomeScreen({ navigation }: any) {
         setChecked(checkedCopy)
     }
 
+    useEffect(() => {
+        (async () => {
+            let data: any = await AsyncStorage.getItem("user")
+            if (data !== null) {
+                data = JSON.parse(data as string)
+                setProfileUri(data.photoUrl)
+            }
+        })();
+    }, []);
+
     const renderItem = useCallback((data: any) => {
 
         const item = data.item
 
         return (<>
-            
-
             <View style={[styles.containerTitle2]}>
 
                 {onLongPress && <BouncyCheckbox
@@ -100,17 +109,13 @@ export default function HomeScreen({ navigation }: any) {
                     </View>
                 </TouchableHighlight>
             </View>
-           
+
         </>)
     }, [checked, onLongPress])
 
     useEffect(() => {
         setChecked(Array(data.length).fill(false))
     }, [data])
-
-    useEffect(() => {
-        setShowPicButton(true)
-    }, [isFocused])
 
     const deleteRow = async (indices: number[]) => {
         let newData = [...data]
@@ -163,7 +168,7 @@ export default function HomeScreen({ navigation }: any) {
 
             <BottomSheet
                 ref={bs}
-                snapPoints={[windowHeight / 1.9, 0]}
+                snapPoints={[windowHeight / 1.3, 0]}
                 initialSnap={1}
                 renderContent={() => {
                     return (
@@ -184,20 +189,17 @@ export default function HomeScreen({ navigation }: any) {
                     <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
                 </View>
             </>) : (<>
-                <View>
-                    <FlatList
-                        data={data}
-                        extraData={checked}
-                        ref={_scrollView}
-                        onScrollToIndexFailed={(err) => { console.log(err) }}
-                        keyExtractor={(item,) => item.key}
-                        renderItem={renderItem}
-                        style={{ marginVertical: 120 }}
-                    />
-                    <View style={{ position: 'absolute', top: flipPosition + 10, left: 20 }}>
-                        <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
-                    </View>
-                </View>
+
+                <FlatList
+                    data={data}
+                    extraData={checked}
+                    ref={_scrollView}
+                    onScrollToIndexFailed={(err) => { console.log(err) }}
+                    keyExtractor={(item,) => item.key}
+                    renderItem={renderItem}
+                    style={{ marginVertical: 120 }}
+                />
+
 
                 {onLongPress &&
                     <View style={{ marginLeft: 'auto', marginRight: 'auto', bottom: 130, backgroundColor: colorScheme === "dark" ? '#181818' : "white", padding: 20, borderRadius: 10 }}>
@@ -235,7 +237,14 @@ export default function HomeScreen({ navigation }: any) {
                         </View>
                     </View>
                 }
+                <View style={{ position: 'absolute', top: flipPosition + 10, right: 20 }}>
+                    <Text style={{ color: colorScheme === "dark" ? "white" : "black", fontSize: 40 }} >{data.length} Image{data.length === 1 ? "" : "s"}</Text>
+                </View>
             </>)}
+            <TouchableOpacity onPress={() => { navigation.openDrawer() }} style={{ position: 'absolute', top: flipPosition, left: 20 }}>
+                <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={true} width={40} height={40} />
+            </TouchableOpacity>
+
         </>
         );
     }

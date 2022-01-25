@@ -1,46 +1,43 @@
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused, useNavigation } from "@react-navigation/native"
+import { osName } from 'expo-device';
 import React, { useContext, useEffect, useState } from "react"
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
 import { deleteMe } from '../api/Auth';
 import UserProfile from "../components/UserProfile"
 import ImageContext from '../hooks/imageContext';
 import useColorScheme from '../hooks/useColorScheme';
 
 const UserProfileScreen = () => {
-    const navigation = useNavigation()
+    const navigation:any = useNavigation()
     const ColorScheme = useColorScheme()
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
-    const [, setShowPicButton] = useContext(ImageContext).showPicButton
     const [name, setName] = useState("")
     const textColor = ColorScheme === "dark" ? "white" : "black"
-    const isFocused = useIsFocused()
+    let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
+
 
     useEffect(() => {
         (async () => {
             let data: any = await AsyncStorage.getItem("user")
             if (data !== null) {
                 data = JSON.parse(data as string)
-                setProfileUri(data.photoUrl)
                 setName(data.name)
             }
         })();
     }, []);
-
-    useEffect(()=>{
-        setShowPicButton(true)
-    }, [isFocused])
 
     return (
         <View style={styles.container}>
             <View style={styles.Middle}>
                 <Text style={[styles.LoginText, { color: textColor }]}>Welcome</Text>
             </View>
-            <UserProfile uri={profileUri === "" ? "guest" : profileUri} navigation={navigation} />
+            <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={false} />
             <View style={styles.Middle}>
                 <Text style={{ color: textColor }}>{name}</Text>
             </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-around', top: Dimensions.get("window").height - 400}}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
                 <View style={{ backgroundColor: 'white', width: 140, height: 50, borderRadius: 60, elevation: 5 }}>
                     <TouchableOpacity onPress={() => {
                         AsyncStorage.removeItem("user")
@@ -70,6 +67,11 @@ const UserProfileScreen = () => {
                         <Text style={{ alignSelf: 'center', marginTop: 15 }}>Delete Account</Text>
                     </TouchableOpacity>
                 </View>
+            </View>
+            <View style={{ position: 'absolute', top: flipPosition + 20, left: 20, backgroundColor: ColorScheme === "dark" ? "black":"white", borderRadius: 60, elevation: 5 }}>
+                <TouchableOpacity onPress={()=>{navigation.openDrawer()}}>
+                    <Ionicons name="ios-arrow-back-sharp" size={30} color={ColorScheme === "dark" ? "white":"black"} />
+                </TouchableOpacity>
             </View>
         </View>
     )

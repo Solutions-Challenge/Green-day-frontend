@@ -31,7 +31,6 @@ export default function App() {
   const [width, setWidth] = useState(Pic.width)
   const [error, setError] = useState(Pic.error)
   const [isLoading, setIsLoading] = useState(Pic.isLoading)
-  const [showPicButton, setShowPicButton] = useState(Pic.showPicButton)
 
   const store = {
     error: [error, setError],
@@ -40,7 +39,6 @@ export default function App() {
     material: [material, setMaterial],
     isLoading: [isLoading, setIsLoading],
     profileUri: [profileUri, setProfileUri],
-    showPicButton: [showPicButton, setShowPicButton]
   }
 
   if (!isLoadingComplete) {
