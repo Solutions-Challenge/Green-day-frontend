@@ -25,10 +25,10 @@ export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
-    const isFocused = useIsFocused()
     const [imageWidth,] = useState(windowWidth / 1.5)
     const [itemData, setItemData] = useState(null)
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
+    const [fullName, setFullName] = useContext(ImageContext).fullName
 
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
@@ -49,8 +49,20 @@ export default function HomeScreen({ navigation }: any) {
         (async () => {
             let data: any = await AsyncStorage.getItem("user")
             if (data !== null) {
+                console.log(data)
                 data = JSON.parse(data as string)
-                setProfileUri(data.photoUrl)
+                if ("photoURL" in data) {
+                    setProfileUri(data.photoURL)
+                } 
+                if ("photoUrl" in data) {
+                    setProfileUri(data.photoUrl)
+                }
+                if ("name" in data) {
+                    setFullName(data.name)
+                }
+                if ("displayName" in data) {
+                    setFullName(data.displayName)
+                }
             }
         })();
     }, []);

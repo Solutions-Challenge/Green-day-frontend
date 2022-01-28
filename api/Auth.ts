@@ -176,10 +176,10 @@ export const currentUser = (): User => {
   return auth.currentUser as User;
 };
  
-export const updateUriAndName = (url: string) => {
-  updateProfile(currentUser(), {
+export const updateUriAndName = async (url: string, name:string) => {
+  await updateProfile(currentUser(), {
     photoURL: url,
-    displayName: "Test 2",
+    displayName: name,
   });
 };
 

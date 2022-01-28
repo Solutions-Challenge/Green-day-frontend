@@ -13,20 +13,9 @@ const UserProfileScreen = () => {
     const navigation:any = useNavigation()
     const ColorScheme = useColorScheme()
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
-    const [name, setName] = useState("")
+    const [fullName, setFullName] = useContext(ImageContext).fullName
     const textColor = ColorScheme === "dark" ? "white" : "black"
     let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
-
-
-    useEffect(() => {
-        (async () => {
-            let data: any = await AsyncStorage.getItem("user")
-            if (data !== null) {
-                data = JSON.parse(data as string)
-                setName(data.name)
-            }
-        })();
-    }, []);
 
     return (
         <View style={styles.container}>
@@ -35,14 +24,15 @@ const UserProfileScreen = () => {
             </View>
             <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={false} />
             <View style={styles.Middle}>
-                <Text style={{ color: textColor }}>{name}</Text>
+                <Text style={{ color: textColor }}>{fullName}</Text>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
                 <View style={{ backgroundColor: 'white', width: 140, height: 50, borderRadius: 60, elevation: 5 }}>
                     <TouchableOpacity onPress={() => {
                         AsyncStorage.removeItem("user")
                         AsyncStorage.removeItem("multi")
-                        setProfileUri("")
+                        setProfileUri("Guest")
+                        setFullName("")
                         navigation.navigate("Register")
                         navigation.reset({
                             index: 0,
@@ -57,7 +47,8 @@ const UserProfileScreen = () => {
                         await AsyncStorage.removeItem("user")
                         await AsyncStorage.removeItem("multi")
                         await deleteMe()
-                        setProfileUri("")
+                        setProfileUri("guest")
+                        setFullName("")
                         navigation.navigate("Register")
                         navigation.reset({
                             index: 0,

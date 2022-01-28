@@ -10,9 +10,7 @@ const AuthButton = ({ uri, text, funct, navigation }: any) => {
         <TouchableOpacity onPress={async () => {
             if (funct.name === "handleGoogleSignIn") {
                 const data = await funct(setU);
-                console.log(data.user)
                 if (Object.keys(data.error).length === 0 && data.user !== "cancel") {
-                    await signin(data.user.email, data.user.password, data.user.password)
                     await AsyncStorage.setItem("user", JSON.stringify(data.user))
                     navigation.navigate("Drawer")
                     navigation.reset({

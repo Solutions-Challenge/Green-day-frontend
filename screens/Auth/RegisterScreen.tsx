@@ -18,6 +18,8 @@ export default function RegisterScreen() {
   const [remember, setRemember] = useState(false)
   const [profileUri,] = useContext(ImageContext).profileUri
   const [error, setError] = useContext(ImageContext).error
+  const [fullName, setFullName] = useContext(ImageContext).fullName
+
 
   return (
     <View style={styles.container}>
@@ -31,12 +33,12 @@ export default function RegisterScreen() {
         </View>
 
         <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={false} />
-
+        <GeneralSignIn placeholder={"Name: "} icon={<MaterialIcons name={"person"} size={24} />} set={setFullName} error={error} />
         <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} error={error} />
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} error={error} />
         <PasswordSignIn placeholder={"Confirm Password: "} reveal={reveal} setReveal={setReveal} setPassword={setConfirmPassword} error={error} />
 
-        <SubmitButton submission={"Register"} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} setError={setError} navigation={navigation} />
+        <SubmitButton submission={"Register"} name={fullName} email={email} password={password} confirmPassword={confirmPassword} setRemember={setRemember} remember={remember} setError={setError} navigation={navigation} />
 
         <View style={styles.lineStyle}>
           <View style={{ flex: 1, height: 1, backgroundColor: 'black' }} />

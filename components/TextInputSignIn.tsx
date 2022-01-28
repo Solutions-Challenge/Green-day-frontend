@@ -1,10 +1,11 @@
 import { useNavigation } from "@react-navigation/native"
-import React from "react"
+import React, { useContext } from "react"
 import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, View, Text } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { HelperText, TextInput } from "react-native-paper"
 import { currentUser, login, passwordReset, signin, updateUriAndName } from '../api/Auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ImageContext from "../hooks/imageContext"
 
 const errorCodesforPasswords = {
     "auth/wrong-password": "password is incorrect",
@@ -83,12 +84,14 @@ export const GeneralSignIn = ({ placeholder, set, icon, error }: any) => {
 }
 
 export const SubmitButton = (props: any) => {
+    const [profileUri,] = useContext(ImageContext).profileUri
     return (<>
         <View style={[styles.buttonStyle, { marginBottom: 0, marginTop: 20 }]}>
             <TouchableOpacity style={styles.buttonDesign} onPress={async () => {
                 let data = {} as any
                 if (props.submission === "Register") {
                     data = await signin(props.email, props.password, props.confirmPassword)
+                    await updateUriAndName(profileUri, props.name)
                 } else if (props.submission === "Login" || props.submission === "Verify") {
                     data = await login(props.email, props.password)
                 } else if (props.submission === "Submit") {
@@ -114,7 +117,6 @@ export const SubmitButton = (props: any) => {
                     }
                     if (props.submission === "Verify") {
                         if (currentUser().emailVerified) {
-                            await updateUriAndName(props.profileUri)
                             if (props.remember === true) {
                                 await AsyncStorage.setItem("user", JSON.stringify(currentUser()))
                             }
@@ -132,7 +134,7 @@ export const SubmitButton = (props: any) => {
             </TouchableOpacity>
         </View>
         {
-            props.submission !== "Submit" || props.submission !== "Verify"  &&
+            (props.submission != "Submit" && props.submission != "Verify") &&
             <View style={styles.checkBox}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <BouncyCheckbox

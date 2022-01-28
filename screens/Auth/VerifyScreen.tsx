@@ -1,10 +1,9 @@
 import { Ionicons } from "@expo/vector-icons"
-import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native"
+import { useNavigation, useRoute } from "@react-navigation/native"
 import { osName } from "expo-device"
-import React, { useContext, useEffect, useState } from "react"
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, KeyboardAvoidingView } from "react-native"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { currentUser, login } from "../../api/Auth"
+import React, { useContext, useState } from "react"
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from "react-native"
+import { currentUser } from "../../api/Auth"
 import { SubmitButton } from "../../components/TextInputSignIn"
 import ImageContext from "../../hooks/imageContext"
 
@@ -15,6 +14,7 @@ let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number
 const VerifyScreen = () => {
     const navigation = useNavigation()
     const [profileUri,] = useContext(ImageContext).profileUri
+    const [fullName,] = useContext(ImageContext).fullName
     const route = useRoute()
     const { password, remember }: any = route.params
     const goBack = () => {
@@ -32,7 +32,7 @@ const VerifyScreen = () => {
                     The link will expire in 1 hour.
                 </Text>
             </View>
-            <SubmitButton submission={"Verify"} email={currentEmail} password={password} setError={setError} navigation={navigation} profileUri={profileUri} />
+            <SubmitButton name={fullName} submission={"Verify"} email={currentEmail} password={password} setError={setError} navigation={navigation} profileUri={profileUri} remember={remember} />
 
         </View>
         <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'white', borderRadius: 60, elevation: 5 }}>

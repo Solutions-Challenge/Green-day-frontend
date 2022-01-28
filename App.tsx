@@ -15,7 +15,8 @@ const Pic = {
   uri: '',
   width: 0,
   error: "",
-  profileUri: "",
+  profileUri: "guest",
+  fullName: "",
   isLoading: false,
   showPicButton: true
 }
@@ -31,6 +32,7 @@ export default function App() {
   const [width, setWidth] = useState(Pic.width)
   const [error, setError] = useState(Pic.error)
   const [isLoading, setIsLoading] = useState(Pic.isLoading)
+  const [fullName, setFullName] = useState(Pic.fullName)
 
   const store = {
     error: [error, setError],
@@ -39,6 +41,7 @@ export default function App() {
     material: [material, setMaterial],
     isLoading: [isLoading, setIsLoading],
     profileUri: [profileUri, setProfileUri],
+    fullName: [fullName, setFullName]
   }
 
   if (!isLoadingComplete) {

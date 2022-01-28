@@ -16,10 +16,10 @@ const UserProfile = ({ uri, navigation, hideCameraEdit, width, height }: any) =>
                     source={{
                         uri: uri,
                     }}
-                    style={{ width: width ? width:120, height: height?height:120, borderRadius: width?width/2:60, overflow: 'hidden', borderColor: "black", borderWidth: uri === "" ? 1 : 0 }}
+                    style={{ width: width ? width:120, height: height?height:120, borderRadius: width?width/2:60, overflow: 'hidden', borderColor: "black", borderWidth: uri === "guest" ? 1 : 0 }}
                     resizeMode="cover"
                 >
-                    {uri === "" && <Ionicons name="person-sharp" color={colorScheme === "dark" ? "white" : "black"} size={width?width:120} style={{ marginLeft: width?0:2 }} />}
+                    {(uri === "guest" || uri==="Guest") && <Ionicons name="person-sharp" color={colorScheme === "dark" ? "white" : "black"} size={width?width:130} style={{alignSelf: 'center', marginTop: 5}} />}
 
                     {
                         !hideCameraEdit &&

@@ -172,13 +172,13 @@ export default function CameraScreen({ navigation, route }: any) {
         save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
         setIsLoading(false)
         setUri(manipImage.uri)
-        navigation.navigate('Home', { screen: "Start" })
+        navigation.navigate('Drawer')
       }
       else {
         console.log('empty')
         setIsLoading(false)
         setUri(manipImage.uri)
-        navigation.navigate('Home', { screen: "Start" })
+        navigation.navigate('Drawer')
       }
     }
   }
@@ -191,7 +191,7 @@ export default function CameraScreen({ navigation, route }: any) {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        navigation.navigate('Home', { screen: "Start" })
+        navigation.navigate("Drawer")
       }
     })();
   }, []);
