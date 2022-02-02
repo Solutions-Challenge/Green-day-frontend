@@ -587,7 +587,7 @@ export default function App({ navigation, route }: any) {
         </View>
       </View>
       {
-        visible && partialUserData.length > 0 && (<>
+        visible && partialUserData.length >= 0 && (<>
           <FlatList
             ref={_categoryView}
             horizontal

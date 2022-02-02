@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { TouchableOpacity, Text, View, Image, StyleSheet } from "react-native"
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { handleGoogleSignIn, signin } from "../api/Auth"
+import { anonymousSignIn, handleGoogleSignIn } from "../api/Auth"
 import ImageContext from "../hooks/imageContext"
 
 const AuthButton = ({ uri, text, funct, navigation }: any) => {
@@ -51,12 +51,17 @@ const AuthButton = ({ uri, text, funct, navigation }: any) => {
 
 
 const AuthButtons = ({ navigation, remember }: any) => {
-    const signInGuest = () => {
-        navigation.navigate("Drawer")
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Drawer' }],
-        });
+    const signInGuest = async () => {
+        const data = await anonymousSignIn()
+        console.log(data)
+        if (Object.keys(data.error).length === 0) {
+            await AsyncStorage.setItem("user", JSON.stringify(data.user))
+            navigation.navigate("Drawer")
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Drawer' }],
+            });
+        }
     }
     return (
         <View style={styles.boxStyle}>

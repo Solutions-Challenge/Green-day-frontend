@@ -22,7 +22,7 @@ const UserProfileScreen = () => {
             <View style={styles.Middle}>
                 <Text style={[styles.LoginText, { color: textColor }]}>Welcome</Text>
             </View>
-            <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={false} />
+            <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={fullName === "Guest" ? true:false} />
             <View style={styles.Middle}>
                 <Text style={{ color: textColor }}>{fullName}</Text>
             </View>
@@ -47,7 +47,7 @@ const UserProfileScreen = () => {
                         await AsyncStorage.removeItem("user")
                         await AsyncStorage.removeItem("multi")
                         await deleteMe()
-                        setProfileUri("guest")
+                        setProfileUri("Guest")
                         setFullName("")
                         navigation.navigate("Register")
                         navigation.reset({

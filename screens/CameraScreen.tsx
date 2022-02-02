@@ -11,8 +11,6 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import { PinchGestureHandler } from 'react-native-gesture-handler';
 import Svg, { Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import getEnvVars from '../environment';
-const { CLOUDVISIONAPIKEY } = getEnvVars();
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -26,20 +24,16 @@ function uuid() {
   });
 }
 
-export default function CameraScreen({ navigation, route }: any) {
+export default function CameraScreen({ navigation }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0)
-  const [, setIsLoading] = useContext(ImageContext).isLoading
+  const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
   const [uri, setUri] = useContext(ImageContext).uri
-  const [, setProfileUri] = useContext(ImageContext).profileUri
-
 
   const isFocused = useIsFocused();
 
-  const { purpose, screen } = route.params
-
-  const save = async (data: any, uri: string, windowWidth: number) => {
+  const save = async (data:any) => {
 
     let items: any = []
 
@@ -53,12 +47,9 @@ export default function CameraScreen({ navigation, route }: any) {
 
         items.unshift({
           key: uuid(),
-          width: windowWidth,
-          uri: uri,
-          multi: data,
+          multi: data
         })
       })
-
     await AsyncStorage.setItem("multi", JSON.stringify(items))
   }
 
@@ -74,11 +65,12 @@ export default function CameraScreen({ navigation, route }: any) {
     setZoom(newZoom);
   }
 
+
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
     setIsLoading(true)
-    const photo = await camera.takePictureAsync({ quality: 1 })
+    const photo = await camera.takePictureAsync({quality: 1})
 
     const manipImage = await manipulateAsync(
       photo.uri,
@@ -100,98 +92,46 @@ export default function CameraScreen({ navigation, route }: any) {
       {
         format: 'jpeg' as SaveFormat,
         compress: 1,
-        base64: true
       }
     )
 
-    if (purpose !== "") {
-      setIsLoading(false)
-      setProfileUri(manipImage.uri)
-      navigation.goBack()
-    }
+    let localUri = manipImage.uri;
+    let filename = localUri.split('/').pop();
 
-    else {
-      const body = JSON.stringify({
-        requests: [
-          {
-            image: {
-              content: manipImage.base64
-            },
-            features: [
-              {
-                type: "OBJECT_LOCALIZATION",
-                maxResults: 10
-              }
-            ]
-          }
-        ]
-      })
+    let match = /\.(\w+)$/.exec(filename as string);
+    let type = match ? `image/${match[1]}` : `image`;
 
-      const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${CLOUDVISIONAPIKEY}`, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        method: "POST",
-        body: body
-      })
+    let formData = new FormData();
 
-      const visionData = await visionRequest.json()
+    // @ts-ignore
+    formData.append('file', { uri: localUri, name: filename, type });
 
-      if ("localizedObjectAnnotations" in visionData.responses[0]) {
-        let object
-        let formData = new FormData();
-        for (let i = 0; i < visionData.responses[0].localizedObjectAnnotations.length; i++) {
-          object = visionData.responses[0].localizedObjectAnnotations[i]
+    const res = await fetch('http://10.0.0.222:5000/multi', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+    })
 
-          const croppedImage = await manipulateAsync(
-            manipImage.uri,
-            [{
-              resize: {
-                width: manipImage.width,
-                height: manipImage.height
-              }
-            },
-            {
-              crop: {
-                originX: manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0,
-                originY: manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0,
-                width: (manipImage.width * object.boundingPoly.normalizedVertices[2].x || 0) - (manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0),
-                height: (manipImage.height * object.boundingPoly.normalizedVertices[2].y || 0) - (manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0)
-              }
-            }
-            ],
-            {
-              format: 'jpeg' as SaveFormat,
-              compress: 1,
-            }
-          )
-          object.croppedImage = croppedImage.uri
-        }
+    const data = await res.json()
 
-        save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
-        setIsLoading(false)
-        setUri(manipImage.uri)
-        navigation.navigate('Drawer')
-      }
-      else {
-        console.log('empty')
-        setIsLoading(false)
-        setUri(manipImage.uri)
-        navigation.navigate('Drawer')
-      }
-    }
+    console.log(data)
+
+    setIsLoading(false)
+
+    navigation.navigate('Home', {screen: "Start"})
   }
 
   const goBack = () => {
-    navigation.goBack()
+    navigation.navigate('Home', {screen: "Start"})
   }
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        navigation.navigate("Drawer")
+        navigation.navigate('Home', {screen: "Start"})
       }
     })();
   }, []);
@@ -258,15 +198,7 @@ export default function CameraScreen({ navigation, route }: any) {
             width={windowWidth}
             height={windowHeight}
           >
-            <Rect
-              x={8}
-              rx={20}
-              y={(windowHeight - windowWidth) / 2}
-              width={windowWidth - 16}
-              height={windowWidth}
-              stroke="rgba(255, 255, 255, .4)"
-              strokeWidth="3"
-            />
+            <Rect x={0} y={(windowHeight - windowWidth) / 2} width={windowWidth} height={windowWidth} stroke="white" strokeWidth="5" />
           </Svg>
 
         </Camera>}

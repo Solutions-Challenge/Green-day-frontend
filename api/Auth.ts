@@ -8,15 +8,35 @@ import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
   sendEmailVerification,
   updateProfile,
   User,
   signInWithCredential,
+  signInAnonymously,
 } from "firebase/auth";
-export const auth = getAuth();
+
+import app from "./config/firebase-service";
+
+export const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
+
+export const anonymousSignIn = async () => {
+  let user = {} as any;
+  let error = {} as any;
+
+  await signInAnonymously(auth)
+  .then((res)=>{
+      user = res.user
+  })
+  .catch((err)=>{
+    error = err
+  })
+  return {
+    user,
+    error
+  }
+}
 
 export const handleGoogleSignIn = async (setUri: any) => {
   let user = {} as any;
@@ -27,29 +47,25 @@ export const handleGoogleSignIn = async (setUri: any) => {
       "15765189134-2uvjibunbcdje9ehscg1fcqi0k3j0v43.apps.googleusercontent.com",
     iosClientId:
       "15765189134-u5vlkk5ncmkl0lceg3pkd5t85rur7026.apps.googleusercontent.com",
+    androidStandaloneAppClientId: 
+      "15765189134-ims9odbajn23r1a4rspn2bfrms830jr4.apps.googleusercontent.com",
     scopes: ["profile", "email"],
   };
 
   await Google.logInAsync(config)
-    .then((res) => {
-      if (res.type === 'success') {
+    .then(async (res) => {
+      if (res.type === "success") {
         const { idToken, accessToken } = res;
-        const credential = GoogleAuthProvider.credential(
-            idToken,
-            accessToken
-        );
-        signInWithCredential(auth, credential);
-        user = res.user
-      }
-      else if (res.type === "cancel") {
-        user = user.type
+        const credential = GoogleAuthProvider.credential(idToken, accessToken);
+        const data = await signInWithCredential(auth, credential);
+        user = data.user;
+      } else if (res.type === "cancel") {
+        user = res.type;
       }
     })
     .catch((err) => {
       error = err.code;
     });
-  
-  console.log(user)
 
   return {
     user: user,
@@ -57,7 +73,10 @@ export const handleGoogleSignIn = async (setUri: any) => {
   };
 };
 
-export const login = async (email: string, password: string) => {
+export const login = async (
+  email: string,
+  password: string,
+) => {
   let user = {} as any;
   let error = {} as any;
 
@@ -78,14 +97,12 @@ export const login = async (email: string, password: string) => {
 
   await signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
-      // Signed in
       user = userCredential.user;
-      // ...
     })
-    .catch((err) => {
-      error = err.code;
-      console.log(error);
+    .catch((e) => {
+      error = e.code;
     });
+
   return {
     user: user,
     error: error,
@@ -175,8 +192,8 @@ export const signin = async (
 export const currentUser = (): User => {
   return auth.currentUser as User;
 };
- 
-export const updateUriAndName = async (url: string, name:string) => {
+
+export const updateUriAndName = async (url: string, name: string) => {
   await updateProfile(currentUser(), {
     photoURL: url,
     displayName: name,
@@ -197,28 +214,4 @@ export function checkAuth(user: JSON) {
       return false;
     }
   });
-}
-
-export function googleLogin() {
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      // @ts-ignore
-      const token = credential.accessToken;
-
-      // The signed-in user info.
-      const user = result.user;
-      // ...
-    })
-    .catch((error) => {
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // The email of the user's account used.
-      const email = error.email;
-      // The AuthCredential type that was used.
-      const credential = GoogleAuthProvider.credentialFromError(error);
-      // ...
-    });
 }

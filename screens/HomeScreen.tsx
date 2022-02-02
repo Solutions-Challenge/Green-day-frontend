@@ -10,7 +10,6 @@ import { osName } from 'expo-device';
 import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
-import { useIsFocused } from '@react-navigation/native';
 import UserProfile from '../components/UserProfile';
 
 const windowWidth = Dimensions.get('window').width;
@@ -51,18 +50,8 @@ export default function HomeScreen({ navigation }: any) {
             if (data !== null) {
                 console.log(data)
                 data = JSON.parse(data as string)
-                if ("photoURL" in data) {
-                    setProfileUri(data.photoURL)
-                } 
-                if ("photoUrl" in data) {
-                    setProfileUri(data.photoUrl)
-                }
-                if ("name" in data) {
-                    setFullName(data.name)
-                }
-                if ("displayName" in data) {
-                    setFullName(data.displayName)
-                }
+                setProfileUri(data.photoURL || "Guest")
+                setFullName(data.displayName || "Guest")
             }
         })();
     }, []);
