@@ -11,7 +11,8 @@ const AuthButton = ({ uri, text, funct, navigation }: any) => {
             if (funct.name === "handleGoogleSignIn") {
                 const data = await funct(setU);
                 if (Object.keys(data.error).length === 0 && data.user !== "cancel") {
-                    await AsyncStorage.setItem("user", JSON.stringify(data.user))
+                    await AsyncStorage.setItem("remember", JSON.stringify({remember: true}))
+                    
                     navigation.navigate("Drawer")
                     navigation.reset({
                         index: 0,

@@ -13,13 +13,13 @@ import {
   User,
   signInWithCredential,
   signInAnonymously,
+  setPersistence,
+  browserLocalPersistence,
 } from "firebase/auth";
 
 import app from "./config/firebase-service";
 
 export const auth = getAuth(app);
-
-const provider = new GoogleAuthProvider();
 
 export const anonymousSignIn = async () => {
   let user = {} as any;
@@ -131,7 +131,6 @@ export const passwordReset = async (email: string) => {
 
 // Important: To delete a user, the user must have signed in recently.
 export const deleteMe = async () => {
-  const auth = getAuth();
   const user = auth.currentUser;
 
   //@ts-ignore
@@ -193,12 +192,17 @@ export const currentUser = (): User => {
   return auth.currentUser as User;
 };
 
-export const updateUriAndName = async (url: string, name: string) => {
+export const updateUri = async (url: string) => {
   await updateProfile(currentUser(), {
     photoURL: url,
-    displayName: name,
   });
 };
+
+export const updateName = async (name: string) => {
+  await updateProfile(currentUser(), {
+    displayName: name,
+  });
+}
 
 export function checkAuth(user: JSON) {
   onAuthStateChanged(auth, (user) => {

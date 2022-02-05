@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StyleSheet, View, TouchableOpacity, StatusBar, Platform } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, StatusBar, Platform, ImageBackground } from 'react-native';
 import { Camera } from 'expo-camera';
 import { osName } from 'expo-device';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
@@ -11,9 +11,33 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import { PinchGestureHandler } from 'react-native-gesture-handler';
 import Svg, { Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import getEnvVars from '../environment';
+import { updateUriAndName } from '../api/Auth';
+const { CLOUDVISIONAPIKEY } = getEnvVars();
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+
+const CameraPreview = ({photo}: any) => {
+  console.log('sdsfds', photo)
+  return (
+    <View
+      style={{
+        backgroundColor: 'transparent',
+        flex: 1,
+        width: '100%',
+        height: '100%'
+      }}
+    >
+      <ImageBackground
+        source={{uri: photo && photo.uri}}
+        style={{
+          flex: 1
+        }}
+      />
+    </View>
+  )
+}
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
@@ -24,16 +48,21 @@ function uuid() {
   });
 }
 
-export default function CameraScreen({ navigation }: any) {
+export default function CameraScreen({ navigation, route }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0)
-  const [isLoading, setIsLoading] = useContext(ImageContext).isLoading
+  const [, setIsLoading] = useContext(ImageContext).isLoading
   const [uri, setUri] = useContext(ImageContext).uri
+  const [, setProfileUri] = useContext(ImageContext).profileUri
+  const [cameraImage, setCameraImage] = useState("") as any
+
 
   const isFocused = useIsFocused();
 
-  const save = async (data:any) => {
+  const { purpose, screen } = route.params
+
+  const save = async (data: any, uri: string, windowWidth: number) => {
 
     let items: any = []
 
@@ -47,7 +76,9 @@ export default function CameraScreen({ navigation }: any) {
 
         items.unshift({
           key: uuid(),
-          multi: data
+          width: windowWidth,
+          uri: uri,
+          multi: data,
         })
       })
     await AsyncStorage.setItem("multi", JSON.stringify(items))
@@ -65,12 +96,12 @@ export default function CameraScreen({ navigation }: any) {
     setZoom(newZoom);
   }
 
-
   let camera: Camera
   const __takePicture = async () => {
     if (!camera) return
     setIsLoading(true)
-    const photo = await camera.takePictureAsync({quality: 1})
+    const photo = await camera.takePictureAsync({ quality: 1 })
+    setCameraImage(photo)
 
     const manipImage = await manipulateAsync(
       photo.uri,
@@ -95,115 +126,179 @@ export default function CameraScreen({ navigation }: any) {
       }
     )
 
-    let localUri = manipImage.uri;
-    let filename = localUri.split('/').pop();
+    if (purpose == "update user picture") {
+      setIsLoading(false)
+      setProfileUri(manipImage.uri)
+      await updateUriAndName(manipImage.uri)
+      navigation.goBack()
+    }
 
-    let match = /\.(\w+)$/.exec(filename as string);
-    let type = match ? `image/${match[1]}` : `image`;
+    else {
+      const body = JSON.stringify({
+        requests: [
+          {
+            image: {
+              content: manipImage.base64
+            },
+            features: [
+              {
+                type: "OBJECT_LOCALIZATION",
+                maxResults: 10
+              }
+            ]
+          }
+        ]
+      })
 
-    let formData = new FormData();
+      const visionRequest = await fetch(`https://vision.googleapis.com/v1p3beta1/images:annotate?key=${CLOUDVISIONAPIKEY}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: body
+      })
 
-    // @ts-ignore
-    formData.append('file', { uri: localUri, name: filename, type });
+      const visionData = await visionRequest.json()
 
-    const res = await fetch('http://10.0.0.222:5000/multi', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'content-type': 'multipart/form-data',
-      },
-    })
+      if ("localizedObjectAnnotations" in visionData.responses[0]) {
+        let object
+        let formData = new FormData();
+        for (let i = 0; i < visionData.responses[0].localizedObjectAnnotations.length; i++) {
+          object = visionData.responses[0].localizedObjectAnnotations[i]
 
-    const data = await res.json()
+          const croppedImage = await manipulateAsync(
+            manipImage.uri,
+            [{
+              resize: {
+                width: manipImage.width,
+                height: manipImage.height
+              }
+            },
+            {
+              crop: {
+                originX: manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0,
+                originY: manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0,
+                width: (manipImage.width * object.boundingPoly.normalizedVertices[2].x || 0) - (manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0),
+                height: (manipImage.height * object.boundingPoly.normalizedVertices[2].y || 0) - (manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0)
+              }
+            }
+            ],
+            {
+              format: 'jpeg' as SaveFormat,
+              compress: 1,
+            }
+          )
+          object.croppedImage = croppedImage.uri
+        }
 
-    console.log(data)
-
-    setIsLoading(false)
-
-    navigation.navigate('Home', {screen: "Start"})
+        save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
+        setIsLoading(false)
+        setUri(manipImage.uri)
+        navigation.navigate('Home', { screen: "Start" })
+      }
+      else {
+        console.log('empty')
+        setIsLoading(false)
+        setUri(manipImage.uri)
+        navigation.navigate('Home', { screen: "Start" })
+      }
+    }
   }
 
   const goBack = () => {
-    navigation.navigate('Home', {screen: "Start"})
+    navigation.goBack()
   }
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        navigation.navigate('Home', {screen: "Start"})
+        navigation.navigate('Home', { screen: "Start" })
       }
     })();
   }, []);
 
   return (<>
-    <PinchGestureHandler
-      onGestureEvent={handleEvent}
-    >
-      <View>
-        {isFocused && <Camera
-          type={type}
-          flashMode={flash}
-          ratio={"16:9"}
-          zoom={zoom}
-          style={{ height: '100%' }}
-          ref={(r) => {
-            camera = r as Camera
-          }}
-        >
-          <Grid style={styles.bottomToolbar}>
-            <Row>
-              <Col style={styles.alignCenter}>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    setFlash(
-                      flash === Camera.Constants.FlashMode.off
-                        ? Camera.Constants.FlashMode.on
-                        : Camera.Constants.FlashMode.off
-                    );
-                  }}>
-                  {
-                    flash === Camera.Constants.FlashMode.off ? (
-                      <Ionicons name="flash-off" size={30} color="white" />
-                    ) : (
-                      <Ionicons name="flash" size={30} color="white" />
-                    )
-                  }
-                </TouchableOpacity>
-              </Col>
-              <Col size={2} style={styles.alignCenter}>
-                <TouchableOpacity
-                  onPress={() => {
-                    __takePicture();
-                  }}>
-                  <View style={[styles.captureBtn]} />
-                </TouchableOpacity>
-              </Col>
-              <Col style={styles.alignCenter}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setType(
-                      type === Camera.Constants.Type.back
-                        ? Camera.Constants.Type.front
-                        : Camera.Constants.Type.back
-                    );
-                  }}>
-                  <MaterialIcons name="flip-camera-ios" size={30} color="white" />
-                </TouchableOpacity>
-              </Col>
-            </Row>
-          </Grid>
-          <Svg
-            width={windowWidth}
-            height={windowHeight}
+    {cameraImage !== "" ? 
+      <CameraPreview photo={cameraImage} />
+      :
+      <PinchGestureHandler
+        onGestureEvent={handleEvent}
+      >
+        <View>
+          {isFocused && <Camera
+            type={type}
+            flashMode={flash}
+            ratio={"16:9"}
+            zoom={zoom}
+            style={{ height: '100%' }}
+            ref={(r) => {
+              camera = r as Camera
+            }}
           >
-            <Rect x={0} y={(windowHeight - windowWidth) / 2} width={windowWidth} height={windowWidth} stroke="white" strokeWidth="5" />
-          </Svg>
+            <Grid style={styles.bottomToolbar}>
+              <Row>
+                <Col style={styles.alignCenter}>
 
-        </Camera>}
-      </View>
-    </PinchGestureHandler>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setFlash(
+                        flash === Camera.Constants.FlashMode.off
+                          ? Camera.Constants.FlashMode.on
+                          : Camera.Constants.FlashMode.off
+                      );
+                    }}>
+                    {
+                      flash === Camera.Constants.FlashMode.off ? (
+                        <Ionicons name="flash-off" size={30} color="white" />
+                      ) : (
+                        <Ionicons name="flash" size={30} color="white" />
+                      )
+                    }
+                  </TouchableOpacity>
+                </Col>
+                <Col size={2} style={styles.alignCenter}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      __takePicture();
+                    }}>
+                    <View style={[styles.captureBtn]} />
+                  </TouchableOpacity>
+                </Col>
+                <Col style={styles.alignCenter}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setType(
+                        type === Camera.Constants.Type.back
+                          ? Camera.Constants.Type.front
+                          : Camera.Constants.Type.back
+                      );
+                    }}>
+                    <MaterialIcons name="flip-camera-ios" size={30} color="white" />
+                  </TouchableOpacity>
+                </Col>
+              </Row>
+            </Grid>
+            <Svg
+              width={windowWidth}
+              height={windowHeight}
+            >
+              <Rect
+                x={8}
+                rx={20}
+                y={(windowHeight - windowWidth) / 2}
+                width={windowWidth - 16}
+                height={windowWidth}
+                stroke="rgba(255, 255, 255, .4)"
+                strokeWidth="3"
+              />
+            </Svg>
+
+          </Camera>}
+        </View>
+      </PinchGestureHandler>
+    }
 
     <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>
       <TouchableOpacity onPress={goBack}>

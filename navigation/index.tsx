@@ -28,6 +28,8 @@ import VerifyScreen from '../screens/Auth/VerifyScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import UserProfile from '../components/UserProfile';
 import ImageContext from '../hooks/imageContext';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../api/Auth';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -45,14 +47,17 @@ function RootNavigator() {
   const navigation = useNavigation()
   useEffect(() => {
     (async () => {
-      const user = await AsyncStorage.getItem("user")
-      if (user === null) {
-        navigation.navigate("Register")
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Register' }],
-        });
-      }
+      const r: any = await AsyncStorage.getItem("remember")
+      const remember = JSON.parse(r)
+      await onAuthStateChanged(auth, (user) => {
+        if (user === null || !remember.remember) {
+          navigation.navigate("Register")
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Register' }],
+          });
+        }
+      })
     })();
   }, []);
 
@@ -87,14 +92,6 @@ const DrawerTabs = () => {
       <Drawer.Screen name={"Home"} component={HomeTabs} />
       <Drawer.Screen name={"Profile"} component={UserProfileScreen} />
     </Drawer.Navigator>
-  )
-}
-
-const Drawer2 = () => {
-  return (
-    <View>
-      <Text>Drawer 2</Text>
-    </View>
   )
 }
 

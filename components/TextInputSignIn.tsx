@@ -91,7 +91,7 @@ export const SubmitButton = (props: any) => {
                 let data = {} as any
                 if (props.submission === "Register") {
                     data = await signin(props.email, props.password, props.confirmPassword)
-                    await updateUriAndName(profileUri, props.name)
+                    await updateUriAndName(profileUri)
                 } else if (props.submission === "Login" || props.submission === "Verify") {
                     data = await login(props.email, props.password)
                 } else if (props.submission === "Submit") {
@@ -106,7 +106,7 @@ export const SubmitButton = (props: any) => {
                         }
                         else {
                             if (props.remember === true) {
-                                await AsyncStorage.setItem("user", JSON.stringify(currentUser()))
+                                await AsyncStorage.setItem("remember", JSON.stringify({remember: true}))
                             }
                             props.navigation.navigate("Drawer")
                             props.navigation.reset({
@@ -118,7 +118,7 @@ export const SubmitButton = (props: any) => {
                     if (props.submission === "Verify") {
                         if (currentUser().emailVerified) {
                             if (props.remember === true) {
-                                await AsyncStorage.setItem("user", JSON.stringify(currentUser()))
+                                await AsyncStorage.setItem("remember", JSON.stringify({remember: true}))
                             }
                             props.navigation.navigate("Drawer")
                             props.navigation.reset({

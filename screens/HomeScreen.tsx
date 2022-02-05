@@ -11,6 +11,8 @@ import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
 import UserProfile from '../components/UserProfile';
+import { auth, logout } from '../api/Auth';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -46,13 +48,20 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         (async () => {
-            let data: any = await AsyncStorage.getItem("user")
-            if (data !== null) {
-                console.log(data)
-                data = JSON.parse(data as string)
-                setProfileUri(data.photoURL || "Guest")
-                setFullName(data.displayName || "Guest")
-            }
+            let data: any = await AsyncStorage.getItem("remember")
+            const remember = JSON.parse(data) as any
+            await onAuthStateChanged(auth, async (user) => {
+                if (user !== null && remember.remember) {
+                    setProfileUri(user.photoURL || "Guest")
+                    setFullName(user.displayName || "Guest")
+                    
+                }
+                else {
+                    setProfileUri("Guest")
+                    setFullName("")
+                    await logout()
+                }
+            })
         })();
     }, []);
 
@@ -190,7 +199,6 @@ export default function HomeScreen({ navigation }: any) {
                     <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
                 </View>
             </>) : (<>
-
                 <FlatList
                     data={data}
                     extraData={checked}

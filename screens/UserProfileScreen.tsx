@@ -4,7 +4,7 @@ import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { osName } from 'expo-device';
 import React, { useContext, useEffect, useState } from "react"
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
-import { deleteMe } from '../api/Auth';
+import { deleteMe, logout } from '../api/Auth';
 import UserProfile from "../components/UserProfile"
 import ImageContext from '../hooks/imageContext';
 import useColorScheme from '../hooks/useColorScheme';
@@ -28,16 +28,12 @@ const UserProfileScreen = () => {
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
                 <View style={{ backgroundColor: 'white', width: 140, height: 50, borderRadius: 60, elevation: 5 }}>
-                    <TouchableOpacity onPress={() => {
+                    <TouchableOpacity onPress={async () => {
                         AsyncStorage.removeItem("user")
                         AsyncStorage.removeItem("multi")
                         setProfileUri("Guest")
                         setFullName("")
-                        navigation.navigate("Register")
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'Register' }],
-                        });
+                        await logout()
                     }}>
                         <Text style={{ alignSelf: 'center', marginTop: 15 }}>Log Out</Text>
                     </TouchableOpacity>
@@ -46,14 +42,10 @@ const UserProfileScreen = () => {
                     <TouchableOpacity onPress={async () => {
                         await AsyncStorage.removeItem("user")
                         await AsyncStorage.removeItem("multi")
+                        await AsyncStorage.removeItem("remember")
                         await deleteMe()
                         setProfileUri("Guest")
                         setFullName("")
-                        navigation.navigate("Register")
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'Register' }],
-                        });
                     }}>
                         <Text style={{ alignSelf: 'center', marginTop: 15 }}>Delete Account</Text>
                     </TouchableOpacity>
