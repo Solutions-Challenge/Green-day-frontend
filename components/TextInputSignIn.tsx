@@ -3,7 +3,7 @@ import React, { useContext } from "react"
 import { KeyboardAvoidingView, StyleSheet, TouchableOpacity, View, Text } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { HelperText, TextInput } from "react-native-paper"
-import { currentUser, login, passwordReset, signin, updateUriAndName } from '../api/Auth';
+import { currentUser, login, passwordReset, signin, updateName, updateUri } from '../api/Auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImageContext from "../hooks/imageContext"
 
@@ -91,7 +91,8 @@ export const SubmitButton = (props: any) => {
                 let data = {} as any
                 if (props.submission === "Register") {
                     data = await signin(props.email, props.password, props.confirmPassword)
-                    await updateUriAndName(profileUri)
+                    await updateUri(profileUri)
+                    await updateName(props.name)
                 } else if (props.submission === "Login" || props.submission === "Verify") {
                     data = await login(props.email, props.password)
                 } else if (props.submission === "Submit") {

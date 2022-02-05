@@ -30,6 +30,7 @@ export default function HomeScreen({ navigation }: any) {
     const [itemData, setItemData] = useState(null)
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
     const [fullName, setFullName] = useContext(ImageContext).fullName
+    const [uid, setUid] = useContext(ImageContext).uid
 
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
@@ -54,7 +55,7 @@ export default function HomeScreen({ navigation }: any) {
                 if (user !== null && remember.remember) {
                     setProfileUri(user.photoURL || "Guest")
                     setFullName(user.displayName || "Guest")
-                    
+                    setUid(user.uid || "")
                 }
                 else {
                     setProfileUri("Guest")

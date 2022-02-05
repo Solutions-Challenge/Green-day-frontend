@@ -23,7 +23,7 @@ import { read_data_hash, write_data_hash } from '../api/firebase';
 import { TextInput } from 'react-native-paper'
 
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
@@ -63,6 +63,7 @@ export default function App({ navigation, route }: any) {
   const [addingMarker, setAddingMarker] = useState({})
   const [userData, setUserData] = useState({} as any)
   const [partialUserData, setPartialUserData] = useState({} as any)
+  const [businessData, setBusinessData] = useState({} as any)
   const [toggle, setToggle] = useState(false)
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
@@ -70,6 +71,7 @@ export default function App({ navigation, route }: any) {
   const [switchToConfirm, setSwitchToConfirm] = useState(false)
   const _categoryView = useRef<FlatList>(null)
   const [categories, setCategories] = useState([] as any)
+  const [uid, setUid] = useContext(ImageContext).uid
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -99,8 +101,8 @@ export default function App({ navigation, route }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: toggle ? partialUserData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
-        longitude: toggle ? partialUserData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
+        latitude: toggle ? businessData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? businessData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.007,
         longitudeDelta: 0.005
       }, 350)
@@ -171,7 +173,8 @@ export default function App({ navigation, route }: any) {
             setmapData(item)
           })
         // TODO: Figure out why reading this data gives a strange error on android
-        await read_data_hash(latitude, longitude, setUserData)
+        await read_data_hash(latitude, longitude, setUserData, setBusinessData)
+
         _map?.current?.animateToRegion({
           latitude: latitude,
           longitude: longitude,
@@ -273,10 +276,10 @@ export default function App({ navigation, route }: any) {
     (async () => {
       setCatIndex(-1)
       setToggle(false)
-      
+
       const data = await fetchCategoryData()
       setCategories(data)
-  
+
       const { material } = route.params;
       if (canMap() && material != "") {
         for (let i = 0; i < categories.length; i++) {
@@ -284,7 +287,7 @@ export default function App({ navigation, route }: any) {
             setCatIndex(i + 1)
             setToggle(true)
             _categoryView.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.5 })
-  
+
             navigation.setParams({
               material: ''
             });
@@ -295,7 +298,7 @@ export default function App({ navigation, route }: any) {
 
   }, [isFocused, userData])
 
-  const renderItemUser = useCallback(
+  const renderItemBusiness = useCallback(
     ({ item }: any) => {
       return (
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
@@ -314,6 +317,14 @@ export default function App({ navigation, route }: any) {
               </Touch>
             </View>
             <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
+            {
+              uid === item.uid &&
+
+              <Touch onPress={() => { }}>
+                <Feather name="x-circle" size={24} color={colorScheme === "dark" ? "white" : "black"} />
+              </Touch>
+
+            }
           </View>
         </View>
       )
@@ -368,95 +379,115 @@ export default function App({ navigation, route }: any) {
       enabledInnerScrolling={false}
       enabledContentGestureInteraction={false}
     />
-    {isFocused &&   
-    <SafeAreaView style={{ flex: 1 }}>
-      <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
-        ref={_map}
-        provider={PROVIDER_GOOGLE}
-        showsUserLocation={true}
-        showsBuildings={true}
-        showsCompass={true}
-        mapType={mapType ? 'standard' : 'satellite'}
-        customMapStyle={colorScheme === 'dark' ? mapStyleDark : mapStyleLight}
-        initialRegion={{
-          latitude: latitude,
-          longitude: longitude,
-          latitudeDelta: latitudeDelta,
-          longitudeDelta: longitudeDelta
-        }}
-        onPanDrag={()=>{bs.current?.snapTo(1);}}
-        onPress={(e: any) => { bs.current?.snapTo(1); !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
-        onLongPress={(e: any) => { (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })); setVisible(false) }}
-      >
-        {canMap() && JSON.stringify(addingMarker) != '{}' && <Marker
-          coordinate={{
-            // @ts-ignore
-            latitude: addingMarker.latitude,
-            // @ts-ignore
-            longitude: addingMarker.longitude,
+    {isFocused &&
+      <SafeAreaView style={{ flex: 1 }}>
+        <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
+          ref={_map}
+          provider={PROVIDER_GOOGLE}
+          showsUserLocation={true}
+          showsBuildings={true}
+          showsCompass={true}
+          mapType={mapType ? 'standard' : 'satellite'}
+          customMapStyle={colorScheme === 'dark' ? mapStyleDark : mapStyleLight}
+          initialRegion={{
+            latitude: latitude,
+            longitude: longitude,
+            latitudeDelta: latitudeDelta,
+            longitudeDelta: longitudeDelta
           }}
+          onPanDrag={() => { bs.current?.snapTo(1); }}
+          onPress={(e: any) => { bs.current?.snapTo(1); !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
+          onLongPress={(e: any) => { (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })); setVisible(false) }}
         >
-          <FontAwesome name="map-marker" size={30} color={mapColors} />
-        </Marker>}
-
-        {canMap() && !toggle && mapData.results.map((e: any, index: any) => {
-          return (
-            <Marker
-              coordinate={{
-                latitude: e.geometry.location.lat,
-                longitude: e.geometry.location.lng
-              }}
-              onPress={() => {
-                _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
-              }}
-            >
-              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
-            </Marker>
-          )
-        })}
-
-        {canMap() && toggle && partialUserData.map((e: any, index: any) => {
-          return (
-            <Marker
-              key={index}
-              coordinate={{
-                latitude: e.coordinates.latitude,
-                longitude: e.coordinates.longitude
-              }}
-              onPress={() => {
-                _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
-              }}
-            >
-              <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
-            </Marker>
-          )
-        })}
-      </MapView>
-
-      {
-        !visible && !("latitude" in addingMarker) && (
-          <View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
-            <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
-          </View>)
-      }
-
-      {
-        "latitude" in addingMarker && (<>
-          {_map.current?.animateToRegion({
-            // @ts-ignore
-            latitude: addingMarker.latitude,
-            // @ts-ignore
-            longitude: addingMarker.longitude,
-            latitudeDelta: 0.0007,
-            longitudeDelta: 0.0001
-          })}
-          <View
-            style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, top: Platform.OS === 'ios' ? 140 : 120, width: width - 40, height: 300, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
+          {canMap() && JSON.stringify(addingMarker) != '{}' && <Marker
+            coordinate={{
+              // @ts-ignore
+              latitude: addingMarker.latitude,
+              // @ts-ignore
+              longitude: addingMarker.longitude,
+            }}
           >
-            {switchToConfirm ? <>
+            <FontAwesome name="map-marker" size={30} color={mapColors} />
+          </Marker>}
+
+          {canMap() && !toggle && mapData.results.map((e: any, index: any) => {
+            return (
+              <Marker
+                coordinate={{
+                  latitude: e.geometry.location.lat,
+                  longitude: e.geometry.location.lng
+                }}
+                onPress={() => {
+                  _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
+                }}
+              >
+                <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
+              </Marker>
+            )
+          })}
+
+          {canMap() && toggle && partialUserData.map((e: any, index: any) => {
+            return (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: e.coordinates.latitude,
+                  longitude: e.coordinates.longitude
+                }}
+                onPress={() => {
+                  Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${e.coordinates.latitude},${e.coordinates.longitude}`)
+                }}
+              >
+                <View style={{ borderRadius: 15, width: 30, height: 30, backgroundColor: 'white' }}>
+                  <Image source={{ uri: e.icon }} style={{ width: 20, height: 20, alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto' }} />
+                </View>
+              </Marker>
+            )
+          })
+          }
+
+          {canMap() && toggle && businessData.map((e: any, index: any) => {
+            return (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: e.coordinates.latitude,
+                  longitude: e.coordinates.longitude
+                }}
+                onPress={() => {
+                  _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
+                }}
+              >
+                <FontAwesome name="map-marker" size={30} color={index == mapIndex ? "lightgreen" : mapColors} />
+              </Marker>
+            )
+          })}
+        </MapView>
+
+        {
+          !visible && !("latitude" in addingMarker) && (
+            <View style={{ alignSelf: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 20, borderRadius: 10, position: 'absolute', top: 100 }}>
+              <Text style={{ color: 'white', fontSize: 20 }}>Click Anywhere to set Marker</Text>
+            </View>)
+        }
+
+        {
+          "latitude" in addingMarker && (<>
+            {_map.current?.animateToRegion({
+              // @ts-ignore
+              latitude: addingMarker.latitude,
+              // @ts-ignore
+              longitude: addingMarker.longitude,
+              latitudeDelta: 0.0007,
+              longitudeDelta: 0.0001
+            })}
+            <View
+              style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', left: 20, top: Platform.OS === 'ios' ? 140 : 120, width: width - 40, height: 300, backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 10, borderRadius: 10 }}
+            >
+
               <Text style={{ color: 'white', fontSize: 30, width: width - 40, paddingLeft: 40, paddingBottom: 10 }}>Category</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignContent: 'space-between', justifyContent: 'center' }}>
-                {categories.map((item:any, index:any) => {
+                {categories.map((item: any, index: any) => {
                   return (<>
                     <TouchableOpacity
                       key={item.key}
@@ -471,206 +502,164 @@ export default function App({ navigation, route }: any) {
                 })}
               </View>
 
-            </> :
-              <View style={{ flexDirection: 'column' }}>
-                <TextInput
-                  placeholder={"Title: "}
-                  autoComplete={''}
-                  error={title === ""}
-                  placeholderTextColor={'black'}
-                  mode={"outlined"}
-                  multiline={false}
-                  dense={true}
-                  style={styles.inputStyle}
-                  value={title}
-                  onChangeText={(res) => setTitle(res)} />
-                <TextInput
-                  placeholder={"Description: "}
-                  autoComplete={''}
-                  error={message === ""}
-                  placeholderTextColor={'black'}
-                  mode={"outlined"}
-                  multiline={true}
-                  numberOfLines={4}
-                  dense={true}
-                  style={styles.inputStyle}
-                  spellCheck={true}
-                  value={message}
-                  onChangeText={(res) => setMessage(res)} />
-              </View>}
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity
-                onPress={() => {
-                  if (switchToConfirm) {
-                    setSwitchToConfirm(false)
-                  }
-                  else {
+
+              <View style={{ flexDirection: 'row' }}>
+                <TouchableOpacity
+                  onPress={() => {
                     setVisible(true);
                     setAddingMarker({});
                     setCatIndex(-1);
-                    setTitle('');
-                    setMessage('')
-                  }
-                }}
-              >
-                <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, borderWidth: 1, backgroundColor: 'transparent', borderColor: switchToConfirm ? '#246EE9' : '#F07470', marginRight: 5 }]}
+                  }}
                 >
-                  <Text style={{ color: switchToConfirm ? '#246EE9' : '#F07470', fontSize: 20 }}>{switchToConfirm ? "Previous" : "Cancel"}</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  if (title !== "" && message !== "") {
-
-                    if (switchToConfirm && catIndex !== -1) {
+                  <View
+                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, borderWidth: 1, backgroundColor: 'transparent', borderColor: switchToConfirm ? '#246EE9' : '#F07470', marginRight: 5 }]}
+                  >
+                    <Text style={{ color: '#F07470', fontSize: 20 }}>{"Cancel"}</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (catIndex !== -1) {
                       setVisible(true);
                       //@ts-ignore
-                      write_data_hash(addingMarker.latitude, addingMarker.longitude, title, message, categories[catIndex - 1].icon, categories[catIndex - 1].name);
+                      write_data_hash(addingMarker.latitude, addingMarker.longitude, categories[catIndex - 1].icon, categories[catIndex - 1].name, uid);
                       setVisible(true);
                       setAddingMarker({});
-                      setCatIndex(-1);
-                      setTitle('');
-                      setMessage('');
-                      setSwitchToConfirm(false);
-                      read_data_hash(latitude, longitude, setUserData);
+                      read_data_hash(latitude, longitude, setUserData, setBusinessData);
                     }
                     else {
-                      setSwitchToConfirm(true)
                       setCatIndex(-1)
                     }
-
-                  }
+                  }}
+                >
+                  <View
+                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, backgroundColor: '#a4d2ac', marginLeft: 5 }]}
+                  >
+                    <Text style={{ color: 'white', fontSize: 20 }}>{"Confirm"}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <MapView>
+              <Marker
+                coordinate={{
+                  // @ts-ignore
+                  latitude: addingMarker.latitude,
+                  // @ts-ignore
+                  longitude: addingMarker.longitude,
                 }}
               >
-                <View
-                  style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, backgroundColor: switchToConfirm ? '#a4d2ac' : '#246EE9', marginLeft: 5 }]}
-                >
-                  <Text style={{ color: 'white', fontSize: 20 }}>{switchToConfirm ? "Confirm" : "Next"}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+
+                <FontAwesome name="map-marker" size={50} color={mapColors} />
+              </Marker>
+
+            </MapView>
+          </>)
+        }
+
+        <View style={styles.searchBox}>
+          <View style={{ backgroundColor: 'white', width: '50%', borderRadius: 10 }}>
+            <TouchableOpacity
+              style={{ alignSelf: 'center', height: 35, top: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9' : 'white' }}
+              onPress={() => setMapType(true)}
+            >
+              <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white' : 'black' }}>Standard</Text>
+            </TouchableOpacity>
           </View>
-          <MapView>
-            <Marker
-              coordinate={{
-                // @ts-ignore
-                latitude: addingMarker.latitude,
-                // @ts-ignore
-                longitude: addingMarker.longitude,
+          <View style={{ backgroundColor: "white", width: '50%', borderRadius: 10 }}>
+            <TouchableOpacity
+              style={{ alignSelf: 'center', height: 35, top: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9' : 'white' }}
+              onPress={() => setMapType(false)}
+            >
+              <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: !mapType ? 'white' : 'black' }}>Satellite</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {
+          visible && (<>
+            <FlatList
+              ref={_categoryView}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              getItemLayout={getItemLayoutCategory}
+              style={styles.chipsScrollView}
+              contentContainerStyle={{
+                paddingRight: 20
+              }}
+              data={categories}
+              renderItem={({ item }: any) => {
+                return (
+                  (item.key != 0 ? <>
+                    <TouchableOpacity
+                      key={item.key}
+                      onPress={() => {
+                        setCatIndex(item.key)
+                        setToggle(true)
+                      }}
+                      style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
+                      <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
+                      <Text>{item.name}</Text>
+                    </TouchableOpacity>
+                    {item.key === catIndex &&
+                      <View style={{ backgroundColor: 'white', borderRadius: 15, width: 30, height: 30, top: 3 }}>
+                        <Touch style={{ alignSelf: 'center', bottom: 0.5 }} onPress={() => { setCatIndex(-1) }}>
+                          <Feather name="x-circle" size={30} color="black" />
+                        </Touch>
+                      </View>
+                    }
+                  </> :
+                    <View key={item.key} />)
+                )
               }}
             >
+            </FlatList>
+            <FlatList
+              ref={_scrollView}
+              initialScrollIndex={0}
+              viewabilityConfig={viewConfigRef.current}
+              onViewableItemsChanged={onViewableItemsChanged.current}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={CARD_WIDTH + 20}
+              removeClippedSubviews={true}
+              snapToAlignment="center"
+              decelerationRate={"fast"}
+              style={styles.scrollView}
+              contentInset={{
+                top: 0,
+                left: SPACING_FOR_CARD_INSET,
+                bottom: 0,
+                right: SPACING_FOR_CARD_INSET
+              }}
+              contentContainerStyle={{
+                paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
+              }}
+              onScrollToIndexFailed={() => { }}
+              data={toggle ? businessData : mapData.results}
+              keyExtractor={keyExtractor}
+              renderItem={canMap() && toggle ? renderItemBusiness : renderItem}
+              getItemLayout={getItemLayout}
+            >
+            </FlatList>
+            <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
+              <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
+                <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+              </View>
+            </Touch>
+            <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
+              <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
+                {
+                  !toggle ?
+                    <Ionicons name="person-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} /> :
+                    <Ionicons name="search-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+                }
+              </View>
+            </Touch>
+          </>)
+        }
 
-              <FontAwesome name="map-marker" size={50} color={mapColors} />
-            </Marker>
-
-          </MapView>
-        </>)
-      }
-
-      <View style={styles.searchBox}>
-        <View style={{ backgroundColor: 'white', width: '50%', borderRadius: 10 }}>
-          <TouchableOpacity
-            style={{ alignSelf: 'center', height: 35, top: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: mapType ? '#246EE9' : 'white' }}
-            onPress={() => setMapType(true)}
-          >
-            <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: mapType ? 'white' : 'black' }}>Standard</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ backgroundColor: "white", width: '50%', borderRadius: 10 }}>
-          <TouchableOpacity
-            style={{ alignSelf: 'center', height: 35, top: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: !mapType ? '#246EE9' : 'white' }}
-            onPress={() => setMapType(false)}
-          >
-            <Text style={{ alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: !mapType ? 'white' : 'black' }}>Satellite</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      {
-        visible && partialUserData.length >= 0 && (<>
-          <FlatList
-            ref={_categoryView}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            getItemLayout={getItemLayoutCategory}
-            style={styles.chipsScrollView}
-            contentContainerStyle={{
-              paddingRight: 20
-            }}
-            data={categories}
-            renderItem={({ item }: any) => {
-              return (
-                (item.key != 0 ? <>
-                  <TouchableOpacity
-                    key={item.key}
-                    onPress={() => {
-                      setCatIndex(item.key)
-                      setToggle(true)
-                    }}
-                    style={[styles.chipsItem, { backgroundColor: item.key === catIndex ? "#ADD8E6" : "white" }]}>
-                    <Image source={{ uri: item.icon }} style={{ width: 20, height: 20, marginRight: 5 }} />
-                    <Text>{item.name}</Text>
-                  </TouchableOpacity>
-                  {item.key === catIndex &&
-                    <View style={{ backgroundColor: 'white', borderRadius: 15, width: 30, height: 30, top: 3 }}>
-                      <Touch style={{ alignSelf: 'center', bottom: 0.5 }} onPress={() => { setCatIndex(-1) }}>
-                        <Feather name="x-circle" size={30} color="black" />
-                      </Touch>
-                    </View>
-                  }
-                </> :
-                  <View key={item.key} />)
-              )
-            }}
-          >
-          </FlatList>
-          <FlatList
-            ref={_scrollView}
-            initialScrollIndex={0}
-            viewabilityConfig={viewConfigRef.current}
-            onViewableItemsChanged={onViewableItemsChanged.current}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={CARD_WIDTH + 20}
-            removeClippedSubviews={true}
-            snapToAlignment="center"
-            decelerationRate={"fast"}
-            style={styles.scrollView}
-            contentInset={{
-              top: 0,
-              left: SPACING_FOR_CARD_INSET,
-              bottom: 0,
-              right: SPACING_FOR_CARD_INSET
-            }}
-            contentContainerStyle={{
-              paddingHorizontal: Platform.OS === 'android' ? SPACING_FOR_CARD_INSET : 0
-            }}
-            onScrollToIndexFailed={() => { }}
-            data={toggle ? partialUserData : mapData.results}
-            keyExtractor={keyExtractor}
-            renderItem={canMap() && toggle ? renderItemUser : renderItem}
-            getItemLayout={getItemLayout}
-          >
-          </FlatList>
-          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 25 }} onPress={() => { bs?.current?.snapTo(0) }}>
-            <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
-              <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
-            </View>
-          </Touch>
-          <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
-            <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
-              {
-                !toggle ?
-                  <Ionicons name="person-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} /> :
-                  <Ionicons name="search-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
-              }
-            </View>
-          </Touch>
-        </>)
-      }
-
-    </SafeAreaView>}
+      </SafeAreaView>}
   </>);
 }
 

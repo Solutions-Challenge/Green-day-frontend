@@ -19,28 +19,27 @@ const geoData = collection(db, "geoLocation");
 export const write_data_hash = async (
   latitude: number,
   longitude: number,
-  title: string,
-  message: string,
   icon: string,
-  name: string
+  name: string,
+  uid: string
 ) => {
   // Compute the GeoHash for a lat/lng point
   const hash = geofire.geohashForLocation([latitude, longitude]);
 
   addDoc(geoData, {
-    title: title,
-    description: message,
     icon: icon,
     name: name,
     coordinates: new GeoPoint(latitude, longitude),
-    hash: hash
+    hash: hash,
+    uid: uid
   });
 };
 
 export const read_data_hash = async(
   latitude: number,
   longitude: number,
-  setUserData: any
+  setUserData: any,
+  setBusinessData: any
 ) => {
 
   // Find cities within 50km of London
@@ -79,6 +78,7 @@ export const read_data_hash = async(
         }
       }
     }
+      setBusinessData([matchingDocs[0]])
       setUserData(matchingDocs)
     })
 }
