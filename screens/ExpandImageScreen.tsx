@@ -82,6 +82,8 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                             k++
                         }
 
+                        console.log(item)
+
                         setIfMLData(ifmlCopy)
 
                         temp = -1

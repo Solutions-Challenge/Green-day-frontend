@@ -65,13 +65,11 @@ export default function App({ navigation, route }: any) {
   const [partialUserData, setPartialUserData] = useState({} as any)
   const [businessData, setBusinessData] = useState({} as any)
   const [toggle, setToggle] = useState(false)
-  const [title, setTitle] = useState('')
-  const [message, setMessage] = useState('')
+  // const [ifZoomed, setIfZoomed] = useState(false)
   const [mapType, setMapType] = useState(true)
-  const [switchToConfirm, setSwitchToConfirm] = useState(false)
   const _categoryView = useRef<FlatList>(null)
   const [categories, setCategories] = useState([] as any)
-  const [uid, setUid] = useContext(ImageContext).uid
+  const [uid,] = useContext(ImageContext).uid
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -395,6 +393,17 @@ export default function App({ navigation, route }: any) {
             latitudeDelta: latitudeDelta,
             longitudeDelta: longitudeDelta
           }}
+          // onRegionChangeComplete={(region)=>{
+          //   console.log(region.latitudeDelta)
+          //   if (region.latitudeDelta < 0.0005) {
+          //     console.log(true)
+          //     setIfZoomed(true)
+          //   }
+          //   else {
+          //     console.log('false')
+          //     setIfZoomed(false)
+          //   }
+          // }}
           onPanDrag={() => { bs.current?.snapTo(1); }}
           onPress={(e: any) => { bs.current?.snapTo(1); !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
           onLongPress={(e: any) => { (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })); setVisible(false) }}
@@ -427,7 +436,26 @@ export default function App({ navigation, route }: any) {
           })}
 
           {canMap() && toggle && partialUserData.map((e: any, index: any) => {
-            return (
+            return (<>
+              {/* {
+                e.uid === uid && ifZoomed &&
+                <Marker
+                  key={index}
+                  style={{zIndex: 100}}
+                  coordinate={{
+                    latitude: e.coordinates.latitude+0.000012,
+                    longitude: e.coordinates.longitude+0.000012
+                  }}
+                  onPress={() => { console.log('delete me') }}
+                >
+                  <View>
+                    <View style={{ backgroundColor: '#F07470', borderRadius: 10 }}>
+                      <Feather name="x-circle" size={20} color="black" />
+                    </View>
+                  </View>
+                </Marker>
+              } */}
+
               <Marker
                 key={index}
                 coordinate={{
@@ -442,6 +470,8 @@ export default function App({ navigation, route }: any) {
                   <Image source={{ uri: e.icon }} style={{ width: 20, height: 20, alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto' }} />
                 </View>
               </Marker>
+
+            </>
             )
           })
           }
@@ -512,7 +542,7 @@ export default function App({ navigation, route }: any) {
                   }}
                 >
                   <View
-                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, borderWidth: 1, backgroundColor: 'transparent', borderColor: switchToConfirm ? '#246EE9' : '#F07470', marginRight: 5 }]}
+                    style={[styles.button, { paddingHorizontal: 5, paddingVertical: 10, width: 150, height: 50, borderWidth: 1, backgroundColor: 'transparent', borderColor: '#F07470', marginRight: 5 }]}
                   >
                     <Text style={{ color: '#F07470', fontSize: 20 }}>{"Cancel"}</Text>
                   </View>

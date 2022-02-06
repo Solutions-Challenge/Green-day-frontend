@@ -12,7 +12,7 @@ import { PinchGestureHandler } from 'react-native-gesture-handler';
 import Svg, { Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../environment';
-import { updateUriAndName } from '../api/Auth';
+import { updateUri } from '../api/Auth';
 const { CLOUDVISIONAPIKEY } = getEnvVars();
 
 const windowWidth = Dimensions.get('window').width;
@@ -55,6 +55,7 @@ export default function CameraScreen({ navigation, route }: any) {
   const [, setIsLoading] = useContext(ImageContext).isLoading
   const [uri, setUri] = useContext(ImageContext).uri
   const [, setProfileUri] = useContext(ImageContext).profileUri
+  const [uid,] = useContext(ImageContext).uid
   const [cameraImage, setCameraImage] = useState("") as any
 
 
@@ -76,6 +77,7 @@ export default function CameraScreen({ navigation, route }: any) {
 
         items.unshift({
           key: uuid(),
+          uid: uid,
           width: windowWidth,
           uri: uri,
           multi: data,
@@ -122,14 +124,15 @@ export default function CameraScreen({ navigation, route }: any) {
       ],
       {
         format: 'jpeg' as SaveFormat,
-        compress: 1,
+        compress: 0.3,
+        base64: true
       }
     )
 
     if (purpose == "update user picture") {
       setIsLoading(false)
       setProfileUri(manipImage.uri)
-      await updateUriAndName(manipImage.uri)
+      await updateUri(manipImage.uri)
       navigation.goBack()
     }
 
@@ -160,10 +163,10 @@ export default function CameraScreen({ navigation, route }: any) {
       })
 
       const visionData = await visionRequest.json()
+      console.log(visionData)
 
       if ("localizedObjectAnnotations" in visionData.responses[0]) {
-        let object
-        let formData = new FormData();
+        let object 
         for (let i = 0; i < visionData.responses[0].localizedObjectAnnotations.length; i++) {
           object = visionData.responses[0].localizedObjectAnnotations[i]
 
@@ -186,7 +189,7 @@ export default function CameraScreen({ navigation, route }: any) {
             ],
             {
               format: 'jpeg' as SaveFormat,
-              compress: 1,
+              compress: 0.3,
             }
           )
           object.croppedImage = croppedImage.uri
@@ -195,13 +198,13 @@ export default function CameraScreen({ navigation, route }: any) {
         save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
         setIsLoading(false)
         setUri(manipImage.uri)
-        navigation.navigate('Home', { screen: "Start" })
+        navigation.navigate('Drawer')
       }
       else {
         console.log('empty')
         setIsLoading(false)
         setUri(manipImage.uri)
-        navigation.navigate('Home', { screen: "Start" })
+        navigation.navigate('Drawer')
       }
     }
   }
@@ -214,7 +217,7 @@ export default function CameraScreen({ navigation, route }: any) {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        navigation.navigate('Home', { screen: "Start" })
+        navigation.navigate('Drawer')
       }
     })();
   }, []);

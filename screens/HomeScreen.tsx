@@ -144,10 +144,12 @@ export default function HomeScreen({ navigation }: any) {
         }
         setData(ans)
         await AsyncStorage.setItem("multi", JSON.stringify(ans))
+
     }
 
     const load = async () => {
         let ImageClassify = await AsyncStorage.getItem("multi")
+        console.log(ImageClassify)
         if (ImageClassify === null) {
             await AsyncStorage.setItem("multi", JSON.stringify(data))
         }
