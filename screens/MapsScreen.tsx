@@ -20,8 +20,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import BottomSheet from 'reanimated-bottom-sheet'
 import { read_data_hash, write_data_hash } from '../api/firebase';
-import { TextInput } from 'react-native-paper'
-
 
 const { width } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -58,14 +56,16 @@ export default function App({ navigation, route }: any) {
   const [mapIndex, setMapIndex] = useState(0)
   const isFocused = useIsFocused();
   const mapColors = colorScheme === "dark" ? "white" : "red"
-  const bs = useRef<BottomSheet>(null)
-  const [visible, setVisible] = useState(true)
-  const [addingMarker, setAddingMarker] = useState({})
+  const [bs,] = useContext(ImageContext).bs
+  const [visible, setVisible] = useContext(ImageContext).visible
+  const [addingMarker, setAddingMarker] = useContext(ImageContext).addingMarker
   const [userData, setUserData] = useState({} as any)
   const [partialUserData, setPartialUserData] = useState({} as any)
   const [businessData, setBusinessData] = useState({} as any)
   const [toggle, setToggle] = useState(false)
-  // const [ifZoomed, setIfZoomed] = useState(false)
+  const [, setFirstPoint] = useContext(ImageContext).firstPoint
+  const [, setSecondPoint] = useContext(ImageContext).secondPoint
+  const [ifRenderMap, setIfRenderMap] = useContext(ImageContext).ifRenderMap
   const [mapType, setMapType] = useState(true)
   const _categoryView = useRef<FlatList>(null)
   const [categories, setCategories] = useState([] as any)
@@ -270,29 +270,36 @@ export default function App({ navigation, route }: any) {
     }
   }, [catIndex, userData])
 
+  useEffect(()=>{
+    if (isFocused) {
+      setFirstPoint(350)
+      setSecondPoint(-100)
+      setIfRenderMap(true)
+    }
+  }, [isFocused])
   useEffect(() => {
-    (async () => {
-      setCatIndex(-1)
-      setToggle(false)
+      (async () => {
+        setCatIndex(-1)
+        setToggle(false)
 
-      const data = await fetchCategoryData()
-      setCategories(data)
+        const data = await fetchCategoryData()
+        setCategories(data)
 
-      const { material } = route.params;
-      if (canMap() && material != "") {
-        for (let i = 0; i < categories.length; i++) {
-          if (categories[i].name === material) {
-            setCatIndex(i + 1)
-            setToggle(true)
-            _categoryView.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.5 })
+        const { material } = route.params;
+        if (canMap() && material != "") {
+          for (let i = 0; i < categories.length; i++) {
+            if (categories[i].name === material) {
+              setCatIndex(i + 1)
+              setToggle(true)
+              _categoryView.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.5 })
 
-            navigation.setParams({
-              material: ''
-            });
+              navigation.setParams({
+                material: ''
+              });
+            }
           }
         }
-      }
-    })();
+      })();
 
   }, [isFocused, userData])
 
@@ -367,16 +374,6 @@ export default function App({ navigation, route }: any) {
   )
 
   return (<>
-    <BottomSheet
-      ref={bs}
-      snapPoints={[450, 0]}
-      initialSnap={1}
-      enabledGestureInteraction={true}
-      renderContent={renderInner}
-      renderHeader={renderHeader}
-      enabledInnerScrolling={false}
-      enabledContentGestureInteraction={false}
-    />
     {isFocused &&
       <SafeAreaView style={{ flex: 1 }}>
         <MapView style={Platform.OS === "ios" ? StyleSheet.absoluteFill : { flex: 1 }}
@@ -393,17 +390,6 @@ export default function App({ navigation, route }: any) {
             latitudeDelta: latitudeDelta,
             longitudeDelta: longitudeDelta
           }}
-          // onRegionChangeComplete={(region)=>{
-          //   console.log(region.latitudeDelta)
-          //   if (region.latitudeDelta < 0.0005) {
-          //     console.log(true)
-          //     setIfZoomed(true)
-          //   }
-          //   else {
-          //     console.log('false')
-          //     setIfZoomed(false)
-          //   }
-          // }}
           onPanDrag={() => { bs.current?.snapTo(1); }}
           onPress={(e: any) => { bs.current?.snapTo(1); !visible && !("latitude" in addingMarker) && (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })) }}
           onLongPress={(e: any) => { (setAddingMarker({ latitude: e.nativeEvent.coordinate.latitude, longitude: e.nativeEvent.coordinate.longitude })); setVisible(false) }}

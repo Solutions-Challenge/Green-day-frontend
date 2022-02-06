@@ -7,7 +7,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme, useNavigation } from '@react-navigation/native';
 import * as React from 'react';
-import { ColorSchemeName, Platform, TouchableOpacity, View, Text } from 'react-native';
+import { ColorSchemeName, Platform, TouchableOpacity, View, StyleSheet, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer"
 import Colors from '../constants/Colors';
@@ -23,13 +23,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 import ForgetPasswordScreen from '../screens/Auth/ForgetPasswordScreen';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import VerifyScreen from '../screens/Auth/VerifyScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import UserProfile from '../components/UserProfile';
 import ImageContext from '../hooks/imageContext';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../api/Auth';
+import { Accuracy, getCurrentPositionAsync } from 'expo-location';
+import BottomSheet from 'reanimated-bottom-sheet'
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -80,7 +82,8 @@ const DrawerTabs = () => {
 
   const [profileUri,] = useContext(ImageContext).profileUri
 
-  return (
+  return (<>
+    <RenderBottomSheet />
     <Drawer.Navigator screenOptions={{ headerShown: false, drawerType: "front", swipeEdgeWidth: 100 }} drawerContent={(props) => {
       return (
         <DrawerContentScrollView {...props}>
@@ -92,6 +95,77 @@ const DrawerTabs = () => {
       <Drawer.Screen name={"Home"} component={HomeTabs} />
       <Drawer.Screen name={"Profile"} component={UserProfileScreen} />
     </Drawer.Navigator>
+  </>)
+}
+
+const RenderBottomSheet = () => {
+  const [bs,setBs] = useContext(ImageContext).bs
+  setBs(useRef(null))
+  const [firstPoint,] = useContext(ImageContext).firstPoint
+  const [secondPoint,] = useContext(ImageContext).secondPoint
+  const [ifRenderMap,]: [boolean] = useContext(ImageContext).ifRenderMap
+  const [, setVisible] = useContext(ImageContext).visible
+  const [, setAddingMarker] = useContext(ImageContext).addingMarker
+  const colorScheme = useColorScheme();
+  const navigation = useNavigation()
+  const [itemData,] = useContext(ImageContext).itemData
+  return (
+    <BottomSheet
+      ref={bs}
+      snapPoints={[firstPoint, secondPoint]}
+      initialSnap={1}
+      renderContent={() => 
+        ifRenderMap ?
+        (
+          <View style={[styles.panel, { paddingBottom: 600, backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={[styles.panelTitle, { color: colorScheme === 'dark' ? 'white' : 'black', marginBottom: 10 }]}>Add Your Own Markers</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.panelButton}
+              onPress={async () => {
+                await getCurrentPositionAsync({ accuracy: Accuracy.Highest })
+                  .then((res) => {
+                    setAddingMarker({ latitude: res.coords.latitude, longitude: res.coords.longitude })
+                  })
+                setVisible(false)
+                bs?.current?.snapTo(1)
+              }}
+            >
+              <Text style={styles.panelButtonTitle}>Use Your Current Location</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.panelButton}
+              onPress={() => { setVisible(false); bs?.current?.snapTo(1) }}
+            >
+              <Text style={styles.panelButtonTitle}>Mark Your Marker In The Map</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.panelButton}
+              onPress={() => { bs?.current?.snapTo(1) }}
+            >
+              <Text style={styles.panelButtonTitle}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        )
+        :
+        (
+          Object.keys(itemData).length !== 0 && <ExpandImageScreen navigation={navigation} item={itemData} />
+        )
+      }
+      renderHeader={() => (
+        <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+          <View style={styles.panelHeader}>
+            <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
+          </View>
+        </View>
+      )
+      }
+      enabledGestureInteraction={true}
+      enabledInnerScrolling={false}
+      enabledContentGestureInteraction={false}
+    />
+
   )
 }
 
@@ -196,3 +270,53 @@ const HomeTabs = ({ navigation }: any) => {
     </BottomTab.Navigator>
   </>)
 }
+
+
+const styles = StyleSheet.create({
+  panel: {
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    paddingTop: 20,
+  },
+  header: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#333333',
+    shadowOffset: { width: -1, height: -3 },
+    shadowRadius: 2,
+    shadowOpacity: 0.4,
+    paddingTop: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  panelHeader: {
+    alignItems: 'center',
+  },
+  panelHandle: {
+    width: 40,
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  panelTitle: {
+    fontSize: 27,
+    height: 35,
+  },
+  panelSubtitle: {
+    fontSize: 14,
+    color: 'gray',
+    height: 30,
+    marginBottom: 10,
+  },
+  panelButton: {
+    padding: 13,
+    borderRadius: 10,
+    backgroundColor: '#FF6347',
+    alignItems: 'center',
+    marginVertical: 7,
+  },
+  panelButtonTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+})

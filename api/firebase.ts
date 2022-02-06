@@ -79,6 +79,7 @@ export const read_data_hash = async(
       }
     }
       setBusinessData([matchingDocs[0]])
+      
       setUserData(matchingDocs)
     })
 }

@@ -138,7 +138,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
 
 
     return (
-        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight / 1.5, display: 'flex' }}>
+        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight, display: 'flex' }}>
             <FlatList
                 onViewableItemsChanged={onViewableItemsChanged.current}
                 viewabilityConfig={viewConfigRef.current}

@@ -18,7 +18,14 @@ const Pic = {
   profileUri: "guest",
   fullName: "",
   isLoading: false,
-  uid: ""
+  uid: "",
+  bs: null,
+  firstPoint: 0,
+  secondPoint: 0,
+  visible: true,
+  ifRenderMap: false,
+  addingMarker: {} as any,
+  itemData: {} as any
 }
 
 
@@ -34,6 +41,14 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(Pic.isLoading)
   const [fullName, setFullName] = useState(Pic.fullName)
   const [uid, setUid] = useState(Pic.uid)
+  const [bs, setBs] = useState(Pic.bs)
+  const [firstPoint, setFirstPoint] = useState(Pic.firstPoint)
+  const [secondPoint, setSecondPoint] = useState(Pic.secondPoint)
+  const [ifRenderMap, setIfRenderMap] = useState(Pic.ifRenderMap)
+  const [addingMarker, setAddingMarker] = useState(Pic.addingMarker)
+  const [itemData, setItemData] = useState(Pic.itemData)
+  const [visible, setVisible] = useState(Pic.visible)
+
 
   const store = {
     error: [error, setError],
@@ -43,7 +58,14 @@ export default function App() {
     isLoading: [isLoading, setIsLoading],
     profileUri: [profileUri, setProfileUri],
     fullName: [fullName, setFullName],
-    uid: [uid, setUid]
+    uid: [uid, setUid],
+    bs: [bs, setBs],
+    firstPoint: [firstPoint, setFirstPoint],
+    secondPoint: [secondPoint, setSecondPoint],
+    ifRenderMap: [ifRenderMap, setIfRenderMap],
+    addingMarker: [addingMarker, setAddingMarker],
+    itemData: [itemData, setItemData],
+    visible: [visible, setVisible]
   }
 
   if (!isLoadingComplete) {
