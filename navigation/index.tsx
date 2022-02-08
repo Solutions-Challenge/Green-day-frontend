@@ -32,6 +32,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../api/Auth';
 import { Accuracy, getCurrentPositionAsync } from 'expo-location';
 import BottomSheet from 'reanimated-bottom-sheet'
+import MapPicScreen from '../screens/MapPicScreen';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -72,6 +73,7 @@ function RootNavigator() {
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
       <Stack.Screen name="Verify" component={VerifyScreen} />
+      <Stack.Screen name="MapPic" component={MapPicScreen} initialParams={{ pic: "", lat: 0, lng: 0 }} />
     </Stack.Navigator>
   </>);
 }
@@ -84,7 +86,7 @@ const DrawerTabs = () => {
 
   return (<>
     <RenderBottomSheet />
-    <Drawer.Navigator screenOptions={{ headerShown: false, drawerType: "front", swipeEdgeWidth: 100 }} drawerContent={(props) => {
+    <Drawer.Navigator screenOptions={{ headerShown: false, drawerType: "front", swipeEdgeWidth: 50 }} drawerContent={(props) => {
       return (
         <DrawerContentScrollView {...props}>
           <UserProfile uri={profileUri} width={60} height={60} hideCameraEdit={true} />
@@ -104,6 +106,7 @@ const RenderBottomSheet = () => {
   const [, setVisible] = useContext(ImageContext).visible
   const [, setAddingMarker] = useContext(ImageContext).addingMarker
   const colorScheme = useColorScheme();
+  let navigation = useNavigation()
   return (
     <BottomSheet
       ref={bs}
@@ -124,6 +127,8 @@ const RenderBottomSheet = () => {
                   })
                 setVisible(false)
                 bs?.current?.snapTo(1)
+                //@ts-ignore
+                navigation.navigate("Pic", { purpose: "update map picture" })
               }}
             >
               <Text style={styles.panelButtonTitle}>Use Your Current Location</Text>

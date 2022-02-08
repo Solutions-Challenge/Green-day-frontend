@@ -25,7 +25,8 @@ const Pic = {
   visible: true,
   ifRenderMap: false,
   addingMarker: {} as any,
-  itemData: {} as any
+  itemData: {} as any,
+  mapPic: "" as any
 }
 
 
@@ -48,6 +49,7 @@ export default function App() {
   const [addingMarker, setAddingMarker] = useState(Pic.addingMarker)
   const [itemData, setItemData] = useState(Pic.itemData)
   const [visible, setVisible] = useState(Pic.visible)
+  const [mapPic, setMapPic] = useState(Pic.mapPic)
 
 
   const store = {
@@ -65,7 +67,8 @@ export default function App() {
     ifRenderMap: [ifRenderMap, setIfRenderMap],
     addingMarker: [addingMarker, setAddingMarker],
     itemData: [itemData, setItemData],
-    visible: [visible, setVisible]
+    visible: [visible, setVisible],
+    mapPic: [mapPic, setMapPic]
   }
 
   if (!isLoadingComplete) {

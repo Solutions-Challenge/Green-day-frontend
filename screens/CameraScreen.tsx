@@ -4,7 +4,7 @@ import { Camera } from 'expo-camera';
 import { osName } from 'expo-device';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import ImageContext from '../hooks/imageContext';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { ImageResult, manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { Dimensions } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Col, Row, Grid } from "react-native-easy-grid";
@@ -19,7 +19,6 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const CameraPreview = ({photo}: any) => {
-  console.log('sdsfds', photo)
   return (
     <View
       style={{
@@ -57,13 +56,14 @@ export default function CameraScreen({ navigation, route }: any) {
   const [, setProfileUri] = useContext(ImageContext).profileUri
   const [uid,] = useContext(ImageContext).uid
   const [cameraImage, setCameraImage] = useState("") as any
+  const [,setMapPic] = useContext(ImageContext).mapPic
 
 
   const isFocused = useIsFocused();
 
-  const { purpose, screen } = route.params
+  const { purpose } = route.params
 
-  const save = async (data: any, uri: string, windowWidth: number) => {
+  const save = async (data: any, results: ImageResult, windowWidth: number) => {
 
     let items: any = []
 
@@ -79,7 +79,7 @@ export default function CameraScreen({ navigation, route }: any) {
           key: uuid(),
           uid: uid,
           width: windowWidth,
-          uri: uri,
+          image: results,
           multi: data,
         })
       })
@@ -102,7 +102,7 @@ export default function CameraScreen({ navigation, route }: any) {
   const __takePicture = async () => {
     if (!camera) return
     setIsLoading(true)
-    const photo = await camera.takePictureAsync({ quality: 1 })
+    const photo = await camera.takePictureAsync({ quality: 0.5, base64: true })
     setCameraImage(photo)
 
     const manipImage = await manipulateAsync(
@@ -136,6 +136,12 @@ export default function CameraScreen({ navigation, route }: any) {
       navigation.goBack()
     }
 
+    if (purpose == "update map picture") {
+      setIsLoading(false)
+      setMapPic(photo.base64)
+      navigation.goBack()
+    }
+
     else {
       const body = JSON.stringify({
         requests: [
@@ -163,45 +169,14 @@ export default function CameraScreen({ navigation, route }: any) {
       })
 
       const visionData = await visionRequest.json()
-      console.log(visionData)
 
       if ("localizedObjectAnnotations" in visionData.responses[0]) {
-        let object 
-        for (let i = 0; i < visionData.responses[0].localizedObjectAnnotations.length; i++) {
-          object = visionData.responses[0].localizedObjectAnnotations[i]
-
-          const croppedImage = await manipulateAsync(
-            manipImage.uri,
-            [{
-              resize: {
-                width: manipImage.width,
-                height: manipImage.height
-              }
-            },
-            {
-              crop: {
-                originX: manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0,
-                originY: manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0,
-                width: (manipImage.width * object.boundingPoly.normalizedVertices[2].x || 0) - (manipImage.width * object.boundingPoly.normalizedVertices[0].x || 0),
-                height: (manipImage.height * object.boundingPoly.normalizedVertices[2].y || 0) - (manipImage.height * object.boundingPoly.normalizedVertices[0].y || 0)
-              }
-            }
-            ],
-            {
-              format: 'jpeg' as SaveFormat,
-              compress: 0.3,
-            }
-          )
-          object.croppedImage = croppedImage.uri
-        }
-
-        save(visionData.responses[0].localizedObjectAnnotations, manipImage.uri, windowWidth)
+        save(visionData.responses[0].localizedObjectAnnotations, manipImage, windowWidth)
         setIsLoading(false)
         setUri(manipImage.uri)
         navigation.navigate('Drawer')
       }
       else {
-        console.log('empty')
         setIsLoading(false)
         setUri(manipImage.uri)
         navigation.navigate('Drawer')

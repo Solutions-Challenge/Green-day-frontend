@@ -1,4 +1,5 @@
 import { osName } from 'expo-device';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Dimensions, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
@@ -21,7 +22,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
             copy.push(false)
         }
     }
-    
+
 
     const [ifMLData, setIfMLData] = useState(copy)
     const [catIndex, setCatIndex] = useState(Array(copy.length).fill(0))
@@ -48,6 +49,37 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
             if (!ifMLData[0]) {
                 let formData = new FormData();
                 let temp = 0
+
+                let object
+                for (let i = 0; i < item.multi.length; i++) {
+                    object = item.multi[i]
+
+                    console.log(object)
+
+                    const croppedImage = await manipulateAsync(
+                        item.image.uri,
+                        [{
+                            resize: {
+                                width: item.image.width,
+                                height: item.image.height
+                            }
+                        },
+                        {
+                            crop: {
+                                originX: item.image.width * object.boundingPoly.normalizedVertices[0].x || 0,
+                                originY: item.image.height * object.boundingPoly.normalizedVertices[0].y || 0,
+                                width: (item.image.width * object.boundingPoly.normalizedVertices[2].x || 0) - (item.image.width * object.boundingPoly.normalizedVertices[0].x || 0),
+                                height: (item.image.height * object.boundingPoly.normalizedVertices[2].y || 0) - (item.image.height * object.boundingPoly.normalizedVertices[0].y || 0)
+                            }
+                        }
+                        ],
+                        {
+                            format: 'jpeg' as SaveFormat,
+                            compress: 0.3,
+                        }
+                    )
+                    object.croppedImage = croppedImage.uri
+                }
 
                 for (let i = 0; i < item.multi.length; i++) {
                     let filename = item.multi[i].croppedImage.split('/').pop();
@@ -103,7 +135,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
     const renderItem: ListRenderItem<any> = useCallback(({ item }) => {
         return (
             <View style={styles.cardView}>
-                <Image style={styles.image} source={{ uri: item.croppedImage }} />
+                {"croppedImage" in item && <Image style={styles.image} source={{ uri: item.croppedImage }} />}
                 <View style={styles.textView}>
                     <Text style={styles.itemTitle}>{item.name}</Text>
                 </View>
@@ -193,7 +225,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                             onPress={() => {
                                 goBack(item.multi[index].mlData[catIndex[index]].mapData.name)
                             }}
-                            style={[styles.chipsItem, { backgroundColor: "white", marginTop: 20, height: 60, width: 170, marginLeft: windowWidth / 2 - 170/2, paddingLeft: 30}]}>
+                            style={[styles.chipsItem, { backgroundColor: "white", marginTop: 20, height: 60, width: 170, marginLeft: windowWidth / 2 - 170 / 2, paddingLeft: 30 }]}>
                             <Image source={{ uri: item.multi[index].mlData[catIndex[index]].mapData.icon }} style={{ width: 40, height: 40, marginRight: 15, marginTop: 'auto', marginBottom: 'auto' }} />
                             <Text style={{ marginTop: 'auto', marginBottom: "auto", width: 130 }}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
                         </TouchableOpacity>

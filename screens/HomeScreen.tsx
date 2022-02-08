@@ -29,8 +29,7 @@ export default function HomeScreen({ navigation }: any) {
     const [imageWidth,] = useState(windowWidth / 1.5)
     const [itemData, setItemData] = useState(null)
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
-    const [fullName, setFullName] = useContext(ImageContext).fullName
-    const [uid, setUid] = useContext(ImageContext).uid
+    const [, setFullName] = useContext(ImageContext).fullName
 
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
@@ -52,10 +51,11 @@ export default function HomeScreen({ navigation }: any) {
             let data: any = await AsyncStorage.getItem("remember")
             const remember = JSON.parse(data) as any
             await onAuthStateChanged(auth, async (user) => {
+                const d = await user?.getIdToken()
+                console.log(d)
                 if (user !== null && remember.remember) {
                     setProfileUri(user.photoURL || "Guest")
                     setFullName(user.displayName || "Guest")
-                    setUid(user.uid || "")
                 }
                 else {
                     setProfileUri("Guest")
@@ -96,7 +96,7 @@ export default function HomeScreen({ navigation }: any) {
                                 }}
                             >
                                 <ImageBackground
-                                    source={{ uri: item.uri }}
+                                    source={{ uri: item.image.uri }}
                                     style={{
                                         height: imageWidth,
                                         width: imageWidth,

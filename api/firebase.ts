@@ -21,18 +21,23 @@ export const write_data_hash = async (
   longitude: number,
   icon: string,
   name: string,
-  uid: string
+  mapPic: string,
+  setMapPic: any
 ) => {
   // Compute the GeoHash for a lat/lng point
   const hash = geofire.geohashForLocation([latitude, longitude]);
+
+  console.log(hash)
 
   addDoc(geoData, {
     icon: icon,
     name: name,
     coordinates: new GeoPoint(latitude, longitude),
     hash: hash,
-    uid: uid
+    mapPic: "data:image/jpeg;base64,"+mapPic
   });
+
+  setMapPic("")
 };
 
 export const read_data_hash = async(

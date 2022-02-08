@@ -65,7 +65,7 @@ export default function App({ navigation, route }: any) {
   const [mapType, setMapType] = useState(true)
   const _categoryView = useRef<FlatList>(null)
   const [categories, setCategories] = useState([] as any)
-  const [uid,] = useContext(ImageContext).uid
+  const [mapPic, setMapPic] = useContext(ImageContext).mapPic
 
   const [catIndex, setCatIndex] = useState(-1)
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 70, minimumViewTime: 300, })
@@ -185,47 +185,6 @@ export default function App({ navigation, route }: any) {
     }
   }, [toggle, catIndex])
 
-  const renderInner = () => (
-    <View style={[styles.panel, { paddingBottom: 600, backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
-      <View style={{ alignItems: 'center' }}>
-        <Text style={[styles.panelTitle, { color: colorScheme === 'dark' ? 'white' : 'black', marginBottom: 10 }]}>Add Your Own Markers</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={async () => {
-          await getCurrentPositionAsync({ accuracy: Accuracy.Highest })
-            .then((res) => {
-              setAddingMarker({ latitude: res.coords.latitude, longitude: res.coords.longitude })
-            })
-          setVisible(false)
-          bs?.current?.snapTo(1)
-        }}
-      >
-        <Text style={styles.panelButtonTitle}>Use Your Current Location</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={() => { setVisible(false); bs?.current?.snapTo(1) }}
-      >
-        <Text style={styles.panelButtonTitle}>Mark Your Marker In The Map</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={() => { bs?.current?.snapTo(1) }}
-      >
-        <Text style={styles.panelButtonTitle}>Cancel</Text>
-      </TouchableOpacity>
-    </View>
-  )
-
-  const renderHeader = () => (
-    <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
-      <View style={styles.panelHeader}>
-        <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
-      </View>
-    </View>
-  )
-
   const keyExtractor = useCallback(
     (item, index) => index.toString(),
     [mapData, toggle, userData, catIndex]
@@ -267,28 +226,28 @@ export default function App({ navigation, route }: any) {
   }, [catIndex, userData])
 
   useEffect(() => {
-      (async () => {
-        setCatIndex(-1)
-        setToggle(false)
+    (async () => {
+      setCatIndex(-1)
+      setToggle(false)
 
-        const data = await fetchCategoryData()
-        setCategories(data)
+      const data = await fetchCategoryData()
+      setCategories(data)
 
-        const { material } = route.params;
-        if (canMap() && material != "") {
-          for (let i = 0; i < categories.length; i++) {
-            if (categories[i].name === material) {
-              setCatIndex(i + 1)
-              setToggle(true)
-              _categoryView.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.5 })
+      const { material } = route.params;
+      if (canMap() && material != "") {
+        for (let i = 0; i < categories.length; i++) {
+          if (categories[i].name === material) {
+            setCatIndex(i + 1)
+            setToggle(true)
+            _categoryView.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.5 })
 
-              navigation.setParams({
-                material: ''
-              });
-            }
+            navigation.setParams({
+              material: ''
+            });
           }
         }
-      })();
+      }
+    })();
 
   }, [isFocused, userData])
 
@@ -296,6 +255,8 @@ export default function App({ navigation, route }: any) {
     ({ item }: any) => {
       return (
         <View style={[styles.card, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+          <View style={styles.container}>
+          </View>
           <View style={styles.textContent}>
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
               <Text numberOfLines={1} style={[styles.cardtitle, { color: colorScheme === "dark" ? "white" : "black", width: 150 }]}>{item.title}</Text>
@@ -311,14 +272,11 @@ export default function App({ navigation, route }: any) {
               </Touch>
             </View>
             <Text style={[styles.cardDescription, { color: colorScheme === "dark" ? "white" : "black" }]}>{item.description}</Text>
-            {
-              uid === item.uid &&
 
-              <Touch onPress={() => { }}>
-                <Feather name="x-circle" size={24} color={colorScheme === "dark" ? "white" : "black"} />
-              </Touch>
+            <Touch onPress={() => { }}>
+              <Feather name="x-circle" size={24} color={colorScheme === "dark" ? "white" : "black"} />
+            </Touch>
 
-            }
           </View>
         </View>
       )
@@ -409,7 +367,6 @@ export default function App({ navigation, route }: any) {
               </Marker>
             )
           })}
-
           {canMap() && toggle && partialUserData.map((e: any, index: any) => {
             return (<>
 
@@ -420,7 +377,7 @@ export default function App({ navigation, route }: any) {
                   longitude: e.coordinates.longitude
                 }}
                 onPress={() => {
-                  Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${e.coordinates.latitude},${e.coordinates.longitude}`)
+                  navigation.navigate("MapPic", { pic: e.mapPic, lat: e.coordinates.latitude, lng: e.coordinates.longitude })
                 }}
               >
                 <View style={{ borderRadius: 15, width: 30, height: 30, backgroundColor: 'white' }}>
@@ -509,10 +466,17 @@ export default function App({ navigation, route }: any) {
                     if (catIndex !== -1) {
                       setVisible(true);
                       //@ts-ignore
-                      write_data_hash(addingMarker.latitude, addingMarker.longitude, categories[catIndex - 1].icon, categories[catIndex - 1].name, uid);
-                      setVisible(true);
-                      setAddingMarker({});
-                      read_data_hash(latitude, longitude, setUserData, setBusinessData);
+                      if (mapPic === "") {
+                        setVisible(true);
+                        setAddingMarker({});
+                        setCatIndex(-1);
+                      }
+                      else {
+                        write_data_hash(addingMarker.latitude, addingMarker.longitude, categories[catIndex - 1].icon, categories[catIndex - 1].name, mapPic, setMapPic);
+                        setVisible(true);
+                        setAddingMarker({});
+                        read_data_hash(latitude, longitude, setUserData, setBusinessData);
+                      }
                     }
                     else {
                       setCatIndex(-1)
