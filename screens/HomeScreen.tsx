@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
 import ImageContext from '../hooks/imageContext';
 import { osName } from 'expo-device';
-import { useIsFocused, useRoute } from '@react-navigation/native';
+
 import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
@@ -24,20 +24,17 @@ let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number
 
 export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
-    const isFocused = useIsFocused()
     const [data, setData] = useState([])
-    const [uri,] = useContext(ImageContext).uri
+    const [uri, setUri] = useContext(ImageContext).uri
     const [imageWidth,] = useState(windowWidth / 1.5)
+    const [itemData, setItemData] = useState(null)
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
-    const [, setFullName] = useContext(ImageContext).fullName
-    const [, setUid] = useContext(ImageContext).uid
-    const [bs, setBs] = useContext(ImageContext).bs
-    const [, setFirstPoint] = useContext(ImageContext).firstPoint
-    const [, setSecondPoint] = useContext(ImageContext).secondPoint
-    const [, setItemData] = useContext(ImageContext).itemData
-    const [, setIfRenderMap] = useContext(ImageContext).ifRenderMap
+    const [fullName, setFullName] = useContext(ImageContext).fullName
+    const [uid, setUid] = useContext(ImageContext).uid
+
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
+    const bs = useRef<BottomSheet>(null)
     const _scrollView = useRef<FlatList>(null)
 
     const onLongPressIn = () => {
@@ -49,14 +46,6 @@ export default function HomeScreen({ navigation }: any) {
         checkedCopy[index] = !checkedCopy[index]
         setChecked(checkedCopy)
     }
-
-    useEffect(() => {
-        if (isFocused) {
-            setFirstPoint(450)
-            setSecondPoint(0)
-            setIfRenderMap(false)
-        }
-    }, [isFocused])
 
     useEffect(() => {
         (async () => {
@@ -155,12 +144,10 @@ export default function HomeScreen({ navigation }: any) {
         }
         setData(ans)
         await AsyncStorage.setItem("multi", JSON.stringify(ans))
-
     }
 
     const load = async () => {
         let ImageClassify = await AsyncStorage.getItem("multi")
-        console.log(ImageClassify)
         if (ImageClassify === null) {
             await AsyncStorage.setItem("multi", JSON.stringify(data))
         }
@@ -179,8 +166,31 @@ export default function HomeScreen({ navigation }: any) {
         })();
     }, [uri]);
 
+    const renderHeader = () => (
+        <View style={[styles.header, { backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
+            <View style={styles.panelHeader}>
+                <View style={[styles.panelHandle, { backgroundColor: colorScheme === "dark" ? "white" : '#00000040' }]} />
+            </View>
+        </View>
+    )
+
     const Root = () => {
         return (<>
+
+            <BottomSheet
+                ref={bs}
+                snapPoints={[windowHeight / 1.3, 0]}
+                initialSnap={1}
+                renderContent={() => {
+                    return (
+                        itemData && <ExpandImageScreen navigation={navigation} item={itemData} />
+                    )
+                }}
+                renderHeader={renderHeader}
+                enabledGestureInteraction={true}
+                enabledInnerScrolling={false}
+                enabledContentGestureInteraction={false}
+            />
 
             {data.length === 0 ? (<>
                 <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>

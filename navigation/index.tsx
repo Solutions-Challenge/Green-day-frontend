@@ -101,21 +101,15 @@ const DrawerTabs = () => {
 const RenderBottomSheet = () => {
   const [bs,setBs] = useContext(ImageContext).bs
   setBs(useRef(null))
-  const [firstPoint,] = useContext(ImageContext).firstPoint
-  const [secondPoint,] = useContext(ImageContext).secondPoint
-  const [ifRenderMap,]: [boolean] = useContext(ImageContext).ifRenderMap
   const [, setVisible] = useContext(ImageContext).visible
   const [, setAddingMarker] = useContext(ImageContext).addingMarker
   const colorScheme = useColorScheme();
-  const navigation = useNavigation()
-  const [itemData,] = useContext(ImageContext).itemData
   return (
     <BottomSheet
       ref={bs}
-      snapPoints={[firstPoint, secondPoint]}
+      snapPoints={[350, 0]}
       initialSnap={1}
       renderContent={() => 
-        ifRenderMap ?
         (
           <View style={[styles.panel, { paddingBottom: 600, backgroundColor: colorScheme === "dark" ? '#181818' : "white" }]}>
             <View style={{ alignItems: 'center' }}>
@@ -147,10 +141,6 @@ const RenderBottomSheet = () => {
               <Text style={styles.panelButtonTitle}>Cancel</Text>
             </TouchableOpacity>
           </View>
-        )
-        :
-        (
-          Object.keys(itemData).length !== 0 && <ExpandImageScreen navigation={navigation} item={itemData} />
         )
       }
       renderHeader={() => (

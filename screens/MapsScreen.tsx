@@ -18,7 +18,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
-import BottomSheet from 'reanimated-bottom-sheet'
 import { read_data_hash, write_data_hash } from '../api/firebase';
 
 const { width } = Dimensions.get("window");
@@ -63,9 +62,6 @@ export default function App({ navigation, route }: any) {
   const [partialUserData, setPartialUserData] = useState({} as any)
   const [businessData, setBusinessData] = useState({} as any)
   const [toggle, setToggle] = useState(false)
-  const [, setFirstPoint] = useContext(ImageContext).firstPoint
-  const [, setSecondPoint] = useContext(ImageContext).secondPoint
-  const [ifRenderMap, setIfRenderMap] = useContext(ImageContext).ifRenderMap
   const [mapType, setMapType] = useState(true)
   const _categoryView = useRef<FlatList>(null)
   const [categories, setCategories] = useState([] as any)
@@ -270,13 +266,6 @@ export default function App({ navigation, route }: any) {
     }
   }, [catIndex, userData])
 
-  useEffect(()=>{
-    if (isFocused) {
-      setFirstPoint(350)
-      setSecondPoint(-100)
-      setIfRenderMap(true)
-    }
-  }, [isFocused])
   useEffect(() => {
       (async () => {
         setCatIndex(-1)
@@ -423,24 +412,6 @@ export default function App({ navigation, route }: any) {
 
           {canMap() && toggle && partialUserData.map((e: any, index: any) => {
             return (<>
-              {/* {
-                e.uid === uid && ifZoomed &&
-                <Marker
-                  key={index}
-                  style={{zIndex: 100}}
-                  coordinate={{
-                    latitude: e.coordinates.latitude+0.000012,
-                    longitude: e.coordinates.longitude+0.000012
-                  }}
-                  onPress={() => { console.log('delete me') }}
-                >
-                  <View>
-                    <View style={{ backgroundColor: '#F07470', borderRadius: 10 }}>
-                      <Feather name="x-circle" size={20} color="black" />
-                    </View>
-                  </View>
-                </Marker>
-              } */}
 
               <Marker
                 key={index}
@@ -593,7 +564,7 @@ export default function App({ navigation, route }: any) {
         </View>
         {
           visible && (<>
-            <FlatList
+            {Object.keys(partialUserData).length !== 0 && <FlatList
               ref={_categoryView}
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -628,7 +599,7 @@ export default function App({ navigation, route }: any) {
                 )
               }}
             >
-            </FlatList>
+            </FlatList>}
             <FlatList
               ref={_scrollView}
               initialScrollIndex={0}
@@ -663,15 +634,18 @@ export default function App({ navigation, route }: any) {
                 <AntDesign name="pluscircleo" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
               </View>
             </Touch>
-            <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
-              <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
-                {
-                  !toggle ?
-                    <Ionicons name="person-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} /> :
-                    <Ionicons name="search-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
-                }
-              </View>
-            </Touch>
+            {
+              Object.keys(partialUserData).length !== 0 &&
+              <Touch style={{ position: 'absolute', bottom: 250 + (Platform.OS === 'ios' ? 50 : 0), right: 100 }} onPress={() => { setToggle(!toggle); }}>
+                <View style={{ backgroundColor: colorScheme === "light" ? 'white' : 'black', borderRadius: 25 }}>
+                  {
+                    !toggle ?
+                      <Ionicons name="person-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} /> :
+                      <Ionicons name="search-circle-outline" size={50} color={colorScheme === "dark" ? 'white' : 'black'} />
+                  }
+                </View>
+              </Touch>
+            }
           </>)
         }
 
