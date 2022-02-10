@@ -15,7 +15,7 @@ const Pic = {
   uri: '',
   width: 0,
   error: "",
-  profileUri: "guest",
+  profileUri: "",
   fullName: "",
   isLoading: false,
   uid: "",

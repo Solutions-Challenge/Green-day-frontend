@@ -4,13 +4,13 @@ import { useIsFocused, useNavigation } from "@react-navigation/native"
 import { osName } from 'expo-device';
 import React, { useContext, useEffect, useState } from "react"
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
-import { deleteMe, logout } from '../api/Auth';
+import { currentUser, deleteMe, logout } from '../api/Auth';
 import UserProfile from "../components/UserProfile"
 import ImageContext from '../hooks/imageContext';
 import useColorScheme from '../hooks/useColorScheme';
 
 const UserProfileScreen = () => {
-    const navigation:any = useNavigation()
+    const navigation: any = useNavigation()
     const ColorScheme = useColorScheme()
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
     const [fullName, setFullName] = useContext(ImageContext).fullName
@@ -22,7 +22,7 @@ const UserProfileScreen = () => {
             <View style={styles.Middle}>
                 <Text style={[styles.LoginText, { color: textColor }]}>Welcome</Text>
             </View>
-            <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={fullName === "Guest" ? true:false} />
+            <UserProfile hideCameraEdit={fullName === "Guest" ? true : false} />
             <View style={styles.Middle}>
                 <Text style={{ color: textColor }}>{fullName}</Text>
             </View>
@@ -44,16 +44,44 @@ const UserProfileScreen = () => {
                         await AsyncStorage.removeItem("multi")
                         await AsyncStorage.removeItem("remember")
                         await deleteMe()
+                        console.log('registering...')
+                        const id_token = await currentUser().getIdToken()
+
+                        let details = {
+                            id_token: id_token
+                        } as any
+
+                        let formBody = []
+                        for (let props in details) {
+                            let encodedKey = encodeURIComponent(props)
+                            let encodedVal = encodeURIComponent(details[props])
+                            formBody.push(encodedKey + "=" + encodedVal)
+                        }
+                        formBody = formBody.join("&") as any
+                        const data = await fetch("http://100.64.58.72:8080/database/deleteUser", {
+                            method: 'DELETE',
+                            body: formBody,
+                            headers: {
+                                'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                            }
+                        })
+                        const json = await data.json()
+                        console.log(json)
                         setProfileUri("Guest")
                         setFullName("")
+                        navigation.navigate("Register")
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'Register' }],
+                        });
                     }}>
                         <Text style={{ alignSelf: 'center', marginTop: 15 }}>Delete Account</Text>
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ position: 'absolute', top: flipPosition + 20, left: 20, backgroundColor: ColorScheme === "dark" ? "black":"white", borderRadius: 60, elevation: 5 }}>
-                <TouchableOpacity onPress={()=>{navigation.openDrawer()}}>
-                    <Ionicons name="ios-arrow-back-sharp" size={30} color={ColorScheme === "dark" ? "white":"black"} />
+            <View style={{ position: 'absolute', top: flipPosition + 20, left: 20, backgroundColor: ColorScheme === "dark" ? "black" : "white", borderRadius: 60, elevation: 5 }}>
+                <TouchableOpacity onPress={() => { navigation.openDrawer() }}>
+                    <Ionicons name="ios-arrow-back-sharp" size={30} color={ColorScheme === "dark" ? "white" : "black"} />
                 </TouchableOpacity>
             </View>
         </View>

@@ -16,10 +16,8 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("")
   const [reveal, setReveal] = useState(false)
   const [remember, setRemember] = useState(false)
-  const [profileUri,] = useContext(ImageContext).profileUri
   const [error, setError] = useContext(ImageContext).error
   const [fullName, setFullName] = useContext(ImageContext).fullName
-
 
   return (
     <View style={styles.container}>
@@ -32,7 +30,7 @@ export default function RegisterScreen() {
           <TouchableOpacity onPress={() => {setError(""); navigation.navigate("Login")}} ><Text style={styles.signupText}> Login </Text></TouchableOpacity>
         </View>
 
-        <UserProfile uri={profileUri} navigation={navigation} hideCameraEdit={false} />
+        <UserProfile hideCameraEdit={false} />
         <GeneralSignIn placeholder={"Name: "} icon={<MaterialIcons name={"person"} size={24} />} set={setFullName} error={error} />
         <GeneralSignIn placeholder={"Email: "} icon={<MaterialIcons name={'email'} size={24} />} set={setEmail} error={error} />
         <PasswordSignIn placeholder={"Password: "} reveal={reveal} setReveal={setReveal} setPassword={setPassword} error={error} />

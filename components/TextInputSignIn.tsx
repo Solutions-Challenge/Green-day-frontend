@@ -107,8 +107,9 @@ export const SubmitButton = (props: any) => {
                         }
                         else {
                             if (props.remember === true) {
-                                await AsyncStorage.setItem("remember", JSON.stringify({remember: true}))
+                                await AsyncStorage.setItem("remember", JSON.stringify({ remember: true }))
                             }
+
                             props.navigation.navigate("Drawer")
                             props.navigation.reset({
                                 index: 0,
@@ -119,8 +120,32 @@ export const SubmitButton = (props: any) => {
                     if (props.submission === "Verify") {
                         if (currentUser().emailVerified) {
                             if (props.remember === true) {
-                                await AsyncStorage.setItem("remember", JSON.stringify({remember: true}))
+                                await AsyncStorage.setItem("remember", JSON.stringify({ remember: true }))
                             }
+                            console.log('registering...')
+                            const id_token = await currentUser().getIdToken()
+
+                            let details = {
+                                id_token: id_token
+                            } as any
+
+                            let formBody = []
+                            for (let props in details) {
+                                let encodedKey = encodeURIComponent(props)
+                                let encodedVal = encodeURIComponent(details[props])
+                                formBody.push(encodedKey+"="+encodedVal)
+                            }
+                            formBody = formBody.join("&") as any
+                            const data = await fetch("http://100.64.58.72:8080/database/createUser", {
+                                method: 'POST',
+                                body: formBody,
+                                headers: {
+                                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                                }
+                            })
+
+                            const json = await data.json()
+                            console.log(json)
                             props.navigation.navigate("Drawer")
                             props.navigation.reset({
                                 index: 0,

@@ -12,13 +12,13 @@ import { PinchGestureHandler } from 'react-native-gesture-handler';
 import Svg, { Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../environment';
-import { updateUri } from '../api/Auth';
+import { currentUser } from '../api/Auth';
 const { CLOUDVISIONAPIKEY } = getEnvVars();
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const CameraPreview = ({photo}: any) => {
+const CameraPreview = ({ photo }: any) => {
   return (
     <View
       style={{
@@ -29,7 +29,7 @@ const CameraPreview = ({photo}: any) => {
       }}
     >
       <ImageBackground
-        source={{uri: photo && photo.uri}}
+        source={{ uri: photo && photo.uri }}
         style={{
           flex: 1
         }}
@@ -52,21 +52,19 @@ export default function CameraScreen({ navigation, route }: any) {
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0)
   const [, setIsLoading] = useContext(ImageContext).isLoading
-  const [uri, setUri] = useContext(ImageContext).uri
-  const [, setProfileUri] = useContext(ImageContext).profileUri
-  const [uid,] = useContext(ImageContext).uid
+  const [, setUri] = useContext(ImageContext).uri
   const [cameraImage, setCameraImage] = useState("") as any
-  const [,setMapPic] = useContext(ImageContext).mapPic
+  const [, setMapPic] = useContext(ImageContext).mapPic
 
 
   const isFocused = useIsFocused();
 
   const { purpose } = route.params
 
-  const save = async (data: any, results: ImageResult, windowWidth: number) => {
+  const save = async (data: any, results: ImageResult) => {
 
     let items: any = []
-
+    const uniqueID = uuid()
     await AsyncStorage.getItem("multi")
       .then((res) => {
         items = JSON.parse(res as string)
@@ -75,14 +73,42 @@ export default function CameraScreen({ navigation, route }: any) {
           items.pop()
         }
 
+        // @ts-ignore
+        results.uri = results.base64
+        results.base64 = ""
+
         items.unshift({
-          key: uuid(),
-          uid: uid,
-          width: windowWidth,
+          key: uniqueID,
           image: results,
           multi: data,
         })
       })
+    const id_token = await currentUser().getIdToken()
+    let details = {
+      id_token: id_token,
+      data: JSON.stringify({
+        key: uniqueID,
+        multi: data
+      }),
+      image_base64: results.uri
+    } as any
+
+    let formBody = []
+    for (let props in details) {
+      let encodedKey = encodeURIComponent(props)
+      let encodedVal = encodeURIComponent(details[props])
+      formBody.push(encodedKey + "=" + encodedVal)
+    }
+    formBody = formBody.join("&") as any
+    const d = await fetch("http://100.64.58.72:8080/database/addPic", {
+      method: 'POST',
+      body: formBody,
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      }
+    })
+
+    const json = await d.json()
     await AsyncStorage.setItem("multi", JSON.stringify(items))
   }
 
@@ -102,7 +128,7 @@ export default function CameraScreen({ navigation, route }: any) {
   const __takePicture = async () => {
     if (!camera) return
     setIsLoading(true)
-    const photo = await camera.takePictureAsync({ quality: 0.5, base64: true })
+    const photo = await camera.takePictureAsync({ quality: 1, base64: true })
     setCameraImage(photo)
 
     const manipImage = await manipulateAsync(
@@ -124,17 +150,10 @@ export default function CameraScreen({ navigation, route }: any) {
       ],
       {
         format: 'jpeg' as SaveFormat,
-        compress: 0.3,
+        compress: 0.5,
         base64: true
       }
     )
-
-    if (purpose == "update user picture") {
-      setIsLoading(false)
-      setProfileUri(manipImage.uri)
-      await updateUri(manipImage.uri)
-      navigation.goBack()
-    }
 
     if (purpose == "update map picture") {
       setIsLoading(false)
@@ -171,7 +190,7 @@ export default function CameraScreen({ navigation, route }: any) {
       const visionData = await visionRequest.json()
 
       if ("localizedObjectAnnotations" in visionData.responses[0]) {
-        save(visionData.responses[0].localizedObjectAnnotations, manipImage, windowWidth)
+        save(visionData.responses[0].localizedObjectAnnotations, manipImage)
         setIsLoading(false)
         setUri(manipImage.uri)
         navigation.navigate('Drawer')
@@ -198,7 +217,7 @@ export default function CameraScreen({ navigation, route }: any) {
   }, []);
 
   return (<>
-    {cameraImage !== "" ? 
+    {cameraImage !== "" ?
       <CameraPreview photo={cameraImage} />
       :
       <PinchGestureHandler

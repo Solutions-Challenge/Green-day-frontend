@@ -1,4 +1,4 @@
-import { useRoute } from "@react-navigation/native"
+import { useNavigation, useRoute } from "@react-navigation/native"
 import React from "react"
 import { Text, Dimensions, Linking, ImageBackground, View } from "react-native"
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const MapPicScreen = () => {
     const route = useRoute()
+    const navigation = useNavigation()
     const { width, height } = Dimensions.get("window");
 
     const { pic, lat, lng }: any = route.params
@@ -13,7 +14,7 @@ const MapPicScreen = () => {
     return (
         <SafeAreaView>
             <ImageBackground source={{ uri: pic }} style={{ height: height, width: width }} >
-                <TouchableOpacity style={{marginTop: height - 100, marginLeft: 20}} onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`) }}>
+                <TouchableOpacity style={{marginTop: height - 100, marginLeft: 20}} onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`); navigation.goBack()  }}>
                     <View style={{
                         backgroundColor: '#246EE9', 
                         borderRadius: 10,

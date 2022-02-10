@@ -11,8 +11,8 @@ import Svg, { Rect } from 'react-native-svg';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import ExpandImageScreen from './ExpandImageScreen';
 import UserProfile from '../components/UserProfile';
-import { auth, logout } from '../api/Auth';
-import { onAuthStateChanged } from 'firebase/auth';
+import { auth, currentUser, logout } from '../api/Auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -21,6 +21,95 @@ const divNum = windowWidth < 600 ? 4 : 3
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
+const deletePic = async (photo_id: string) => {
+    const id_token = await currentUser().getIdToken()
+
+    let details = {
+        id_token: id_token,
+        photo_id: photo_id,
+        meta_flag: "true"
+    } as any
+
+    let formBody = []
+    for (let props in details) {
+        let encodedKey = encodeURIComponent(props)
+        let encodedVal = encodeURIComponent(details[props])
+        formBody.push(encodedKey + "=" + encodedVal)
+    }
+    formBody = formBody.join("&") as any
+    const data = await fetch("http://100.64.58.72:8080/database/deletePic", {
+        method: 'DELETE',
+        body: formBody,
+        headers: {
+            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        }
+    })
+
+    let json = await data.json()
+
+    console.log(json)
+
+}
+
+const getPic = async (photo_id: string) => {
+    const id_token = await currentUser().getIdToken()
+
+    let details = {
+        id_token: id_token,
+        photo_id: photo_id,
+        meta_flag: "true"
+    } as any
+
+    let formBody = []
+    for (let props in details) {
+        let encodedKey = encodeURIComponent(props)
+        let encodedVal = encodeURIComponent(details[props])
+        formBody.push(encodedKey + "=" + encodedVal)
+    }
+    formBody = formBody.join("&") as any
+    const data = await fetch("http://100.64.58.72:8080/database/getPic", {
+        method: 'POST',
+        body: formBody,
+        headers: {
+            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        }
+    })
+
+    let json = await data.json()
+
+    json.success.photo.uri = json.success.photo.uri.substring(2)
+
+    json.success["photo-meta"].image = json.success.photo
+
+    return json.success["photo-meta"]
+}
+
+const getAllPics = async () => {
+    const id_token = await currentUser().getIdToken()
+
+    let details = {
+        id_token: id_token
+    } as any
+
+    let formBody = []
+    for (let props in details) {
+        let encodedKey = encodeURIComponent(props)
+        let encodedVal = encodeURIComponent(details[props])
+        formBody.push(encodedKey + "=" + encodedVal)
+    }
+    formBody = formBody.join("&") as any
+    const data = await fetch("http://100.64.58.72:8080/database/getPicKeys", {
+        method: 'POST',
+        body: formBody,
+        headers: {
+            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        }
+    })
+
+    const json = await data.json()
+
+    return json
+}
 
 export default function HomeScreen({ navigation }: any) {
     const colorScheme = useColorScheme()
@@ -30,11 +119,13 @@ export default function HomeScreen({ navigation }: any) {
     const [itemData, setItemData] = useState(null)
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
     const [, setFullName] = useContext(ImageContext).fullName
+    const [authChange, setAuthChange] = useState(false)
 
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
     const bs = useRef<BottomSheet>(null)
     const _scrollView = useRef<FlatList>(null)
+    const [fireStorePics, setFireStorePics] = useState([])
 
     const onLongPressIn = () => {
         setOnLongPress(true)
@@ -48,11 +139,82 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         (async () => {
+            let currentPhotos = []
+            if (fireStorePics !== []) {
+                for (let i = 0; i < data.length; i++) {
+                    // @ts-ignore
+                    currentPhotos.push(data[i].key)
+                }
+
+                const setA = new Set(fireStorePics)
+                const setB = new Set(currentPhotos)
+
+                let _difference = new Set(setA)
+                for (let elem of setB) {
+                    // @ts-ignore
+                    _difference.delete(elem)
+                }
+
+                if (authChange) {
+                    let ans: any[] = []
+                    let check = false
+                    _difference.forEach(async (e) => {
+                        await getPic(e)
+                            .then((res) => {
+                                ans.push(res)
+                                if (ans.length === _difference.size) {
+                                    ans.push(...data)
+                                    check = true
+                                }
+                            })
+
+                        if (check) {
+                            AsyncStorage.setItem("multi", JSON.stringify(ans))
+                            // @ts-ignore
+                            setData(ans)
+                        }
+                    })
+                }
+
+                let _difference2 = new Set(setB)
+                for (let elem of setA) {
+                    // @ts-ignore
+                    _difference2.delete(elem)
+                }
+
+                if (authChange) {
+                    let ans: any[] = []
+                    _difference2.forEach(async (e) => {
+                        ans.push(_difference2)
+                    })
+                    let indices = []
+                    for (let i = 0; i < data.length; i++) {
+                        // @ts-ignore
+                        if (data[i].key in ans) {
+                            indices.push(i)
+                            // @ts-ignore
+                            deletePic(data[i].key)
+                        }
+                    }
+                    deleteRow(indices)
+                }
+
+
+            }
+        })();
+    }, [authChange]);
+
+    useEffect(() => {
+        (async () => {
             let data: any = await AsyncStorage.getItem("remember")
             const remember = JSON.parse(data) as any
             await onAuthStateChanged(auth, async (user) => {
+                const ids = await getAllPics()
+
                 const d = await user?.getIdToken()
                 console.log(d)
+                setFireStorePics(ids.success)
+                setAuthChange(true)
                 if (user !== null && remember.remember) {
                     setProfileUri(user.photoURL || "Guest")
                     setFullName(user.displayName || "Guest")
@@ -96,7 +258,7 @@ export default function HomeScreen({ navigation }: any) {
                                 }}
                             >
                                 <ImageBackground
-                                    source={{ uri: item.image.uri }}
+                                    source={{ uri: "data:image/jpeg;base64," + item.image.uri }}
                                     style={{
                                         height: imageWidth,
                                         width: imageWidth,
@@ -134,6 +296,11 @@ export default function HomeScreen({ navigation }: any) {
         let ans: any = []
         let temp = 0
 
+        for (let i = 0; i < indices.length; i++) {
+            // @ts-ignore
+            deletePic(data[i].key)
+        }
+
         for (let i = 0; i < newData.length; i++) {
             if (indices[temp] === i) {
                 temp += 1
@@ -147,7 +314,7 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     const load = async () => {
-        let ImageClassify = await AsyncStorage.getItem("multi")
+        let ImageClassify: any = await AsyncStorage.getItem("multi")
         if (ImageClassify === null) {
             await AsyncStorage.setItem("multi", JSON.stringify(data))
         }

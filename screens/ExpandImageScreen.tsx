@@ -50,26 +50,26 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                 let formData = new FormData();
                 let temp = 0
 
+                console.log(item)
+
                 let object
                 for (let i = 0; i < item.multi.length; i++) {
                     object = item.multi[i]
 
-                    console.log(object)
-
                     const croppedImage = await manipulateAsync(
-                        item.image.uri,
+                        "data:image/jpeg;base64,"+item.image.uri,
                         [{
                             resize: {
-                                width: item.image.width,
-                                height: item.image.height
+                                width: windowWidth,
+                                height: windowWidth
                             }
                         },
                         {
                             crop: {
-                                originX: item.image.width * object.boundingPoly.normalizedVertices[0].x || 0,
-                                originY: item.image.height * object.boundingPoly.normalizedVertices[0].y || 0,
-                                width: (item.image.width * object.boundingPoly.normalizedVertices[2].x || 0) - (item.image.width * object.boundingPoly.normalizedVertices[0].x || 0),
-                                height: (item.image.height * object.boundingPoly.normalizedVertices[2].y || 0) - (item.image.height * object.boundingPoly.normalizedVertices[0].y || 0)
+                                originX: windowWidth * object.boundingPoly.normalizedVertices[0].x || 0,
+                                originY: windowWidth * object.boundingPoly.normalizedVertices[0].y || 0,
+                                width: (windowWidth * object.boundingPoly.normalizedVertices[2].x || 0) - (windowWidth * object.boundingPoly.normalizedVertices[0].x || 0),
+                                height: (windowWidth * object.boundingPoly.normalizedVertices[2].y || 0) - (windowWidth * object.boundingPoly.normalizedVertices[0].y || 0)
                             }
                         }
                         ],

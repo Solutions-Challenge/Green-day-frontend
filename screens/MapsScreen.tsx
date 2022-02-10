@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, Dimensions, Linking, FlatList } from 'react-nat
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { TouchableOpacity as Touch } from 'react-native';
 import { AntDesign, Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
-import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location'
+import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync, enableNetworkProviderAsync } from 'expo-location'
 import { useEffect, useRef, useState } from 'react';
 import useColorScheme from '../hooks/useColorScheme';
 import mapStyleDark from '../mapStyle.json';
@@ -122,6 +122,8 @@ export default function App({ navigation, route }: any) {
       if (status !== 'granted') {
         navigation.navigate('Home')
       }
+
+      await enableNetworkProviderAsync()
 
       let location = await getCurrentPositionAsync({ accuracy: Accuracy.Highest })
       setLatitude(location.coords.latitude)

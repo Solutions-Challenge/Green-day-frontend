@@ -1,18 +1,44 @@
 import React, { useContext } from "react"
 import { TouchableOpacity, Text, View, Image, StyleSheet } from "react-native"
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { anonymousSignIn, handleGoogleSignIn } from "../api/Auth"
+import { anonymousSignIn, currentUser, handleGoogleSignIn } from "../api/Auth"
 import ImageContext from "../hooks/imageContext"
 
 const AuthButton = ({ uri, text, funct, navigation }: any) => {
     const [u, setU] = useContext(ImageContext).uri
+    const [, setProfileUri] = useContext(ImageContext).profileUri
     return (
         <TouchableOpacity onPress={async () => {
             if (funct.name === "handleGoogleSignIn") {
                 const data = await funct(setU);
                 if (Object.keys(data.error).length === 0 && data.user !== "cancel") {
-                    await AsyncStorage.setItem("remember", JSON.stringify({remember: true}))
-                    
+                    await AsyncStorage.setItem("remember", JSON.stringify({ remember: true }))
+
+                    console.log('registering...')
+                    const id_token = await currentUser().getIdToken()
+
+                    let details = {
+                        id_token: id_token
+                    } as any
+
+                    let formBody = []
+                    for (let props in details) {
+                        let encodedKey = encodeURIComponent(props)
+                        let encodedVal = encodeURIComponent(details[props])
+                        formBody.push(encodedKey + "=" + encodedVal)
+                    }
+                    formBody = formBody.join("&") as any
+                    const data = await fetch("http://100.64.58.72:8080/database/createUser", {
+                        method: 'POST',
+                        body: formBody,
+                        headers: {
+                            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                        }
+                    })
+
+                    const json = await data.json()
+                    console.log(json)
+
                     navigation.navigate("Drawer")
                     navigation.reset({
                         index: 0,
@@ -22,6 +48,7 @@ const AuthButton = ({ uri, text, funct, navigation }: any) => {
             }
             else if (funct.name === "signInGuest") {
                 funct()
+                setProfileUri("Guest")
             }
         }} style={{ marginBottom: 20 }} >
             <View style={{
