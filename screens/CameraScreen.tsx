@@ -69,10 +69,6 @@ export default function CameraScreen({ navigation, route }: any) {
       .then((res) => {
         items = JSON.parse(res as string)
 
-        if (items.length > 10) {
-          items.pop()
-        }
-
         // @ts-ignore
         results.uri = results.base64
         results.base64 = ""
@@ -83,6 +79,9 @@ export default function CameraScreen({ navigation, route }: any) {
           multi: data,
         })
       })
+
+    await AsyncStorage.setItem("multi", JSON.stringify(items))
+
     const id_token = await currentUser().getIdToken()
     let details = {
       id_token: id_token,
@@ -107,9 +106,6 @@ export default function CameraScreen({ navigation, route }: any) {
         'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
       }
     })
-
-    const json = await d.json()
-    await AsyncStorage.setItem("multi", JSON.stringify(items))
   }
 
   const handleEvent = (e: any) => {

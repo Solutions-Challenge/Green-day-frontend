@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useCallback, useRef, createRef } from 'react';
 import * as React from 'react'
-import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList, TouchableWithoutFeedback, ScrollView, Modal } from 'react-native';
+import { Animated, Image, StyleSheet, View, Text, Dimensions, TouchableOpacity, TouchableHighlight, StatusBar, ImageBackground, FlatList, TouchableWithoutFeedback, ScrollView, Modal, RefreshControl } from 'react-native';
 import BottomSheet from 'reanimated-bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useColorScheme from '../hooks/useColorScheme';
@@ -21,97 +21,104 @@ const divNum = windowWidth < 600 ? 4 : 3
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
-const deletePic = async (photo_id: string) => {
-    const id_token = await currentUser().getIdToken()
 
-    let details = {
-        id_token: id_token,
-        photo_id: photo_id,
-        meta_flag: "true"
-    } as any
-
-    let formBody = []
-    for (let props in details) {
-        let encodedKey = encodeURIComponent(props)
-        let encodedVal = encodeURIComponent(details[props])
-        formBody.push(encodedKey + "=" + encodedVal)
-    }
-    formBody = formBody.join("&") as any
-    const data = await fetch("http://100.64.58.72:8080/database/deletePic", {
-        method: 'DELETE',
-        body: formBody,
-        headers: {
-            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        }
-    })
-
-    let json = await data.json()
-
-    console.log(json)
-
-}
-
-const getPic = async (photo_id: string) => {
-    const id_token = await currentUser().getIdToken()
-
-    let details = {
-        id_token: id_token,
-        photo_id: photo_id,
-        meta_flag: "true"
-    } as any
-
-    let formBody = []
-    for (let props in details) {
-        let encodedKey = encodeURIComponent(props)
-        let encodedVal = encodeURIComponent(details[props])
-        formBody.push(encodedKey + "=" + encodedVal)
-    }
-    formBody = formBody.join("&") as any
-    const data = await fetch("http://100.64.58.72:8080/database/getPic", {
-        method: 'POST',
-        body: formBody,
-        headers: {
-            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        }
-    })
-
-    let json = await data.json()
-
-    json.success.photo.uri = json.success.photo.uri.substring(2)
-
-    json.success["photo-meta"].image = json.success.photo
-
-    return json.success["photo-meta"]
-}
-
-const getAllPics = async () => {
-    const id_token = await currentUser().getIdToken()
-
-    let details = {
-        id_token: id_token
-    } as any
-
-    let formBody = []
-    for (let props in details) {
-        let encodedKey = encodeURIComponent(props)
-        let encodedVal = encodeURIComponent(details[props])
-        formBody.push(encodedKey + "=" + encodedVal)
-    }
-    formBody = formBody.join("&") as any
-    const data = await fetch("http://100.64.58.72:8080/database/getPicKeys", {
-        method: 'POST',
-        body: formBody,
-        headers: {
-            'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        }
-    })
-
-    const json = await data.json()
-
-    return json
+const wait = (timeout: any) => {
+    return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
 export default function HomeScreen({ navigation }: any) {
+    const deletePic = async (photo_id: string) => {
+        if (authChange) {
+
+            const id_token = await currentUser().getIdToken()
+
+            let details = {
+                id_token: id_token,
+                photo_id: photo_id,
+                meta_flag: "true"
+            } as any
+
+            let formBody = []
+            for (let props in details) {
+                let encodedKey = encodeURIComponent(props)
+                let encodedVal = encodeURIComponent(details[props])
+                formBody.push(encodedKey + "=" + encodedVal)
+            }
+            formBody = formBody.join("&") as any
+            const data = await fetch("http://100.64.58.72:8080/database/deletePic", {
+                method: 'DELETE',
+                body: formBody,
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                }
+            })
+        }
+    }
+
+    const getPic = async (photo_id: string) => {
+        if (authChange) {
+
+            const id_token = await currentUser().getIdToken()
+
+            let details = {
+                id_token: id_token,
+                photo_id: photo_id,
+                meta_flag: "true"
+            } as any
+
+            let formBody = []
+            for (let props in details) {
+                let encodedKey = encodeURIComponent(props)
+                let encodedVal = encodeURIComponent(details[props])
+                formBody.push(encodedKey + "=" + encodedVal)
+            }
+            formBody = formBody.join("&") as any
+            const data = await fetch("http://100.64.58.72:8080/database/getPic", {
+                method: 'POST',
+                body: formBody,
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                }
+            })
+
+            let json = await data.json()
+
+            json.success.photo.uri = json.success.photo.uri.substring(2)
+
+            json.success["photo-meta"].image = json.success.photo
+
+            return json.success["photo-meta"]
+        }
+    }
+
+    const getAllPics = async () => {
+        if (authChange) {
+            const id_token = await currentUser().getIdToken()
+
+            let details = {
+                id_token: id_token
+            } as any
+
+            let formBody = []
+            for (let props in details) {
+                let encodedKey = encodeURIComponent(props)
+                let encodedVal = encodeURIComponent(details[props])
+                formBody.push(encodedKey + "=" + encodedVal)
+            }
+            formBody = formBody.join("&") as any
+            const data = await fetch("http://100.64.58.72:8080/database/getPicKeys", {
+                method: 'POST',
+                body: formBody,
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                }
+            })
+
+            const json = await data.json()
+
+            return json
+        }
+    }
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
@@ -120,6 +127,8 @@ export default function HomeScreen({ navigation }: any) {
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
     const [, setFullName] = useContext(ImageContext).fullName
     const [authChange, setAuthChange] = useState(false)
+
+    const [refreshing, setRefreshing] = React.useState(false);
 
     const [checked, setChecked] = useState([false])
     const [onLongPress, setOnLongPress] = useState(false)
@@ -137,8 +146,11 @@ export default function HomeScreen({ navigation }: any) {
         setChecked(checkedCopy)
     }
 
-    useEffect(() => {
-        (async () => {
+    const reload = async () => {
+        if (authChange) {
+            const ids = await getAllPics()
+            setRefreshing(true)
+            setFireStorePics(ids.success)
             let currentPhotos = []
             if (fireStorePics !== []) {
                 for (let i = 0; i < data.length; i++) {
@@ -169,12 +181,17 @@ export default function HomeScreen({ navigation }: any) {
                             })
 
                         if (check) {
-                            AsyncStorage.setItem("multi", JSON.stringify(ans))
+                            await AsyncStorage.setItem("multi", JSON.stringify(ans))
+                                .then(() => {
+                                    setRefreshing(false)
+                                })
                             // @ts-ignore
                             setData(ans)
                         }
                     })
                 }
+
+                setRefreshing(false)
 
                 let _difference2 = new Set(setB)
                 for (let elem of setA) {
@@ -185,23 +202,31 @@ export default function HomeScreen({ navigation }: any) {
                 if (authChange) {
                     let ans: any[] = []
                     _difference2.forEach(async (e) => {
-                        ans.push(_difference2)
+                        ans.push(e)
                     })
                     let indices = []
                     for (let i = 0; i < data.length; i++) {
-                        // @ts-ignore
-                        if (data[i].key in ans) {
-                            indices.push(i)
+                        for (let j = 0; j < ans.length; j++) {
                             // @ts-ignore
-                            deletePic(data[i].key)
+                            if (data[i].key === ans[j]) {
+                                if (!(i in indices)) {
+                                    indices.push(i)
+                                }
+                            }
                         }
                     }
+                    console.log(indices)
                     deleteRow(indices)
                 }
-
-
             }
-        })();
+
+
+        }
+
+    }
+
+    useEffect(() => {
+        reload()
     }, [authChange]);
 
     useEffect(() => {
@@ -209,11 +234,8 @@ export default function HomeScreen({ navigation }: any) {
             let data: any = await AsyncStorage.getItem("remember")
             const remember = JSON.parse(data) as any
             await onAuthStateChanged(auth, async (user) => {
-                const ids = await getAllPics()
-
                 const d = await user?.getIdToken()
                 console.log(d)
-                setFireStorePics(ids.success)
                 setAuthChange(true)
                 if (user !== null && remember.remember) {
                     setProfileUri(user.photoURL || "Guest")
@@ -360,16 +382,39 @@ export default function HomeScreen({ navigation }: any) {
             />
 
             {data.length === 0 ? (<>
-                <View style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black' }}>No Picture Taken</Text>
-                    <Image source={require("../assets/images/empty.png")} />
-                    <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>Take a picture and see</Text>
-                    <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black' }}>its recyclability here</Text>
-                </View>
+                <ScrollView
+                    style={{ display: 'flex', flex: 1, marginTop: windowHeight / 2 - 200 }}
+                    refreshControl={
+                        <RefreshControl
+                            enabled={true}
+                            refreshing={refreshing}
+                            onRefresh={useCallback(() => {
+                                reload()
+                            }, [])}
+                        />
+                    }
+                    contentContainerStyle={{justifyContent: 'center', alignItems: 'center'}}
+                    >
+                    <View>
+                        <Text style={{ fontSize: 25, lineHeight: 40, color: colorScheme === 'dark' ? 'white' : 'black', alignSelf: 'center' }}>No Picture Taken</Text>
+                        <Image source={require("../assets/images/empty.png")} />
+                        <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black', alignSelf: 'center' }}>Take a picture and see</Text>
+                        <Text style={{ fontSize: 20, color: colorScheme === 'dark' ? 'white' : 'black', alignSelf: 'center' }}>its recyclability here</Text>
+                    </View>
+                </ScrollView>
             </>) : (<>
                 <FlatList
                     data={data}
                     extraData={checked}
+                    refreshControl={
+                        <RefreshControl
+                            enabled={true}
+                            refreshing={refreshing}
+                            onRefresh={React.useCallback(() => {
+                                reload()
+                            }, [])}
+                        />
+                    }
                     ref={_scrollView}
                     onScrollToIndexFailed={(err) => { console.log(err) }}
                     keyExtractor={(item,) => item.key}
