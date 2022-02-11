@@ -99,7 +99,7 @@ export default function CameraScreen({ navigation, route }: any) {
       formBody.push(encodedKey + "=" + encodedVal)
     }
     formBody = formBody.join("&") as any
-    const d = await fetch("http://100.64.58.72:8080/database/addPic", {
+    const d = await fetch("http://100.64.58.72:8080/database/addImg", {
       method: 'POST',
       body: formBody,
       headers: {

@@ -21,20 +21,15 @@ const divNum = windowWidth < 600 ? 4 : 3
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
-
-const wait = (timeout: any) => {
-    return new Promise(resolve => setTimeout(resolve, timeout));
-}
-
 export default function HomeScreen({ navigation }: any) {
-    const deletePic = async (photo_id: string) => {
+    const deletePic = async (image_id: string) => {
         if (authChange) {
 
             const id_token = await currentUser().getIdToken()
 
             let details = {
                 id_token: id_token,
-                photo_id: photo_id,
+                image_id: image_id,
                 meta_flag: "true"
             } as any
 
@@ -45,7 +40,7 @@ export default function HomeScreen({ navigation }: any) {
                 formBody.push(encodedKey + "=" + encodedVal)
             }
             formBody = formBody.join("&") as any
-            const data = await fetch("http://100.64.58.72:8080/database/deletePic", {
+            const data = await fetch("http://100.64.58.72:8080/database/deleteImg", {
                 method: 'DELETE',
                 body: formBody,
                 headers: {
@@ -55,14 +50,14 @@ export default function HomeScreen({ navigation }: any) {
         }
     }
 
-    const getPic = async (photo_id: string) => {
+    const getPic = async (image_id: string) => {
         if (authChange) {
 
             const id_token = await currentUser().getIdToken()
 
             let details = {
                 id_token: id_token,
-                photo_id: photo_id,
+                image_id: image_id,
                 meta_flag: "true"
             } as any
 
@@ -73,7 +68,7 @@ export default function HomeScreen({ navigation }: any) {
                 formBody.push(encodedKey + "=" + encodedVal)
             }
             formBody = formBody.join("&") as any
-            const data = await fetch("http://100.64.58.72:8080/database/getPic", {
+            const data = await fetch("http://100.64.58.72:8080/database/getImg", {
                 method: 'POST',
                 body: formBody,
                 headers: {
@@ -83,11 +78,14 @@ export default function HomeScreen({ navigation }: any) {
 
             let json = await data.json()
 
-            json.success.photo.uri = json.success.photo.uri.substring(2)
+            let copy = {
+                "image": {
+                    "uri": json.success.photo.substring(2)
+                },
+                ...json.success["photo-meta"]
+            }
 
-            json.success["photo-meta"].image = json.success.photo
-
-            return json.success["photo-meta"]
+            return copy
         }
     }
 
@@ -106,7 +104,7 @@ export default function HomeScreen({ navigation }: any) {
                 formBody.push(encodedKey + "=" + encodedVal)
             }
             formBody = formBody.join("&") as any
-            const data = await fetch("http://100.64.58.72:8080/database/getPicKeys", {
+            const data = await fetch("http://100.64.58.72:8080/database/getImgKeys", {
                 method: 'POST',
                 body: formBody,
                 headers: {
@@ -199,25 +197,25 @@ export default function HomeScreen({ navigation }: any) {
                     _difference2.delete(elem)
                 }
 
-                if (authChange) {
-                    let ans: any[] = []
-                    _difference2.forEach(async (e) => {
-                        ans.push(e)
-                    })
-                    let indices = []
-                    for (let i = 0; i < data.length; i++) {
-                        for (let j = 0; j < ans.length; j++) {
-                            // @ts-ignore
-                            if (data[i].key === ans[j]) {
-                                if (!(i in indices)) {
-                                    indices.push(i)
-                                }
-                            }
-                        }
-                    }
-                    console.log(indices)
-                    deleteRow(indices)
-                }
+                // if (authChange) {
+                //     let ans: any[] = []
+                //     _difference2.forEach(async (e) => {
+                //         ans.push(e)
+                //     })
+                //     let indices = []
+                //     for (let i = 0; i < data.length; i++) {
+                //         for (let j = 0; j < ans.length; j++) {
+                //             // @ts-ignore
+                //             if (data[i].key === ans[j]) {
+                //                 if (!(i in indices)) {
+                //                     indices.push(i)
+                //                 }
+                //             }
+                //         }
+                //     }
+                //     console.log(indices)
+                //     deleteRow(indices)
+                // }
             }
 
 
@@ -231,6 +229,7 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         (async () => {
+            // await AsyncStorage.removeItem("multi")
             let data: any = await AsyncStorage.getItem("remember")
             const remember = JSON.parse(data) as any
             await onAuthStateChanged(auth, async (user) => {
