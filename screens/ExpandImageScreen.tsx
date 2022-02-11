@@ -3,6 +3,7 @@ import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Dimensions, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
+import { analyzeImg } from '../api/Backend';
 import useColorScheme from '../hooks/useColorScheme';
 
 
@@ -89,15 +90,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                     formData.append('files[]', { uri: item.multi[i].croppedImage, name: filename, type });
 
                     if (temp == 2 || i + 1 == item.multi.length) {
-                        const MLRequest = await fetch('https://multi-service-gkv32wdswa-ue.a.run.app/predict', {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'content-type': 'multipart/form-data'
-                            }
-                        })
-
-                        const MLdata = await MLRequest.json()
+                        const MLdata = await analyzeImg(formData)
 
                         let ifmlCopy = [...ifMLData]
                         for (let j = temp; j >= 0; j--) {

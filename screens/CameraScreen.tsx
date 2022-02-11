@@ -12,7 +12,7 @@ import { PinchGestureHandler } from 'react-native-gesture-handler';
 import Svg, { Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../environment';
-import { currentUser } from '../api/Auth';
+import { addImg } from '../api/Backend';
 const { CLOUDVISIONAPIKEY } = getEnvVars();
 
 const windowWidth = Dimensions.get('window').width;
@@ -81,31 +81,7 @@ export default function CameraScreen({ navigation, route }: any) {
       })
 
     await AsyncStorage.setItem("multi", JSON.stringify(items))
-
-    const id_token = await currentUser().getIdToken()
-    let details = {
-      id_token: id_token,
-      data: JSON.stringify({
-        key: uniqueID,
-        multi: data
-      }),
-      image_base64: results.uri
-    } as any
-
-    let formBody = []
-    for (let props in details) {
-      let encodedKey = encodeURIComponent(props)
-      let encodedVal = encodeURIComponent(details[props])
-      formBody.push(encodedKey + "=" + encodedVal)
-    }
-    formBody = formBody.join("&") as any
-    const d = await fetch("http://100.64.58.72:8080/database/addImg", {
-      method: 'POST',
-      body: formBody,
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-      }
-    })
+    await addImg(uniqueID, data, results)
   }
 
   const handleEvent = (e: any) => {

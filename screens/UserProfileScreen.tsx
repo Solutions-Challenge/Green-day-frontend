@@ -5,6 +5,7 @@ import { osName } from 'expo-device';
 import React, { useContext, useEffect, useState } from "react"
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
 import { currentUser, deleteMe, logout } from '../api/Auth';
+import { deleteUser } from '../api/Backend';
 import UserProfile from "../components/UserProfile"
 import ImageContext from '../hooks/imageContext';
 import useColorScheme from '../hooks/useColorScheme';
@@ -44,35 +45,13 @@ const UserProfileScreen = () => {
                         await AsyncStorage.removeItem("multi")
                         await AsyncStorage.removeItem("remember")
                         await deleteMe()
-                        console.log('registering...')
-                        const id_token = await currentUser().getIdToken()
-
-                        let details = {
-                            id_token: id_token
-                        } as any
-
-                        let formBody = []
-                        for (let props in details) {
-                            let encodedKey = encodeURIComponent(props)
-                            let encodedVal = encodeURIComponent(details[props])
-                            formBody.push(encodedKey + "=" + encodedVal)
-                        }
-                        formBody = formBody.join("&") as any
-                        const data = await fetch("http://100.64.58.72:8080/database/deleteUser", {
-                            method: 'DELETE',
-                            body: formBody,
-                            headers: {
-                                'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                            }
-                        })
-                        const json = await data.json()
-                        console.log(json)
-                        setProfileUri("Guest")
-                        setFullName("")
-                        navigation.navigate("Register")
+                        await deleteUser()
+                        setProfileUri("Guest");
+                        setFullName("");
+                        navigation.navigate("Register");
                         navigation.reset({
                             index: 0,
-                            routes: [{ name: 'Register' }],
+                            routes: [{ name: "Register" }],
                         });
                     }}>
                         <Text style={{ alignSelf: 'center', marginTop: 15 }}>Delete Account</Text>

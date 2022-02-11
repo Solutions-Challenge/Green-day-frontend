@@ -13,6 +13,7 @@ import ExpandImageScreen from './ExpandImageScreen';
 import UserProfile from '../components/UserProfile';
 import { auth, currentUser, logout } from '../api/Auth';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { getAllPics, getPic } from '../api/Backend';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -22,101 +23,6 @@ const divNum = windowWidth < 600 ? 4 : 3
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
 export default function HomeScreen({ navigation }: any) {
-    const deletePic = async (image_id: string) => {
-        if (authChange) {
-
-            const id_token = await currentUser().getIdToken()
-
-            let details = {
-                id_token: id_token,
-                image_id: image_id,
-                meta_flag: "true"
-            } as any
-
-            let formBody = []
-            for (let props in details) {
-                let encodedKey = encodeURIComponent(props)
-                let encodedVal = encodeURIComponent(details[props])
-                formBody.push(encodedKey + "=" + encodedVal)
-            }
-            formBody = formBody.join("&") as any
-            const data = await fetch("http://100.64.58.72:8080/database/deleteImg", {
-                method: 'DELETE',
-                body: formBody,
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                }
-            })
-        }
-    }
-
-    const getPic = async (image_id: string) => {
-        if (authChange) {
-
-            const id_token = await currentUser().getIdToken()
-
-            let details = {
-                id_token: id_token,
-                image_id: image_id,
-                meta_flag: "true"
-            } as any
-
-            let formBody = []
-            for (let props in details) {
-                let encodedKey = encodeURIComponent(props)
-                let encodedVal = encodeURIComponent(details[props])
-                formBody.push(encodedKey + "=" + encodedVal)
-            }
-            formBody = formBody.join("&") as any
-            const data = await fetch("http://100.64.58.72:8080/database/getImg", {
-                method: 'POST',
-                body: formBody,
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                }
-            })
-
-            let json = await data.json()
-
-            let copy = {
-                "image": {
-                    "uri": json.success.photo.substring(2)
-                },
-                ...json.success["photo-meta"]
-            }
-
-            return copy
-        }
-    }
-
-    const getAllPics = async () => {
-        if (authChange) {
-            const id_token = await currentUser().getIdToken()
-
-            let details = {
-                id_token: id_token
-            } as any
-
-            let formBody = []
-            for (let props in details) {
-                let encodedKey = encodeURIComponent(props)
-                let encodedVal = encodeURIComponent(details[props])
-                formBody.push(encodedKey + "=" + encodedVal)
-            }
-            formBody = formBody.join("&") as any
-            const data = await fetch("http://100.64.58.72:8080/database/getImgKeys", {
-                method: 'POST',
-                body: formBody,
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                }
-            })
-
-            const json = await data.json()
-
-            return json
-        }
-    }
     const colorScheme = useColorScheme()
     const [data, setData] = useState([])
     const [uri, setUri] = useContext(ImageContext).uri
@@ -146,7 +52,7 @@ export default function HomeScreen({ navigation }: any) {
 
     const reload = async () => {
         if (authChange) {
-            const ids = await getAllPics()
+            const ids = await getAllPics(authChange)
             setRefreshing(true)
             setFireStorePics(ids.success)
             let currentPhotos = []
@@ -169,7 +75,7 @@ export default function HomeScreen({ navigation }: any) {
                     let ans: any[] = []
                     let check = false
                     _difference.forEach(async (e) => {
-                        await getPic(e)
+                        await getPic(e, authChange)
                             .then((res) => {
                                 ans.push(res)
                                 if (ans.length === _difference.size) {
@@ -319,7 +225,7 @@ export default function HomeScreen({ navigation }: any) {
 
         for (let i = 0; i < indices.length; i++) {
             // @ts-ignore
-            deletePic(data[i].key)
+            deletePic(data[i].key, authChange)
         }
 
         for (let i = 0; i < newData.length; i++) {
