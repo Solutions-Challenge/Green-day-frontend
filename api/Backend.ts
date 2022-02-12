@@ -1,5 +1,15 @@
 import { currentUser } from "./Auth";
 
+const develop = "http://100.64.58.72:8080";
+const prod = "https://multi-service-gkv32wdswa-ue.a.run.app";
+const ifDev = true;
+
+/**
+ * @param {string} image_id the unique id of the image stored both in firestore and localstorage
+ * @param {boolean} authChange checks if user has been properly signed in before sending data to backend
+ * 
+ * deletes a picture using its image id from firestore
+ */
 export const deletePic = async (image_id: string, authChange: boolean) => {
   if (authChange) {
     const id_token = await currentUser().getIdToken();
@@ -17,7 +27,7 @@ export const deletePic = async (image_id: string, authChange: boolean) => {
       formBody.push(encodedKey + "=" + encodedVal);
     }
     formBody = formBody.join("&") as any;
-    const data = await fetch("http://100.64.58.72:8080/database/deleteImg", {
+    const data = await fetch(`${ifDev ? develop : prod}/database/deleteImg`, {
       method: "DELETE",
       body: formBody,
       headers: {
@@ -44,7 +54,7 @@ export const getPic = async (image_id: string, authChange: boolean) => {
       formBody.push(encodedKey + "=" + encodedVal);
     }
     formBody = formBody.join("&") as any;
-    const data = await fetch("http://100.64.58.72:8080/database/getImg", {
+    const data = await fetch(`${ifDev ? develop : prod}/database/getImg`, {
       method: "POST",
       body: formBody,
       headers: {
@@ -80,7 +90,7 @@ export const getAllPics = async (authChange: boolean) => {
       formBody.push(encodedKey + "=" + encodedVal);
     }
     formBody = formBody.join("&") as any;
-    const data = await fetch("http://100.64.58.72:8080/database/getImgKeys", {
+    const data = await fetch(`${ifDev ? develop : prod}/database/getImgKeys`, {
       method: "POST",
       body: formBody,
       headers: {
@@ -108,7 +118,7 @@ export const deleteUser = async () => {
     formBody.push(encodedKey + "=" + encodedVal);
   }
   formBody = formBody.join("&") as any;
-  const data = await fetch("http://100.64.58.72:8080/database/deleteUser", {
+  const data = await fetch(`${ifDev ? develop : prod}/database/deleteUser`, {
     method: "DELETE",
     body: formBody,
     headers: {
@@ -135,7 +145,7 @@ export const addImg = async (uniqueID: any, data: any, results: any) => {
     formBody.push(encodedKey + "=" + encodedVal);
   }
   formBody = formBody.join("&") as any;
-  const d = await fetch("http://100.64.58.72:8080/database/addImg", {
+  const d = await fetch(`${ifDev ? develop : prod}/database/addImg`, {
     method: "POST",
     body: formBody,
     headers: {
@@ -144,18 +154,44 @@ export const addImg = async (uniqueID: any, data: any, results: any) => {
   });
 };
 
-export const analyzeImg = async (formData:any) => {
-  const MLRequest = await fetch(
-    "https://multi-service-gkv32wdswa-ue.a.run.app/predict",
-    {
-      method: "POST",
-      body: formData,
-      headers: {
-        "content-type": "multipart/form-data",
-      },
-    }
-  );
+export const analyzeImg = async (formData: any) => {
+  const MLRequest = await fetch(`${ifDev ? develop : prod}/predict`, {
+    method: "POST",
+    body: formData,
+    headers: {
+      "content-type": "multipart/form-data",
+    },
+  });
 
   const MLdata = await MLRequest.json();
-  return MLdata
+  return MLdata;
+};
+
+export const addTrashImg = async (props: any) => {
+  const id_token = await currentUser().getIdToken();
+  let details = {
+    id_token: id_token,
+    image_base64: props.base64,
+    longitude: props.longitude,
+    latitude: props.latitude,
+    recyling_types: props.name,
+    date_taken: Date.now(),
+    image_id: props.uuid,
+  } as any;
+
+  let formBody = [];
+  for (let props in details) {
+    let encodedKey = encodeURIComponent(props);
+    let encodedVal = encodeURIComponent(details[props]);
+    formBody.push(encodedKey + "=" + encodedVal);
+  }
+  props.setMapPic("");
+  formBody = formBody.join("&") as any;
+  await fetch(`${ifDev ? develop : prod}/database/createTrashcanCoords`, {
+    method: "POST",
+    body: formBody,
+    headers: {
+      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+    },
+  });
 };

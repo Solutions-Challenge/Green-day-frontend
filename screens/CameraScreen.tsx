@@ -14,6 +14,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import getEnvVars from '../environment';
 import { addImg } from '../api/Backend';
 const { CLOUDVISIONAPIKEY } = getEnvVars();
+import 'react-native-get-random-values'
+// @ts-ignore
+import { v4 as uuidv4 } from 'uuid';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -40,13 +43,6 @@ const CameraPreview = ({ photo }: any) => {
 
 let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
-function uuid() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
 export default function CameraScreen({ navigation, route }: any) {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
@@ -61,10 +57,20 @@ export default function CameraScreen({ navigation, route }: any) {
 
   const { purpose } = route.params
 
+  /**
+   * @param data object containing the image anaysis from google vision api,
+   * including the bounding boxes and name of the objects inside the picture
+   * 
+   * @param {ImageResult} results the currently cropped image after taking the picture
+   * 
+   * Purpose:
+   * 
+   * adds the peice of data to localstorage and to firestore by uuid
+   */
   const save = async (data: any, results: ImageResult) => {
-
     let items: any = []
-    const uniqueID = uuid()
+    const uniqueID = uuidv4()
+    console.log(uniqueID)
     await AsyncStorage.getItem("multi")
       .then((res) => {
         items = JSON.parse(res as string)
@@ -97,6 +103,12 @@ export default function CameraScreen({ navigation, route }: any) {
   }
 
   let camera: Camera
+
+  /**
+   * Purpose:
+   * 
+   * takes the picture, crops the image to fit bounding box, and analyzes the image using google vision api
+   */
   const __takePicture = async () => {
     if (!camera) return
     setIsLoading(true)
@@ -179,6 +191,7 @@ export default function CameraScreen({ navigation, route }: any) {
     navigation.goBack()
   }
 
+  
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();

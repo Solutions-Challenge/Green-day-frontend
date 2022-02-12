@@ -19,6 +19,10 @@ import ImageContext from '../hooks/imageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import { read_data_hash, write_data_hash } from '../api/firebase';
+import 'react-native-get-random-values'
+// @ts-ignore
+import { v4 as uuidv4 } from 'uuid';
+import { addTrashImg } from '../api/Backend';
 
 const { width } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -27,6 +31,16 @@ const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 const latitudeDelta = 0.0922
 const longitudeDelta = 0.121
 
+/**
+ * @param lat1 
+ * @param lng1
+ * @param lat2
+ * @param lng2
+ * 
+ * Purpose:
+ * 
+ * Gets distance between two latitude and longitude points in kilometers
+ */
 function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   var R = 6371; // Radius of the earth in km
   var dLat = deg2rad(lat2 - lat1);  // deg2rad below
@@ -41,6 +55,7 @@ function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon
   return d;
 }
 
+// Converts degrees to radians
 function deg2rad(deg: number) {
   return deg * (Math.PI / 180)
 }
@@ -132,6 +147,7 @@ export default function App({ navigation, route }: any) {
     })();
   }, []);
 
+  // Finds user's location to determine the type of recycling centers near that region
   useEffect(() => {
     (async () => {
 
@@ -464,7 +480,7 @@ export default function App({ navigation, route }: any) {
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => {
+                  onPress={async () => {
                     if (catIndex !== -1) {
                       setVisible(true);
                       //@ts-ignore
@@ -474,7 +490,16 @@ export default function App({ navigation, route }: any) {
                         setCatIndex(-1);
                       }
                       else {
-                        write_data_hash(addingMarker.latitude, addingMarker.longitude, categories[catIndex - 1].icon, categories[catIndex - 1].name, mapPic, setMapPic);
+                        // write_data_hash(addingMarker.latitude, addingMarker.longitude, categories[catIndex - 1].icon, categories[catIndex - 1].name, mapPic, setMapPic);
+                        await addTrashImg({
+                          latitude: addingMarker.latitude,
+                          longitude: addingMarker.longitude,
+                          icon: categories[catIndex - 1].icon,
+                          name: categories[catIndex - 1].name,
+                          base64: mapPic,
+                          setMapPic: setMapPic,
+                          uuid: uuidv4()
+                        })
                         setVisible(true);
                         setAddingMarker({});
                         read_data_hash(latitude, longitude, setUserData, setBusinessData);

@@ -13,7 +13,7 @@ import ExpandImageScreen from './ExpandImageScreen';
 import UserProfile from '../components/UserProfile';
 import { auth, currentUser, logout } from '../api/Auth';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { getAllPics, getPic } from '../api/Backend';
+import { deletePic, getAllPics, getPic } from '../api/Backend';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -39,17 +39,26 @@ export default function HomeScreen({ navigation }: any) {
     const bs = useRef<BottomSheet>(null)
     const _scrollView = useRef<FlatList>(null)
     const [fireStorePics, setFireStorePics] = useState([])
-
-    const onLongPressIn = () => {
-        setOnLongPress(true)
-    }
-
+    
+    /**
+     * Purpose: 
+     * 
+     * On long press of image, this function stores the user's current
+     * inputted check marks as an array of booleans
+     */
     const changeChecked = (index: number) => {
         let checkedCopy = checked
         checkedCopy[index] = !checkedCopy[index]
         setChecked(checkedCopy)
     }
 
+    
+    /**
+     * Purpose:
+     *  
+     * Fetches new peices of data from firestore and compares it to the one in local storage
+     * if there is a difference, change localstorage to fit the data in firestore
+     */
     const reload = async () => {
         if (authChange) {
             const ids = await getAllPics(authChange)
@@ -133,9 +142,16 @@ export default function HomeScreen({ navigation }: any) {
         reload()
     }, [authChange]);
 
+    
+    /**
+     * Purpose: 
+     * 
+     * Checks if user is currently signed in and wants to be remembered.
+     * if not, redirects to register screen. If so, sets the user's profile,
+     * name, and fetches their pics from firestore
+     */
     useEffect(() => {
         (async () => {
-            // await AsyncStorage.removeItem("multi")
             let data: any = await AsyncStorage.getItem("remember")
             const remember = JSON.parse(data) as any
             await onAuthStateChanged(auth, async (user) => {
@@ -155,27 +171,28 @@ export default function HomeScreen({ navigation }: any) {
         })();
     }, []);
 
+    /**
+     * Purpose: 
+     * 
+     * Renders each image in user pictures to the flatlist
+     */
     const renderItem = useCallback((data: any) => {
-
         const item = data.item
-
         return (<>
             <View style={[styles.containerTitle2]}>
-
                 {onLongPress && <BouncyCheckbox
                     useNativeDriver={true}
                     isChecked={checked[data.index]}
                     fillColor="#246EE9"
                     onPress={() => { changeChecked(data.index) }}
                 />}
-
                 <TouchableHighlight style={{ marginBottom: 50 }}>
                     {/* @ts-ignore */}
                     <View style={[styles.card, { height: imageWidth }]}>
                         <View>
                             <TouchableOpacity
                                 activeOpacity={1}
-                                onLongPress={() => onLongPressIn()}
+                                onLongPress={() => setOnLongPress(true)}
                                 onPress={() => {
                                     setItemData(item)
                                     setTimeout(() => {
@@ -213,13 +230,20 @@ export default function HomeScreen({ navigation }: any) {
         </>)
     }, [checked, onLongPress])
 
+    // when data is changed for user pics, restart the checkmark boxes to all be false
     useEffect(() => {
         setChecked(Array(data.length).fill(false))
     }, [data])
 
+    /**
+     * @param {number[]} indices the array of indexes that the user wants to delete
+     * 
+     * Purpose:
+     * 
+     * deletes the set of data from indices and save that new data into localstorage
+     */
     const deleteRow = async (indices: number[]) => {
         let newData = [...data]
-
         let ans: any = []
         let temp = 0
 
@@ -240,6 +264,12 @@ export default function HomeScreen({ navigation }: any) {
         await AsyncStorage.setItem("multi", JSON.stringify(ans))
     }
 
+    
+    /**
+     * Purpose:
+     * 
+     * loads up the data from localstorage to state hook called "Data" 
+     */
     const load = async () => {
         let ImageClassify: any = await AsyncStorage.getItem("multi")
         if (ImageClassify === null) {
