@@ -33,6 +33,7 @@ import { auth } from '../api/Auth';
 import { Accuracy, getCurrentPositionAsync } from 'expo-location';
 import BottomSheet from 'reanimated-bottom-sheet'
 import MapPicScreen from '../screens/MapPicScreen';
+import MapMarkerScreen from '../screens/mapMarkerScreen';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -96,6 +97,7 @@ const DrawerTabs = () => {
     }} >
       <Drawer.Screen name={"Home"} component={HomeTabs} />
       <Drawer.Screen name={"Profile"} component={UserProfileScreen} />
+      <Drawer.Screen name={"Markers"} component={MapMarkerScreen} />
     </Drawer.Navigator>
   </>)
 }

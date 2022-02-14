@@ -22,7 +22,7 @@ import { read_data_hash, write_data_hash } from '../api/firebase';
 import 'react-native-get-random-values'
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
-import { addTrashImg } from '../api/Backend';
+import { addTrashImg, getTrashCanImage, getUserTrashCans, queryTrashCanLocations } from '../api/Backend';
 
 const { width } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -110,8 +110,8 @@ export default function App({ navigation, route }: any) {
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
       _map?.current?.animateToRegion({
-        latitude: toggle ? businessData[mapIndex].coordinates.latitude : mapData.results[mapIndex].geometry.location.lat,
-        longitude: toggle ? businessData[mapIndex].coordinates.longitude : mapData.results[mapIndex].geometry.location.lng,
+        latitude: toggle ? businessData[mapIndex].latitude : mapData.results[mapIndex].geometry.location.lat,
+        longitude: toggle ? businessData[mapIndex].longitude : mapData.results[mapIndex].geometry.location.lng,
         latitudeDelta: 0.007,
         longitudeDelta: 0.005
       }, 350)
@@ -130,6 +130,7 @@ export default function App({ navigation, route }: any) {
   useEffect(() => {
     (async () => {
       let { status } = await requestForegroundPermissionsAsync();
+      await enableNetworkProviderAsync()
       setIsLoading(true)
 
 
@@ -138,7 +139,6 @@ export default function App({ navigation, route }: any) {
         navigation.navigate('Home')
       }
 
-      await enableNetworkProviderAsync()
 
       let location = await getCurrentPositionAsync({ accuracy: Accuracy.Highest })
       setLatitude(location.coords.latitude)
@@ -184,8 +184,6 @@ export default function App({ navigation, route }: any) {
             let item = JSON.parse(res as string)
             setmapData(item)
           })
-        // TODO: Figure out why reading this data gives a strange error on android
-        await read_data_hash(latitude, longitude, setUserData, setBusinessData)
 
         _map?.current?.animateToRegion({
           latitude: latitude,
@@ -193,6 +191,20 @@ export default function App({ navigation, route }: any) {
           longitudeDelta: longitudeDelta,
           latitudeDelta: latitudeDelta
         })
+        
+        const d = await queryTrashCanLocations(latitude, longitude)
+        let ans: any = []
+        let c = false
+        for (let i = 0; i < d["Success"].length; i++) {
+          const item = await getUserTrashCans(d["Success"][i])
+          ans.push(item)
+          if (i == d["Success"].length - 1) {
+            check = true
+          }
+        }
+        console.log(ans)
+        setUserData(ans)
+        setBusinessData(ans)
       }
     })();
   }, [longitude])
@@ -387,19 +399,19 @@ export default function App({ navigation, route }: any) {
           })}
           {canMap() && toggle && partialUserData.map((e: any, index: any) => {
             return (<>
-
               <Marker
                 key={index}
                 coordinate={{
-                  latitude: e.coordinates.latitude,
-                  longitude: e.coordinates.longitude
+                  latitude: parseFloat(e.latitude),
+                  longitude: parseFloat(e.longitude)
                 }}
-                onPress={() => {
-                  navigation.navigate("MapPic", { pic: e.mapPic, lat: e.coordinates.latitude, lng: e.coordinates.longitude })
+                onPress={async () => {
+                  const pic = await getTrashCanImage(e["image_id"])
+                  navigation.navigate("MapPic", { pic: pic.success["image_base64"].substring(2), lat: e.latitude, lng: e.longitude })
                 }}
               >
                 <View style={{ borderRadius: 15, width: 30, height: 30, backgroundColor: 'white' }}>
-                  <Image source={{ uri: e.icon }} style={{ width: 20, height: 20, alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto' }} />
+                  <Image source={{ uri: e["recycling_types"][0] }} style={{ width: 20, height: 20, alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto' }} />
                 </View>
               </Marker>
 
@@ -413,8 +425,8 @@ export default function App({ navigation, route }: any) {
               <Marker
                 key={index}
                 coordinate={{
-                  latitude: e.coordinates.latitude,
-                  longitude: e.coordinates.longitude
+                  latitude: parseFloat(e.latitude),
+                  longitude: parseFloat(e.longitude)
                 }}
                 onPress={() => {
                   _scrollView?.current?.scrollToIndex({ index: index, animated: true, viewPosition: 0.5 })
@@ -495,14 +507,14 @@ export default function App({ navigation, route }: any) {
                           latitude: addingMarker.latitude,
                           longitude: addingMarker.longitude,
                           icon: categories[catIndex - 1].icon,
-                          name: categories[catIndex - 1].name,
                           base64: mapPic,
                           setMapPic: setMapPic,
                           uuid: uuidv4()
                         })
                         setVisible(true);
                         setAddingMarker({});
-                        read_data_hash(latitude, longitude, setUserData, setBusinessData);
+
+                        // read_data_hash(latitude, longitude, setUserData, setBusinessData);
                       }
                     }
                     else {

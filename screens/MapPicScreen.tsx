@@ -11,9 +11,10 @@ const MapPicScreen = () => {
 
     const { pic, lat, lng }: any = route.params
 
+    console.log(pic.substring(0,153))
     return (
         <SafeAreaView>
-            <ImageBackground source={{ uri: pic }} style={{ height: height, width: width }} >
+            <ImageBackground source={{ uri: "data:image/jpeg;base64," + pic }} style={{ height: height, width: width }} >
                 <TouchableOpacity style={{marginTop: height - 100, marginLeft: 20}} onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`); navigation.goBack()  }}>
                     <View style={{
                         backgroundColor: '#246EE9', 
