@@ -197,12 +197,13 @@ export default function App({ navigation, route }: any) {
         let c = false
         for (let i = 0; i < d["Success"].length; i++) {
           const item = await getUserTrashCans(d["Success"][i])
-          ans.push(item)
+          if (item !== "error") {
+            ans.push(item)
+          }
           if (i == d["Success"].length - 1) {
             check = true
           }
         }
-        console.log(ans)
         setUserData(ans)
         setBusinessData(ans)
       }
@@ -399,6 +400,8 @@ export default function App({ navigation, route }: any) {
           })}
           {canMap() && toggle && partialUserData.map((e: any, index: any) => {
             return (<>
+              {console.log(e)}
+              <View></View>
               <Marker
                 key={index}
                 coordinate={{
@@ -407,9 +410,11 @@ export default function App({ navigation, route }: any) {
                 }}
                 onPress={async () => {
                   const pic = await getTrashCanImage(e["image_id"])
-                  navigation.navigate("MapPic", { pic: pic.success["image_base64"].substring(2), lat: e.latitude, lng: e.longitude })
+                  console.log(pic)
+                  navigation.navigate("MapPic", { pic: pic.success["image_url"], lat: e.latitude, lng: e.longitude })
                 }}
               >
+                {console.log(e["recycling_types"])}
                 <View style={{ borderRadius: 15, width: 30, height: 30, backgroundColor: 'white' }}>
                   <Image source={{ uri: e["recycling_types"][0] }} style={{ width: 20, height: 20, alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto' }} />
                 </View>
@@ -503,6 +508,8 @@ export default function App({ navigation, route }: any) {
                       }
                       else {
                         // write_data_hash(addingMarker.latitude, addingMarker.longitude, categories[catIndex - 1].icon, categories[catIndex - 1].name, mapPic, setMapPic);
+                        setVisible(true);
+                        setAddingMarker({});
                         await addTrashImg({
                           latitude: addingMarker.latitude,
                           longitude: addingMarker.longitude,
@@ -511,8 +518,6 @@ export default function App({ navigation, route }: any) {
                           setMapPic: setMapPic,
                           uuid: uuidv4()
                         })
-                        setVisible(true);
-                        setAddingMarker({});
 
                         // read_data_hash(latitude, longitude, setUserData, setBusinessData);
                       }

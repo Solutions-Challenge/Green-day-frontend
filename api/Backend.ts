@@ -62,14 +62,18 @@ export const getPic = async (image_id: string, authChange: boolean) => {
 
     let json = await data.json();
 
-    let copy = {
-      image: {
-        uri: json.success.photo.substring(2),
-      },
-      ...json.success["photo-meta"],
-    };
+    if ("error" in json) {
+      return "error";
+    } else {
+      let copy = {
+        image: {
+          uri: json.success.photo,
+        },
+        ...json.success["photo-meta"],
+      };
 
-    return copy;
+      return copy;
+    }
   }
 };
 
@@ -119,7 +123,7 @@ export const addImg = async (uniqueID: any, data: any, results: any) => {
       key: uniqueID,
       multi: data,
     }),
-    image_base64: results.uri,
+    image_base64: results.base64,
   } as any;
 
   const d = await fetch(`${ifDev ? develop : prod}/database/addImg`, {
@@ -129,17 +133,24 @@ export const addImg = async (uniqueID: any, data: any, results: any) => {
       "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
     },
   });
+
+  const json = await d.json();
+  console.log(json);
 };
 
 export const addTrashImg = async (props: any) => {
   const id_token = await currentUser().getIdToken();
+  var today = new Date();
+
+  var date = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+  console.log(props.base64.substring(0, 10));
   let details = {
     id_token: id_token,
     image_base64: props.base64,
     longitude: props.longitude,
     latitude: props.latitude,
     recycling_types: props.icon,
-    date_taken: Date.now(),
+    date_taken: date,
     image_id: props.uuid,
   } as any;
 
@@ -250,21 +261,44 @@ export const queryTrashCanLocations = async (lat: number, lng: number) => {
   return json;
 };
 
-export const getTrashCanImage = async (id:any) => {
+export const getTrashCanImage = async (id: any) => {
   let details = {
-    image_id: id
+    image_id: id,
   } as any;
 
-  const d = await fetch(
-    `${ifDev ? develop : prod}/database/getTrashcanImage`,
-    {
-      method: "POST",
-      body: formBody(details),
-      headers: {
-        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-      },
-    }
-  );
+  const d = await fetch(`${ifDev ? develop : prod}/database/getTrashcanImage`, {
+    method: "POST",
+    body: formBody(details),
+    headers: {
+      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+    },
+  });
   const json: any = d.json();
   return json;
+};
+
+export const Register = async () => {
+  const id_token = await currentUser().getIdToken();
+
+  let details = {
+    id_token: id_token,
+  } as any;
+
+  let formBody = [];
+  for (let props in details) {
+    let encodedKey = encodeURIComponent(props);
+    let encodedVal = encodeURIComponent(details[props]);
+    formBody.push(encodedKey + "=" + encodedVal);
+  }
+  formBody = formBody.join("&") as any;
+  const data = await fetch(`${ifDev ? develop : prod}/database/createUser`, {
+    method: "POST",
+    body: formBody,
+    headers: {
+      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+    },
+  });
+
+  const json = await data.json();
+  console.log(json);
 };

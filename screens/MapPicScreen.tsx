@@ -14,17 +14,19 @@ const MapPicScreen = () => {
     console.log(pic.substring(0,153))
     return (
         <SafeAreaView>
-            <ImageBackground source={{ uri: "data:image/jpeg;base64," + pic }} style={{ height: height, width: width }} >
-                <TouchableOpacity style={{marginTop: height - 100, marginLeft: 20}} onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`); navigation.goBack()  }}>
-                    <View style={{
-                        backgroundColor: '#246EE9', 
-                        borderRadius: 10,
-                        height: 45,
-                        width: 100,
-                    }}>
-                        <Text style={{alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: 'white'}}>Go Here</Text>
-                    </View>
-                </TouchableOpacity>
+            <ImageBackground source={{ uri: pic }} style={{ height: height, width: width }} >
+                <View style={{marginTop: height - 100, marginLeft: 20}}>                    
+                    <TouchableOpacity onPress={() => { Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`); navigation.goBack()  }}>
+                        <View style={{
+                            backgroundColor: '#246EE9', 
+                            borderRadius: 10,
+                            height: 45,
+                            width: 100,
+                        }}>
+                            <Text style={{alignSelf: 'center', marginTop: 'auto', marginBottom: 'auto', color: 'white'}}>Go Here</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
 
             </ ImageBackground>
         </SafeAreaView>

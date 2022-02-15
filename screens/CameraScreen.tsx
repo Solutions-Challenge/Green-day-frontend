@@ -75,10 +75,6 @@ export default function CameraScreen({ navigation, route }: any) {
       .then((res) => {
         items = JSON.parse(res as string)
 
-        // @ts-ignore
-        results.uri = results.base64
-        results.base64 = ""
-
         items.unshift({
           key: uniqueID,
           image: results,

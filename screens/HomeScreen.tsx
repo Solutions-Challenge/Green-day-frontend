@@ -71,33 +71,34 @@ export default function HomeScreen({ navigation }: any) {
                     currentPhotos.push(data[i].key)
                 }
 
-                const setA = new Set(fireStorePics)
-                const setB = new Set(currentPhotos)
+                const cloudPics = new Set(fireStorePics)
+                let localPics = new Set(currentPhotos)
 
-                let _difference = new Set(setA)
-                for (let elem of setB) {
+                let _difference = new Set(cloudPics)
+                for (let elem of localPics) {
                     // @ts-ignore
                     _difference.delete(elem)
                 }
 
+                // finds if new item in firestore and adds it to localstorage
                 if (authChange) {
                     let ans: any[] = []
                     let check = false
                     _difference.forEach(async (e) => {
                         await getPic(e, authChange)
                             .then((res) => {
-                                ans.push(res)
-                                if (ans.length === _difference.size) {
-                                    ans.push(...data)
-                                    check = true
+                                if (res !== "error") {
+                                    ans.push(res)
+                                    currentPhotos.push(res)
+                                    if (ans.length === _difference.size) {
+                                        ans.push(...data)
+                                        check = true
+                                    }
                                 }
                             })
 
                         if (check) {
                             await AsyncStorage.setItem("multi", JSON.stringify(ans))
-                                .then(() => {
-                                    setRefreshing(false)
-                                })
                             // @ts-ignore
                             setData(ans)
                         }
@@ -106,31 +107,29 @@ export default function HomeScreen({ navigation }: any) {
 
                 setRefreshing(false)
 
-                let _difference2 = new Set(setB)
-                for (let elem of setA) {
-                    // @ts-ignore
-                    _difference2.delete(elem)
-                }
+                // localPics = new Set(currentPhotos)
 
+                // let _difference2 = new Set(localPics)
+                // for (let elem of cloudPics) {
+                //     // @ts-ignore
+                //     _difference2.delete(elem)
+                // }
+
+                // let indices:number[] = []
                 // if (authChange) {
-                //     let ans: any[] = []
-                //     _difference2.forEach(async (e) => {
-                //         ans.push(e)
-                //     })
-                //     let indices = []
                 //     for (let i = 0; i < data.length; i++) {
-                //         for (let j = 0; j < ans.length; j++) {
-                //             // @ts-ignore
-                //             if (data[i].key === ans[j]) {
-                //                 if (!(i in indices)) {
-                //                     indices.push(i)
-                //                 }
-                //             }
+                //         // @ts-ignore
+                //         if (_difference2.has(data[i].key)) {
+                //             indices.push(i)
                 //         }
                 //     }
-                //     console.log(indices)
-                //     deleteRow(indices)
                 // }
+
+                // await deleteRow(indices)
+                // .then(()=>{
+                //     setRefreshing(false)
+                // })
+
             }
 
 
@@ -165,7 +164,7 @@ export default function HomeScreen({ navigation }: any) {
                 else {
                     setProfileUri("Guest")
                     setFullName("")
-                    await logout()
+                    // await logout()
                 }
             })
         })();
@@ -178,6 +177,7 @@ export default function HomeScreen({ navigation }: any) {
      */
     const renderItem = useCallback((data: any) => {
         const item = data.item
+        console.log(item.image.uri)
         return (<>
             <View style={[styles.containerTitle2]}>
                 {onLongPress && <BouncyCheckbox
@@ -202,7 +202,7 @@ export default function HomeScreen({ navigation }: any) {
                                 }}
                             >
                                 <ImageBackground
-                                    source={{ uri: "data:image/jpeg;base64," + item.image.uri }}
+                                    source={{ uri: item.image.uri }}
                                     style={{
                                         height: imageWidth,
                                         width: imageWidth,
@@ -247,13 +247,10 @@ export default function HomeScreen({ navigation }: any) {
         let ans: any = []
         let temp = 0
 
-        for (let i = 0; i < indices.length; i++) {
-            // @ts-ignore
-            deletePic(data[i].key, authChange)
-        }
-
         for (let i = 0; i < newData.length; i++) {
             if (indices[temp] === i) {
+                // @ts-ignore
+                deletePic(data[indices[temp]].key, authChange)
                 temp += 1
             }
             else {

@@ -6,6 +6,7 @@ import { HelperText, TextInput } from "react-native-paper"
 import { currentUser, login, passwordReset, signin, updateName, updateUri } from '../api/Auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImageContext from "../hooks/imageContext"
+import { Register } from "../api/Backend"
 
 const errorCodesforPasswords = {
     "auth/wrong-password": "password is incorrect",
@@ -123,29 +124,7 @@ export const SubmitButton = (props: any) => {
                                 await AsyncStorage.setItem("remember", JSON.stringify({ remember: true }))
                             }
                             console.log('registering...')
-                            const id_token = await currentUser().getIdToken()
-
-                            let details = {
-                                id_token: id_token
-                            } as any
-
-                            let formBody = []
-                            for (let props in details) {
-                                let encodedKey = encodeURIComponent(props)
-                                let encodedVal = encodeURIComponent(details[props])
-                                formBody.push(encodedKey+"="+encodedVal)
-                            }
-                            formBody = formBody.join("&") as any
-                            const data = await fetch("http://100.64.58.72:8080/database/createUser", {
-                                method: 'POST',
-                                body: formBody,
-                                headers: {
-                                    'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                                }
-                            })
-
-                            const json = await data.json()
-                            console.log(json)
+                            await Register()
                             props.navigation.navigate("Drawer")
                             props.navigation.reset({
                                 index: 0,

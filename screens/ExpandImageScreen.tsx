@@ -57,7 +57,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                     object = item.multi[i]
 
                     const croppedImage = await manipulateAsync(
-                        "data:image/jpeg;base64,"+item.image.uri,
+                        item.image.uri,
                         [{
                             resize: {
                                 width: windowWidth,
@@ -87,11 +87,9 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                     let type = match ? `image/${match[1]}` : `image`;
                     // @ts-ignore
                     formData.append('files[]', { uri: item.multi[i].croppedImage, name: filename, type });
-
-                    console.log(formData)
                     
                     if (temp == 2 || i + 1 == item.multi.length) {
-                        const MLRequest = await fetch('http://100.64.58.72:8080/predict', {
+                        const MLRequest = await fetch('http://100.64.58.72:8081/predict', {
                             method: 'POST',
                             body: formData,
                             headers: {
