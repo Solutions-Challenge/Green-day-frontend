@@ -1,8 +1,8 @@
 import { currentUser } from "./Auth";
 
-const develop = "http://100.64.58.72:8081";
+const develop = "http://100.64.58.17:5000";
 const prod = "https://multi-service-gkv32wdswa-ue.a.run.app";
-const ifDev = true;
+const ifDev = false;
 
 const formBody = (details: any) => {
   let formBody = [];
@@ -40,6 +40,30 @@ export const deletePic = async (image_id: string, authChange: boolean) => {
       },
     });
   }
+};
+
+export const fetchCategoryData = async () => {
+  const MLRequest = await fetch(`${ifDev ? develop : prod}/mapData`, {
+    method: 'GET',
+  })
+  const MLdata = await MLRequest.json()
+  return MLdata.success
+}
+
+export const predict = async (formBody: any) => {
+  const MLRequest = await fetch(
+    `${ifDev ? develop : prod}/predict`,
+    {
+      method: "POST",
+      body: formBody,
+      headers: {
+        "content-type": "multipart/form-data",
+      },
+    }
+  );
+
+  const MLdata = await MLRequest.json();
+  return MLdata
 };
 
 export const getPic = async (image_id: string, authChange: boolean) => {
@@ -142,7 +166,8 @@ export const addTrashImg = async (props: any) => {
   const id_token = await currentUser().getIdToken();
   var today = new Date();
 
-  var date = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+  var date =
+    today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
   console.log(props.base64.substring(0, 10));
   let details = {
     id_token: id_token,
