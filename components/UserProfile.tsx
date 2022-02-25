@@ -13,7 +13,6 @@ function uuid() {
 }
 
 const UserProfile = ({ hideCameraEdit, width, height }: any) => {
-    const colorScheme = useColorScheme();
     const [profileUri, setProfileUri] = useContext(ImageContext).profileUri
 
     return (
@@ -21,17 +20,17 @@ const UserProfile = ({ hideCameraEdit, width, height }: any) => {
             <TouchableOpacity onPress={async () => {
                 if (!hideCameraEdit) {
                     setProfileUri(uuid())
-                    await updateUri(profileUri)
+                    await updateUri(`https://avatars.dicebear.com/api/avataaars/:${profileUri}.png`)
                 }
             }}>
                 <ImageBackground
                     source={{
                         uri: profileUri === "Guest" ? "":`https://avatars.dicebear.com/api/avataaars/:${profileUri}.png`,
                     }}
-                    style={{ width: width ? width : 120, height: height ? height : 120, borderRadius: width ? width / 2 : 60, overflow: 'hidden', borderColor: "black", borderWidth: profileUri === "Guest" ? 1 : 0 }}
+                    style={{ width: width ? width : 120, height: height ? height : 120, borderRadius: width ? width / 2 : 60, overflow: 'hidden', borderColor: "black", borderWidth: profileUri === "Guest" ? 1 : 0, backgroundColor: 'white' }}
                     resizeMode="cover"
                 >
-                    {(profileUri === "Guest") && <Ionicons name="person-sharp" color={colorScheme === "dark" ? "white" : "black"} size={width ? width : 130} style={{ alignSelf: 'center', marginTop: 5 }} />}
+                    {(profileUri === "Guest") && <Ionicons name="person-sharp" color={"black"} size={width ? width : 130} style={{ alignSelf: 'center', marginTop: 5 }} />}
 
                     {
                         !hideCameraEdit &&
