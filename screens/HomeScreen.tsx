@@ -106,33 +106,7 @@ export default function HomeScreen({ navigation }: any) {
                 }
 
                 setRefreshing(false)
-
-                // localPics = new Set(currentPhotos)
-
-                // let _difference2 = new Set(localPics)
-                // for (let elem of cloudPics) {
-                //     // @ts-ignore
-                //     _difference2.delete(elem)
-                // }
-
-                // let indices:number[] = []
-                // if (authChange) {
-                //     for (let i = 0; i < data.length; i++) {
-                //         // @ts-ignore
-                //         if (_difference2.has(data[i].key)) {
-                //             indices.push(i)
-                //         }
-                //     }
-                // }
-
-                // await deleteRow(indices)
-                // .then(()=>{
-                //     setRefreshing(false)
-                // })
-
             }
-
-
         }
 
     }
@@ -164,7 +138,7 @@ export default function HomeScreen({ navigation }: any) {
                 else {
                     setProfileUri("Guest")
                     setFullName("")
-                    // await logout()
+                    await logout()
                 }
             })
         })();

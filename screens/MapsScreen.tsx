@@ -30,7 +30,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ImageContext from "../hooks/imageContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
-import { read_data_hash, write_data_hash } from "../api/firebase";
 import "react-native-get-random-values";
 // @ts-ignore
 import { v4 as uuidv4 } from "uuid";
@@ -315,13 +314,19 @@ export default function App({ navigation, route }: any) {
       if (canMap() && material != "") {
         for (let i = 0; i < categories.length; i++) {
           if (categories[i].name === material) {
-            setCatIndex(i + 1);
-            setToggle(true);
-            _categoryView.current?.scrollToIndex({
-              index: i,
-              animated: true,
-              viewPosition: 0.5,
-            });
+            console.log(partialUserData);
+            if (
+              partialUserData.length !== 0 &&
+              Object.keys(partialUserData).length === 0
+            ) {
+              setCatIndex(i + 1);
+              setToggle(true);
+              _categoryView.current?.scrollToIndex({
+                index: i,
+                animated: true,
+                viewPosition: 0.5,
+              });
+            }
 
             navigation.setParams({
               material: "",
@@ -777,6 +782,22 @@ export default function App({ navigation, route }: any) {
                             setMapPic: setMapPic,
                             uuid: uuidv4(),
                           });
+
+                          const d = await queryTrashCanLocations(
+                            latitude,
+                            longitude
+                          );
+                          let ans: any = [];
+                          let c = false;
+                          for (let i = 0; i < d["Success"].length; i++) {
+                            const item = await getUserTrashCans(
+                              d["Success"][i]
+                            );
+                            if (item !== "error") {
+                              ans.push(item);
+                            }
+                          }
+                          setUserData(ans);
 
                           // read_data_hash(latitude, longitude, setUserData, setBusinessData);
                         }

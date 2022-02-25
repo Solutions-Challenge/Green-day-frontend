@@ -137,12 +137,6 @@ const RenderBottomSheet = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.panelButton}
-              onPress={() => { setVisible(false); bs?.current?.snapTo(1) }}
-            >
-              <Text style={styles.panelButtonTitle}>Mark Your Marker In The Map</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.panelButton}
               onPress={() => { bs?.current?.snapTo(1) }}
             >
               <Text style={styles.panelButtonTitle}>Cancel</Text>
