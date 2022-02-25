@@ -1,7 +1,7 @@
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { osName } from "expo-device";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   StatusBar,
 } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { ActivityIndicator } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -20,7 +21,9 @@ import {
   getUserMarkers,
   getUserTrashCans,
 } from "../api/Backend";
+import UserProfile from "../components/UserProfile";
 import getEnvVars from "../environment";
+import ImageContext from "../hooks/imageContext";
 import useColorScheme from "../hooks/useColorScheme";
 const { STATISMAPSAPIKEY } = getEnvVars();
 
@@ -31,9 +34,10 @@ const MapMarkerScreen = () => {
   const [load, setLoad] = useState(false);
   const textColor = colorScheme === "dark" ? "white" : "black";
   const windowWidth = Dimensions.get("window").width;
-  let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
-  const navigation: any = useNavigation()
-
+  const [profileUri, setProfileUri] = useContext(ImageContext).profileUri;
+  let flipPosition: any =
+    osName === "Android" ? (StatusBar.currentHeight as number) : 30;
+  const navigation: any = useNavigation();
 
   useEffect(() => {
     (async () => {
@@ -57,7 +61,14 @@ const MapMarkerScreen = () => {
     <SafeAreaView>
       {load ? (
         <ActivityIndicator
-          style={{ width: 120, height: 140, alignContent: 'center', alignSelf: 'center', justifyContent: 'center' }}
+          style={{
+            width: 120,
+            height: 140,
+            alignContent: "center",
+            alignSelf: "center",
+            justifyContent: "center",
+            marginTop: 120,
+          }}
           size="large"
           color="#246EE9"
         />
@@ -69,6 +80,7 @@ const MapMarkerScreen = () => {
               backgroundColor: colorScheme === "dark" ? "#181818" : "#ffffff",
               height: 220,
               flexDirection: "column",
+              marginTop: 120,
             },
           ]}
         >
@@ -91,86 +103,117 @@ const MapMarkerScreen = () => {
           </Text>
         </View>
       ) : (
-        data.map((e: any, index: number) => {
-          return (
-            <View
-              key={index}
-              style={[
-                styles.container,
-                {
-                  backgroundColor:
-                    colorScheme === "dark" ? "#181818" : "#ffffff",
-                },
-              ]}
-            >
-              <ImageBackground
-                style={{
-                  width: 120,
-                  height: 140,
-                  overflow: "hidden",
-                  borderTopLeftRadius: 10,
-                  borderBottomLeftRadius: 10,
-                }}
-                source={{ uri: e["image_url"] }}
+        <ScrollView style={{ marginTop: 120 }}>
+          {data.map((e: any, index: number) => {
+            return (
+              <View
+                key={index}
+                style={[
+                  styles.container,
+                  {
+                    backgroundColor:
+                      colorScheme === "dark" ? "#181818" : "#ffffff",
+                    width: 310,
+                    alignSelf: "center",
+                  },
+                ]}
               >
-                <Text style={{ color: textColor, top: 120, left: 10 }}>
-                  {e["date_taken"]}
-                </Text>
-              </ImageBackground>
-              <Image
-                style={{
-                  width: 120,
-                  height: 140,
-                  borderTopRightRadius: 10,
-                  borderBottomRightRadius: 10,
-                }}
-                source={{
-                  uri: `https://maps.googleapis.com/maps/api/staticmap?center=${e["latitude"]},${e["longitude"]}&zoom=20&size=400x400&maptype=roadmap&markers=color:blue%7Clabel:S%7C${e["latitude"]},${e["longitude"]}&key=${STATISMAPSAPIKEY}`,
-                }}
-              />
-              <View style={{ width: windowWidth }}>
-                <TouchableOpacity
-                  style={{ left: windowWidth - 390, top: 50 }}
-                  onPress={async () => {
-                    await delete_trashcan(e["image_id"]);
-                    let copy = [];
-                    for (let i = 0; i < data.length; i++) {
-                      if (data[i]["image_id"] !== e["image_id"]) {
-                        copy.push(data[i]);
-                      }
-                    }
-                    setData(copy);
+                <ImageBackground
+                  style={{
+                    width: 120,
+                    height: 140,
+                    overflow: "hidden",
+                    borderTopLeftRadius: 10,
+                    borderBottomLeftRadius: 10,
+                  }}
+                  source={{ uri: e["image_url"] }}
+                >
+                  <Text style={{ color: textColor, top: 120, left: 10 }}>
+                    {e["date_taken"]}
+                  </Text>
+                </ImageBackground>
+                <Image
+                  style={{
+                    width: 120,
+                    height: 140,
+                    borderTopRightRadius: 10,
+                    borderBottomRightRadius: 10,
+                  }}
+                  source={{
+                    uri: `https://maps.googleapis.com/maps/api/staticmap?center=${e["latitude"]},${e["longitude"]}&zoom=20&size=400x400&maptype=roadmap&markers=color:blue%7Clabel:S%7C${e["latitude"]},${e["longitude"]}&key=${STATISMAPSAPIKEY}`,
+                  }}
+                />
+                <View
+                  style={{
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    marginLeft: "auto",
+                    marginRight: 20,
                   }}
                 >
-                  <Feather name="trash-2" size={30} color="#fe6f5e" />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ marginBottom: 20 }}
+                    onPress={async () => {
+                      await delete_trashcan(e["image_id"]);
+                      let copy = [];
+                      for (let i = 0; i < data.length; i++) {
+                        if (data[i]["image_id"] !== e["image_id"]) {
+                          copy.push(data[i]);
+                        }
+                      }
+                      setData(copy);
+                    }}
+                  >
+                    <Feather name="trash-2" size={30} color="#fe6f5e" />
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      backgroundColor: "white",
+                      borderRadius: 15,
+                      padding: 5,
+                    }}
+                  >
+                    <Image
+                      style={{ width: 20, height: 20 }}
+                      source={{ uri: e["recycling_types"][0] }}
+                    />
+                  </View>
+                </View>
               </View>
-            </View>
-          );
-        })
+            );
+          })}
+        </ScrollView>
       )}
-      <View
-        style={{
-          position: "absolute",
-          top: flipPosition + 20,
-          left: 20,
-          backgroundColor: colorScheme === "dark" ? "black" : "white",
-          borderRadius: 60,
-          elevation: 5,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            navigation.openDrawer();
-          }}
+
+      {data.length !== 0 && (
+        <View
+          style={{ position: "absolute", top: flipPosition + 10, right: 20 }}
         >
-          <Ionicons
-            name="ios-arrow-back-sharp"
-            size={30}
-            color={colorScheme === "dark" ? "white" : "black"}
-          />
-        </TouchableOpacity>
-      </View>
+          <Text
+            style={{
+              color: colorScheme === "dark" ? "white" : "black",
+              fontSize: 40,
+            }}
+          >
+            {data.length} Marker{data.length === 1 ? "" : "s"}
+          </Text>
+        </View>
+      )}
+
+      <TouchableOpacity
+        onPress={() => {
+          navigation.openDrawer();
+        }}
+        style={{ position: "absolute", top: flipPosition, left: 20 }}
+      >
+        <UserProfile
+          uri={profileUri}
+          navigation={navigation}
+          hideCameraEdit={true}
+          width={40}
+          height={40}
+        />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

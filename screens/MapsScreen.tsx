@@ -232,20 +232,7 @@ export default function App({ navigation, route }: any) {
           latitudeDelta: latitudeDelta,
         });
 
-        const d = await queryTrashCanLocations(latitude, longitude);
-        let ans: any = [];
-        let c = false;
-        for (let i = 0; i < d["Success"].length; i++) {
-          const item = await getUserTrashCans(d["Success"][i]);
-          if (item !== "error") {
-            ans.push(item);
-          }
-          if (i == d["Success"].length - 1) {
-            check = true;
-          }
-        }
-        setUserData(ans);
-        setBusinessData(ans);
+        await fetchUserData()
       }
     })();
   }, [longitude]);
@@ -302,6 +289,22 @@ export default function App({ navigation, route }: any) {
     }
   }, [catIndex, userData]);
 
+  const fetchUserData = async () => {
+    if (latitude !== 0 && longitude !== 0) {
+      const d = await queryTrashCanLocations(latitude, longitude);
+      let ans: any = [];
+      for (let i = 0; i < d["Success"].length; i++) {
+        const item = await getUserTrashCans(d["Success"][i]);
+        if (item !== "error") {
+          ans.push(item);
+        }
+      }
+      setPartialUserData(ans);
+      setUserData(ans);
+      setBusinessData(ans)
+
+    }
+  };
   useEffect(() => {
     (async () => {
       setCatIndex(-1);
@@ -314,7 +317,6 @@ export default function App({ navigation, route }: any) {
       if (canMap() && material != "") {
         for (let i = 0; i < categories.length; i++) {
           if (categories[i].name === material) {
-            console.log(partialUserData);
             if (
               partialUserData.length !== 0 &&
               Object.keys(partialUserData).length === 0
@@ -336,6 +338,12 @@ export default function App({ navigation, route }: any) {
       }
     })();
   }, [isFocused, userData]);
+
+  useEffect(() => {
+    (async () => {
+      await fetchUserData()
+    })();
+  }, [isFocused, latitude, longitude]);
 
   const renderItemBusiness = useCallback(
     ({ item }: any) => {
@@ -573,7 +581,6 @@ export default function App({ navigation, route }: any) {
               partialUserData.map((e: any, index: any) => {
                 return (
                   <>
-                    {console.log(e)}
                     <View></View>
                     <Marker
                       key={index}
@@ -583,7 +590,6 @@ export default function App({ navigation, route }: any) {
                       }}
                       onPress={async () => {
                         const pic = await getTrashCanImage(e["image_id"]);
-                        console.log(pic);
                         navigation.navigate("MapPic", {
                           pic: pic.success["image_url"],
                           lat: e.latitude,
@@ -591,7 +597,6 @@ export default function App({ navigation, route }: any) {
                         });
                       }}
                     >
-                      {console.log(e["recycling_types"])}
                       <View
                         style={{
                           borderRadius: 15,
@@ -782,24 +787,7 @@ export default function App({ navigation, route }: any) {
                             setMapPic: setMapPic,
                             uuid: uuidv4(),
                           });
-
-                          const d = await queryTrashCanLocations(
-                            latitude,
-                            longitude
-                          );
-                          let ans: any = [];
-                          let c = false;
-                          for (let i = 0; i < d["Success"].length; i++) {
-                            const item = await getUserTrashCans(
-                              d["Success"][i]
-                            );
-                            if (item !== "error") {
-                              ans.push(item);
-                            }
-                          }
-                          setUserData(ans);
-
-                          // read_data_hash(latitude, longitude, setUserData, setBusinessData);
+                          await fetchUserData()
                         }
                       } else {
                         setCatIndex(-1);
