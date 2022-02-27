@@ -34,6 +34,7 @@ import { Accuracy, getCurrentPositionAsync } from 'expo-location';
 import BottomSheet from 'reanimated-bottom-sheet'
 import MapPicScreen from '../screens/MapPicScreen';
 import MapMarkerScreen from '../screens/mapMarkerScreen';
+import ListScreen from '../screens/ListScreen';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -98,6 +99,7 @@ const DrawerTabs = () => {
       <Drawer.Screen name={"Home"} component={HomeTabs} />
       <Drawer.Screen name={"Profile"} component={UserProfileScreen} />
       <Drawer.Screen name={"Markers"} component={MapMarkerScreen} />
+      <Drawer.Screen name={"Search"} component={ListScreen} />
     </Drawer.Navigator>
   </>)
 }
@@ -112,7 +114,7 @@ const RenderBottomSheet = () => {
   return (
     <BottomSheet
       ref={bs}
-      snapPoints={[350, 0]}
+      snapPoints={[350, -700]}
       initialSnap={1}
       renderContent={() => 
         (
