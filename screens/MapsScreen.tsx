@@ -277,7 +277,6 @@ export default function App({ navigation, route }: any) {
     if (catIndex === -1) {
       setPartialUserData(userData);
     } else {
-      console.log(userData)
       let filteredData = userData.filter((e: any) => {
         return e["recycling_types"][0] == categories[catIndex].icon;
       });
@@ -302,7 +301,7 @@ export default function App({ navigation, route }: any) {
       }
       setPartialUserData(ans);
       setUserData(ans);
-      setBusinessData(ans)
+      setBusinessData([ans[0]])
 
       const { material } = route.params;
       if (canMap() && material != "") {
@@ -908,7 +907,7 @@ export default function App({ navigation, route }: any) {
                   }}
                   data={categories}
                   renderItem={({ item }: any) => {
-                    return item.key != 0 ? (
+                    return (
                       <>
                         <TouchableOpacity
                           key={item.key}
@@ -955,9 +954,7 @@ export default function App({ navigation, route }: any) {
                           </View>
                         )}
                       </>
-                    ) : (
-                      <View key={item.key} />
-                    );
+                    )
                   }}
                 ></FlatList>
               )}

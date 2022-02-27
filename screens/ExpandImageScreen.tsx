@@ -51,8 +51,6 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                 let formData = new FormData();
                 let temp = 0
 
-                console.log(item)
-
                 let object
                 for (let i = 0; i < item.multi.length; i++) {
                     object = item.multi[i]
