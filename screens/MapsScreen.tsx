@@ -277,8 +277,9 @@ export default function App({ navigation, route }: any) {
     if (catIndex === -1) {
       setPartialUserData(userData);
     } else {
+      console.log(userData)
       let filteredData = userData.filter((e: any) => {
-        return e.name == categories[catIndex - 1].name;
+        return e["recycling_types"][0] == categories[catIndex].icon;
       });
 
       if (filteredData.length > 0) {
@@ -293,12 +294,14 @@ export default function App({ navigation, route }: any) {
     if (latitude !== 0 && longitude !== 0) {
       const d = await queryTrashCanLocations(latitude, longitude);
       let ans: any = [];
-      for (let i = 0; i < d["Success"].length; i++) {
-        const item = await getUserTrashCans(d["Success"][i]);
+      console.log(d)
+      for (let i = 0; i < d["success"].length; i++) {
+        const item = await getUserTrashCans(d["success"][i]);
         if (item !== "error") {
           ans.push(item);
         }
       }
+      console.log(ans)
       setPartialUserData(ans);
       setUserData(ans);
       setBusinessData(ans)
@@ -782,7 +785,7 @@ export default function App({ navigation, route }: any) {
                           await addTrashImg({
                             latitude: addingMarker.latitude,
                             longitude: addingMarker.longitude,
-                            icon: categories[catIndex - 1].icon,
+                            icon: categories[catIndex].icon,
                             base64: mapPic,
                             setMapPic: setMapPic,
                             uuid: uuidv4(),

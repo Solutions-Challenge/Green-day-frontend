@@ -180,7 +180,7 @@ export const addTrashImg = async (props: any) => {
   } as any;
 
   props.setMapPic("");
-  await fetch(`${ifDev ? develop : prod}/database/createTrashcanCoords`, {
+  const data = await fetch(`${ifDev ? develop : prod}/database/createTrashcanCoords`, {
     method: "POST",
     body: formBody(details),
     headers: {
@@ -304,6 +304,7 @@ export const getTrashCanImage = async (id: any) => {
 
 export const Register = async () => {
   const id_token = await currentUser().getIdToken();
+  console.log(id_token)
 
   let details = {
     id_token: id_token,

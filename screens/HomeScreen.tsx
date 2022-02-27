@@ -151,7 +151,6 @@ export default function HomeScreen({ navigation }: any) {
      */
     const renderItem = useCallback((data: any) => {
         const item = data.item
-        console.log(item.image.uri)
         return (<>
             <View style={[styles.containerTitle2]}>
                 {onLongPress && <BouncyCheckbox

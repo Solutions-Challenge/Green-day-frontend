@@ -44,8 +44,8 @@ const UserProfileScreen = () => {
                         await AsyncStorage.removeItem("user")
                         await AsyncStorage.removeItem("multi")
                         await AsyncStorage.removeItem("remember")
-                        await deleteMe()
                         await deleteUser()
+                        await deleteMe()
                         setProfileUri("Guest");
                         setFullName("");
                         navigation.navigate("Register");
