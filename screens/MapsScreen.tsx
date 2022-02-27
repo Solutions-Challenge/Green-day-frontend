@@ -304,25 +304,15 @@ export default function App({ navigation, route }: any) {
       setUserData(ans);
       setBusinessData(ans)
 
-    }
-  };
-  useEffect(() => {
-    (async () => {
-      setCatIndex(-1);
-      setToggle(false);
-
-      const data = await fetchCategoryData();
-      setCategories(data);
-
       const { material } = route.params;
       if (canMap() && material != "") {
         for (let i = 0; i < categories.length; i++) {
           if (categories[i].name === material) {
             if (
               partialUserData.length !== 0 &&
-              Object.keys(partialUserData).length === 0
+              Object.keys(partialUserData).length !== 0
             ) {
-              setCatIndex(i + 1);
+              setCatIndex(i);
               setToggle(true);
               _categoryView.current?.scrollToIndex({
                 index: i,
@@ -337,6 +327,16 @@ export default function App({ navigation, route }: any) {
           }
         }
       }
+
+    }
+  };
+  useEffect(() => {
+    (async () => {
+      setCatIndex(-1);
+      setToggle(false);
+
+      const data = await fetchCategoryData();
+      setCategories(data);
     })();
   }, [isFocused, userData]);
 
