@@ -218,7 +218,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
                             onPress={() => {
                                 goBack(item.multi[index].mlData[catIndex[index]].mapData.name)
                             }}
-                            style={[styles.chipsItem, { backgroundColor: "white", marginTop: 20, height: 60, width: 170, marginLeft: windowWidth / 2 - 170 / 2, paddingLeft: 30 }]}>
+                            style={[styles.chipsItem, { backgroundColor: "white", marginTop: 20, height: 60, width: 200, marginLeft: windowWidth / 2 - 200 / 2, paddingLeft: 30 }]}>
                             <Image source={{ uri: item.multi[index].mlData[catIndex[index]].mapData.icon }} style={{ width: 40, height: 40, marginRight: 15, marginTop: 'auto', marginBottom: 'auto' }} />
                             <Text style={{ marginTop: 'auto', marginBottom: "auto", width: 130 }}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
                         </TouchableOpacity>

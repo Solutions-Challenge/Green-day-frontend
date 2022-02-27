@@ -128,7 +128,7 @@ const MapMarkerScreen = () => {
                   }}
                   source={{ uri: e["image_url"] }}
                 >
-                  <Text style={{ color: textColor, top: 120, left: 10 }}>
+                  <Text style={{ color: 'white', top: 120, left: 25, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderTopLeftRadius: 10, paddingLeft: 10 }}>
                     {e["date_taken"]}
                   </Text>
                 </ImageBackground>

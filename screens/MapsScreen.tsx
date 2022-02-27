@@ -294,14 +294,12 @@ export default function App({ navigation, route }: any) {
     if (latitude !== 0 && longitude !== 0) {
       const d = await queryTrashCanLocations(latitude, longitude);
       let ans: any = [];
-      console.log(d)
       for (let i = 0; i < d["success"].length; i++) {
         const item = await getUserTrashCans(d["success"][i]);
         if (item !== "error") {
           ans.push(item);
         }
       }
-      console.log(ans)
       setPartialUserData(ans);
       setUserData(ans);
       setBusinessData(ans)
@@ -726,7 +724,7 @@ export default function App({ navigation, route }: any) {
                               backgroundColor:
                                 item.key === catIndex ? "#ADD8E6" : "white",
                               marginBottom: 10,
-                              width: 130,
+                              width: 150,
                             },
                           ]}
                         >
