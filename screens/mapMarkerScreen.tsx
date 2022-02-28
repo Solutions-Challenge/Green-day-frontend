@@ -44,12 +44,21 @@ const MapMarkerScreen = () => {
       setLoad(true);
       let ans = [];
       const data = await getUserMarkers();
-      for (let i = 0; i < data.success.length; i++) {
-        const trashCan = await getUserTrashCans(data.success[i]);
-        const image = await getTrashCanImage(trashCan["image_id"]);
+
+      const trashCans:any = await getUserTrashCans(data.success)
+
+      let image_ids = []
+
+      for (let i = 0; i < trashCans.length; i++) {
+          image_ids.push(trashCans[i]["image_id"])
+      }
+
+      const images:any = await getTrashCanImage(image_ids)
+
+      for (let i = 0; i < trashCans.length; i++) {
         const copy = {
-          image_url: image.success["image_url"],
-          ...trashCan,
+          image_url: images.success[i],
+          ...trashCans[i]
         };
         ans.push(copy);
       }

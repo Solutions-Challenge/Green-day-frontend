@@ -292,16 +292,11 @@ export default function App({ navigation, route }: any) {
   const fetchUserData = async () => {
     if (latitude !== 0 && longitude !== 0) {
       const d = await queryTrashCanLocations(latitude, longitude);
-      let ans: any = [];
-      for (let i = 0; i < d["success"].length; i++) {
-        const item = await getUserTrashCans(d["success"][i]);
-        if (item !== "error") {
-          ans.push(item);
-        }
-      }
-      setPartialUserData(ans);
-      setUserData(ans);
-      setBusinessData([ans[0]])
+      const data = await getUserTrashCans(d["success"])
+
+      setPartialUserData(data);
+      setUserData(data);
+      setBusinessData([data[0]])
 
       const { material } = route.params;
       if (canMap() && material != "") {
@@ -589,9 +584,9 @@ export default function App({ navigation, route }: any) {
                         longitude: parseFloat(e.longitude),
                       }}
                       onPress={async () => {
-                        const pic = await getTrashCanImage(e["image_id"]);
+                        const pic = await getTrashCanImage([e["image_id"]]);
                         navigation.navigate("MapPic", {
-                          pic: pic.success["image_url"],
+                          pic: pic.success[0],
                           lat: e.latitude,
                           lng: e.longitude,
                         });

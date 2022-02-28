@@ -1,8 +1,8 @@
 import { currentUser } from "./Auth";
 
-const develop = "http://100.64.58.17:5000";
+const develop = "http://100.64.60.179:8081";
 const prod = "https://multi-service-gkv32wdswa-ue.a.run.app";
-const ifDev = false;
+const ifDev = true;
 
 const formBody = (details: any) => {
   let formBody = [];
@@ -157,9 +157,6 @@ export const addImg = async (uniqueID: any, data: any, results: any) => {
       "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
     },
   });
-
-  const json = await d.json();
-  console.log(json);
 };
 
 export const addTrashImg = async (props: any) => {
@@ -168,7 +165,6 @@ export const addTrashImg = async (props: any) => {
 
   var date =
     today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
-  console.log(props.base64.substring(0, 10));
   let details = {
     id_token: id_token,
     image_base64: props.base64,
@@ -227,7 +223,7 @@ export const getUserTrashCans = async (trashCan: string) => {
   const id_token = await currentUser().getIdToken();
   let details = {
     id_token: id_token,
-    image_id: trashCan,
+    image_ids: trashCan,
   } as any;
 
   const d = await fetch(`${ifDev ? develop : prod}/database/getTrashcan`, {
@@ -239,12 +235,11 @@ export const getUserTrashCans = async (trashCan: string) => {
   });
 
   const json: any = await d.json();
-  console.log(json);
 
   if (json.error === "Data does not exist") {
     return "error";
   } else {
-    return json.success;
+    return json;
   }
 };
 
@@ -262,8 +257,6 @@ export const delete_trashcan = async (trashCan: any) => {
       "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
     },
   });
-  const json = await d.json();
-  console.log(json);
 };
 
 export const queryTrashCanLocations = async (lat: number, lng: number) => {
@@ -288,7 +281,7 @@ export const queryTrashCanLocations = async (lat: number, lng: number) => {
 
 export const getTrashCanImage = async (id: any) => {
   let details = {
-    image_id: id,
+    image_ids: id,
   } as any;
 
   const d = await fetch(`${ifDev ? develop : prod}/database/getTrashcanImage`, {
@@ -304,7 +297,6 @@ export const getTrashCanImage = async (id: any) => {
 
 export const Register = async () => {
   const id_token = await currentUser().getIdToken();
-  console.log(id_token)
 
   let details = {
     id_token: id_token,
@@ -326,5 +318,4 @@ export const Register = async () => {
   });
 
   const json = await data.json();
-  console.log(json);
 };

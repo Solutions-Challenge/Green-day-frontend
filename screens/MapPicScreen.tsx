@@ -11,7 +11,6 @@ const MapPicScreen = () => {
 
     const { pic, lat, lng }: any = route.params
 
-    console.log(pic.substring(0,153))
     return (
         <SafeAreaView>
             <ImageBackground source={{ uri: pic }} style={{ height: height, width: width }} >
