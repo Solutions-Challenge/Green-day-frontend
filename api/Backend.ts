@@ -2,7 +2,7 @@ import { currentUser } from "./Auth";
 
 const develop = "http://100.64.60.179:8081";
 const prod = "https://multi-service-gkv32wdswa-ue.a.run.app";
-const ifDev = true;
+const ifDev = false;
 
 const formBody = (details: any) => {
   let formBody = [];

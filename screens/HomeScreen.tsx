@@ -62,6 +62,7 @@ export default function HomeScreen({ navigation }: any) {
     const reload = async () => {
         if (authChange) {
             const ids = await getAllPics(authChange)
+            console.log(ids)
             setRefreshing(true)
             setFireStorePics(ids.success)
             let currentPhotos = []
