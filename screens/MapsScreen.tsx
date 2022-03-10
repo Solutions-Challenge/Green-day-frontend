@@ -7,6 +7,7 @@ import {
   Dimensions,
   Linking,
   FlatList,
+  StatusBar,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { TouchableOpacity as Touch } from "react-native";
@@ -51,8 +52,10 @@ import {
   queryTrashCanLocations,
 } from "../api/Backend";
 import HorizontalScroll from "../components/HorizontalScroll";
+import Animated, { Easing, EasingNode } from "react-native-reanimated";
+import { osName } from "expo-device";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
@@ -115,6 +118,9 @@ export default function App({ navigation, route }: any) {
   const _categoryView = useRef<FlatList>(null);
   const [categories, setCategories] = useState([] as any);
   const [mapPic, setMapPic] = useContext(ImageContext).mapPic;
+  const [ifHeightIncrease, setIfHeightIncrease] = useState(false);
+  const cardHeight = useRef(new Animated.Value(1)).current;
+  let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
 
   const [catIndex, setCatIndex] = useState(-1);
   const viewConfigRef = useRef({
@@ -306,9 +312,6 @@ export default function App({ navigation, route }: any) {
       const d = await queryTrashCanLocations(latitude, longitude);
       const data = await getUserTrashCans(d["success"]);
 
-      setPartialUserData(data);
-      setUserData(data);
-
       const queryBusiness = await queryBusinessData(latitude, longitude);
 
       let ans = [];
@@ -319,6 +322,9 @@ export default function App({ navigation, route }: any) {
       }
 
       setBusinessData(ans);
+
+      setPartialUserData(data);
+      setUserData(data);
 
       const { material } = route.params;
       if (canMap() && material != "") {
@@ -361,213 +367,205 @@ export default function App({ navigation, route }: any) {
     })();
   }, [isFocused, latitude, longitude]);
 
-  // const renderItemBusiness = useCallback(
-  //   ({ item }: any) => {
-  //     return (
-  //       <View
-  //         style={[
-  //           styles.card,
-  //           { backgroundColor: colorScheme === "dark" ? "#181818" : "white" },
-  //         ]}
-  //       >
-  //         <View style={styles.textContent}>
-  //           <View
-  //             style={{
-  //               display: "flex",
-  //               flexDirection: "row",
-  //               alignItems: "center",
-  //               marginBottom: 10,
-  //             }}
-  //           >
-  //             <Text
-  //             style={[
-  //               styles.cardDescription,
-  //               { color: colorScheme === "dark" ? "white" : "black" },
-  //             ]}
-  //           >
-  //             {`${item.recyclingTypes[0]}, ${item.recyclingTypes[1]}, ${item.recyclingTypes[2]}`}
-  //             <Touch>
-  //               <Text>See More...</Text>
-  //             </Touch>
-  //           </Text>
-  //             <Touch
-  //               style={{ marginLeft: "auto" }}
-  //               onPress={() => {
-  //                 Linking.openURL(
-  //                   `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`
-  //                 );
-  //               }}
-  //             >
-  //               <View
-  //                 style={[
-  //                   styles.chipsItem,
-  //                   { backgroundColor: "white", width: 120, marginTop: CARD_HEIGHT-60 },
-  //                 ]}
-  //               >
-  //                 <Entypo name="direction" size={24} color="black" />
-  //                 <Text>Go Here</Text>
-  //               </View>
-  //             </Touch>
-  //           </View>
-  //           <Text
-  //               numberOfLines={1}
-  //               style={[
-  //                 styles.cardtitle,
-  //                 {
-  //                   color: colorScheme === "dark" ? "white" : "black",
-  //                   width: 150,
-  //                 },
-  //               ]}
-  //             >
-  //               {item.name}
-  //             </Text>
-  //         </View>
-  //       </View>
-  //     );
-  //   },
-  //   [userData, colorScheme]
-  // );
+  const decrease_height = (easing: any) => {
+    Animated.timing(cardHeight, {
+      toValue: 1,
+      duration: 250,
+      easing,
+    }).start();
+    setIfHeightIncrease(false);
+  };
+
+  const Contact = (data: any) => {
+    const item = data.item;
+    return (
+      <View style={{ flexDirection: "row", marginTop: "auto" }}>
+        {"website" in item && (
+          <View
+            style={{
+              backgroundColor: "white",
+              borderRadius: 17,
+              width: 34,
+              height: 34,
+              marginLeft: 5,
+            }}
+          >
+            <Touch
+              style={{
+                alignSelf: "center",
+                marginTop: "auto",
+                marginBottom: "auto",
+              }}
+              onPress={() => {
+                Linking.openURL(item.website);
+              }}
+            >
+              <MaterialCommunityIcons
+                name="search-web"
+                size={20}
+                color="black"
+              />
+            </Touch>
+          </View>
+        )}
+        {"phone" in item && (
+          <View
+            style={{
+              backgroundColor: "white",
+              borderRadius: 17,
+              width: 34,
+              height: 34,
+              marginLeft: 5,
+            }}
+          >
+            <Touch
+              style={{
+                alignSelf: "center",
+                marginTop: "auto",
+                marginBottom: "auto",
+              }}
+              onPress={() => {
+                Linking.openURL(`tel:${item.phone}`);
+              }}
+            >
+              <Feather name="phone" size={20} color="black" />
+            </Touch>
+          </View>
+        )}
+        <View
+          style={{
+            backgroundColor: "white",
+            borderRadius: 17,
+            width: 34,
+            height: 34,
+            marginLeft: 5,
+          }}
+        >
+          <Touch
+            style={{
+              alignSelf: "center",
+              marginTop: "auto",
+              marginBottom: "auto",
+            }}
+            onPress={() => {
+              Linking.openURL(
+                `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`
+              );
+            }}
+          >
+            <Entypo name="direction" size={20} color="black" />
+          </Touch>
+        </View>
+        {"timeAvailability" in item && (
+          <View
+            style={{
+              backgroundColor: "white",
+              borderRadius: 17,
+              width: 128,
+              height: 34,
+              marginLeft: "auto",
+            }}
+          >
+            <Text
+              style={{
+                alignSelf: "center",
+                marginTop: "auto",
+                marginBottom: "auto",
+              }}
+            >
+              {item.timeAvailability}
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const renderItemBusiness = useCallback(
     ({ item }: any) => {
+      const heightInterpolate = cardHeight.interpolate({
+        inputRange: [1, 2],
+        outputRange: [CARD_HEIGHT, height - flipPosition - CARD_HEIGHT],
+      });
+
+      const increase_height = async (easing: any) => {
+        await Animated.timing(cardHeight, {
+          toValue: 2,
+          duration: 250,
+          easing,
+        }).start();
+        setIfHeightIncrease(true);
+      };
+
       return (
-        <View
+        <Animated.View
           style={[
             styles.card,
-            { backgroundColor: colorScheme === "dark" ? "#181818" : "white" },
+            {
+              backgroundColor: colorScheme === "dark" ? "#181818" : "white",
+              padding: 13,
+              height: heightInterpolate,
+            },
           ]}
         >
-          <View style={styles.textContent}>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
+          {ifHeightIncrease ? (
+            <View style={{flexDirection: 'row'}}>
+              <HorizontalScroll data={item.recyclingTypes} />
+              <Touch onPress={()=>{decrease_height(EasingNode.ease)}}>
+                <AntDesign name="closecircleo" size={24} color={colorScheme === "dark" ? "white":"black"}/>
+              </Touch>
+            </View>
+          ) : (
+            <View style={styles.textContent}>
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <View>
+                  <Text
+                    style={{
+                      color: colorScheme === "dark" ? "white" : "black",
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                </View>
+              </View>
               <View>
-                <Text
-                  style={{ color: colorScheme === "dark" ? "white" : "black" }}
-                >
-                  {item.name}
-                </Text>
+                <View style={{ flexDirection: "row" }}>
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={[
+                      styles.textSign,
+                      { color: colorScheme === "dark" ? "white" : "black" },
+                    ]}
+                  >
+                    {`${item.recyclingTypes}`}
+                  </Text>
+                  <Touch
+                    onPress={() => {
+                      increase_height(EasingNode.ease);
+                    }}
+                  >
+                    <AntDesign
+                      name="downcircle"
+                      size={20}
+                      color={colorScheme === "dark" ? "white" : "black"}
+                    />
+                  </Touch>
+                </View>
               </View>
             </View>
-            <View>
-              <Text
-                style={[
-                  styles.textSign,
-                  { color: colorScheme === "dark" ? "white" : "black" },
-                ]}
-              >
-                {`${item.recyclingTypes[0]}, ${item.recyclingTypes[1]}, ${item.recyclingTypes[2]}  `}
-                <Touch>
-                  <AntDesign
-                    name="downcircle"
-                    size={16}
-                    color={colorScheme === "dark" ? "white" : "black"}
-                  />
-                </Touch>
-              </Text>
-            </View>
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <View
-              style={{
-                backgroundColor: "white",
-                borderRadius: 17,
-                width: 34,
-                height: 34,
-                marginLeft: 5,
-              }}
-            >
-              <Touch
-                style={{
-                  alignSelf: "center",
-                  marginTop: "auto",
-                  marginBottom: "auto",
-                }}
-                onPress={() => {
-                  Linking.openURL(item.website);
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="search-web"
-                  size={20}
-                  color="black"
-                />
-              </Touch>
-            </View>
-            <View
-              style={{
-                backgroundColor: "white",
-                borderRadius: 17,
-                width: 34,
-                height: 34,
-                marginLeft: 5,
-              }}
-            >
-              <Touch
-                style={{
-                  alignSelf: "center",
-                  marginTop: "auto",
-                  marginBottom: "auto",
-                }}
-                onPress={() => {
-                  Linking.openURL(`tel:${item.phone}`);
-                }}
-              >
-                <Feather name="phone" size={20} color="black" />
-              </Touch>
-            </View>
-            <View
-              style={{
-                backgroundColor: "white",
-                borderRadius: 17,
-                width: 34,
-                height: 34,
-                marginLeft: 5,
-              }}
-            >
-              <Touch
-                style={{
-                  alignSelf: "center",
-                  marginTop: "auto",
-                  marginBottom: "auto",
-                }}
-                onPress={() => {
-                  Linking.openURL(
-                    `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`
-                  );
-                }}
-              >
-                <Entypo name="direction" size={20} color="black" />
-              </Touch>
-            </View>
-            <View
-              style={{
-                backgroundColor: "white",
-                borderRadius: 17,
-                width: 128,
-                height: 34,
-                marginLeft: 5,
-              }}
-            >
-              <Text
-                style={{
-                  alignSelf: "center",
-                  marginTop: "auto",
-                  marginBottom: "auto",
-                }}
-              >
-                {item.timeAvailability}
-              </Text>
-            </View>
-          </View>
-        </View>
+          )}
+          <Contact item={item} />
+        </Animated.View>
       );
     },
-    [userData, businessData, colorScheme]
+    [userData, businessData, colorScheme, ifHeightIncrease]
   );
 
   const renderItem = useCallback(
@@ -978,73 +976,75 @@ export default function App({ navigation, route }: any) {
             </>
           )}
 
-          <View style={styles.searchBox}>
-            <View
-              style={{
-                backgroundColor: "white",
-                width: "50%",
-                borderRadius: 10,
-              }}
-            >
-              <TouchableOpacity
+          {!ifHeightIncrease && (
+            <View style={styles.searchBox}>
+              <View
                 style={{
-                  alignSelf: "center",
-                  height: 35,
-                  top: 5,
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
+                  backgroundColor: "white",
+                  width: "50%",
                   borderRadius: 10,
-                  backgroundColor: mapType ? "#246EE9" : "white",
                 }}
-                onPress={() => setMapType(true)}
               >
-                <Text
+                <TouchableOpacity
                   style={{
                     alignSelf: "center",
-                    marginTop: "auto",
-                    marginBottom: "auto",
-                    color: mapType ? "white" : "black",
+                    height: 35,
+                    top: 5,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 10,
+                    backgroundColor: mapType ? "#246EE9" : "white",
                   }}
+                  onPress={() => setMapType(true)}
                 >
-                  Standard
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                backgroundColor: "white",
-                width: "50%",
-                borderRadius: 10,
-              }}
-            >
-              <TouchableOpacity
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      marginTop: "auto",
+                      marginBottom: "auto",
+                      color: mapType ? "white" : "black",
+                    }}
+                  >
+                    Standard
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View
                 style={{
-                  alignSelf: "center",
-                  height: 35,
-                  top: 5,
-                  paddingHorizontal: 10,
-                  paddingVertical: 5,
+                  backgroundColor: "white",
+                  width: "50%",
                   borderRadius: 10,
-                  backgroundColor: !mapType ? "#246EE9" : "white",
                 }}
-                onPress={() => setMapType(false)}
               >
-                <Text
+                <TouchableOpacity
                   style={{
                     alignSelf: "center",
-                    marginTop: "auto",
-                    marginBottom: "auto",
-                    color: !mapType ? "white" : "black",
+                    height: 35,
+                    top: 5,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 10,
+                    backgroundColor: !mapType ? "#246EE9" : "white",
                   }}
+                  onPress={() => setMapType(false)}
                 >
-                  Satellite
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      marginTop: "auto",
+                      marginBottom: "auto",
+                      color: !mapType ? "white" : "black",
+                    }}
+                  >
+                    Satellite
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          )}
           {visible && (
             <>
-              {Object.keys(partialUserData).length !== 0 && (
+              {Object.keys(partialUserData).length !== 0 && !ifHeightIncrease && (
                 <FlatList
                   ref={_categoryView}
                   horizontal
@@ -1110,6 +1110,7 @@ export default function App({ navigation, route }: any) {
               <FlatList
                 ref={_scrollView}
                 initialScrollIndex={0}
+                scrollEnabled={!ifHeightIncrease}
                 viewabilityConfig={viewConfigRef.current}
                 onViewableItemsChanged={onViewableItemsChanged.current}
                 horizontal
@@ -1148,21 +1149,23 @@ export default function App({ navigation, route }: any) {
                   bs?.current?.snapTo(0);
                 }}
               >
-                <View
-                  style={{
-                    backgroundColor:
-                      colorScheme === "light" ? "white" : "black",
-                    borderRadius: 25,
-                  }}
-                >
-                  <AntDesign
-                    name="pluscircleo"
-                    size={50}
-                    color={colorScheme === "dark" ? "white" : "black"}
-                  />
-                </View>
+                {!ifHeightIncrease && (
+                  <View
+                    style={{
+                      backgroundColor:
+                        colorScheme === "light" ? "white" : "black",
+                      borderRadius: 25,
+                    }}
+                  >
+                    <AntDesign
+                      name="pluscircleo"
+                      size={50}
+                      color={colorScheme === "dark" ? "white" : "black"}
+                    />
+                  </View>
+                )}
               </Touch>
-              {Object.keys(partialUserData).length !== 0 && (
+              {Object.keys(partialUserData).length !== 0 && !ifHeightIncrease && (
                 <Touch
                   style={{
                     position: "absolute",
