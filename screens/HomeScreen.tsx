@@ -130,6 +130,7 @@ export default function HomeScreen({ navigation }: any) {
             const remember = JSON.parse(data) as any
             await onAuthStateChanged(auth, async (user) => {
                 const d = await user?.getIdToken()
+                console.log(user?.uid)
                 console.log(d)
                 setAuthChange(true)
                 if (user !== null && remember.remember) {

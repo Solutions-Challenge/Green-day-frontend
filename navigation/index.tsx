@@ -99,7 +99,6 @@ const DrawerTabs = () => {
       <Drawer.Screen name={"Home"} component={HomeTabs} />
       <Drawer.Screen name={"Profile"} component={UserProfileScreen} />
       <Drawer.Screen name={"Markers"} component={MapMarkerScreen} />
-      <Drawer.Screen name={"Search"} component={ListScreen} />
     </Drawer.Navigator>
   </>)
 }

@@ -10,7 +10,14 @@ import {
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { TouchableOpacity as Touch } from "react-native";
-import { AntDesign, Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Entypo,
+  Feather,
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import {
   Accuracy,
   getCurrentPositionAsync,
@@ -25,7 +32,11 @@ import { Platform } from "expo-modules-core";
 import { Image } from "react-native";
 import StarRating from "../components/StarRating";
 import fetchData from "../api/googleMaps";
-import { fetchCategoryData } from "../api/Backend";
+import {
+  fetchCategoryData,
+  getBusinessData,
+  queryBusinessData,
+} from "../api/Backend";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ImageContext from "../hooks/imageContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -39,6 +50,7 @@ import {
   getUserTrashCans,
   queryTrashCanLocations,
 } from "../api/Backend";
+import HorizontalScroll from "../components/HorizontalScroll";
 
 const { width } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -139,10 +151,10 @@ export default function App({ navigation, route }: any) {
       _map?.current?.animateToRegion(
         {
           latitude: toggle
-            ? businessData[mapIndex].latitude
+            ? businessData[mapIndex].lat
             : mapData.results[mapIndex].geometry.location.lat,
           longitude: toggle
-            ? businessData[mapIndex].longitude
+            ? businessData[mapIndex].lng
             : mapData.results[mapIndex].geometry.location.lng,
           latitudeDelta: 0.007,
           longitudeDelta: 0.005,
@@ -232,7 +244,7 @@ export default function App({ navigation, route }: any) {
           latitudeDelta: latitudeDelta,
         });
 
-        await fetchUserData()
+        await fetchUserData();
       }
     })();
   }, [longitude]);
@@ -292,11 +304,21 @@ export default function App({ navigation, route }: any) {
   const fetchUserData = async () => {
     if (latitude !== 0 && longitude !== 0) {
       const d = await queryTrashCanLocations(latitude, longitude);
-      const data = await getUserTrashCans(d["success"])
+      const data = await getUserTrashCans(d["success"]);
 
       setPartialUserData(data);
       setUserData(data);
-      setBusinessData([data[0]])
+
+      const queryBusiness = await queryBusinessData(latitude, longitude);
+
+      let ans = [];
+
+      for (let i = 0; i < queryBusiness.success.length; i++) {
+        let busData = await getBusinessData(queryBusiness.success[i]);
+        ans.push(busData.success);
+      }
+
+      setBusinessData(ans);
 
       const { material } = route.params;
       if (canMap() && material != "") {
@@ -321,7 +343,6 @@ export default function App({ navigation, route }: any) {
           }
         }
       }
-
     }
   };
   useEffect(() => {
@@ -336,9 +357,76 @@ export default function App({ navigation, route }: any) {
 
   useEffect(() => {
     (async () => {
-      await fetchUserData()
+      await fetchUserData();
     })();
   }, [isFocused, latitude, longitude]);
+
+  // const renderItemBusiness = useCallback(
+  //   ({ item }: any) => {
+  //     return (
+  //       <View
+  //         style={[
+  //           styles.card,
+  //           { backgroundColor: colorScheme === "dark" ? "#181818" : "white" },
+  //         ]}
+  //       >
+  //         <View style={styles.textContent}>
+  //           <View
+  //             style={{
+  //               display: "flex",
+  //               flexDirection: "row",
+  //               alignItems: "center",
+  //               marginBottom: 10,
+  //             }}
+  //           >
+  //             <Text
+  //             style={[
+  //               styles.cardDescription,
+  //               { color: colorScheme === "dark" ? "white" : "black" },
+  //             ]}
+  //           >
+  //             {`${item.recyclingTypes[0]}, ${item.recyclingTypes[1]}, ${item.recyclingTypes[2]}`}
+  //             <Touch>
+  //               <Text>See More...</Text>
+  //             </Touch>
+  //           </Text>
+  //             <Touch
+  //               style={{ marginLeft: "auto" }}
+  //               onPress={() => {
+  //                 Linking.openURL(
+  //                   `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`
+  //                 );
+  //               }}
+  //             >
+  //               <View
+  //                 style={[
+  //                   styles.chipsItem,
+  //                   { backgroundColor: "white", width: 120, marginTop: CARD_HEIGHT-60 },
+  //                 ]}
+  //               >
+  //                 <Entypo name="direction" size={24} color="black" />
+  //                 <Text>Go Here</Text>
+  //               </View>
+  //             </Touch>
+  //           </View>
+  //           <Text
+  //               numberOfLines={1}
+  //               style={[
+  //                 styles.cardtitle,
+  //                 {
+  //                   color: colorScheme === "dark" ? "white" : "black",
+  //                   width: 150,
+  //                 },
+  //               ]}
+  //             >
+  //               {item.name}
+  //             </Text>
+  //         </View>
+  //       </View>
+  //     );
+  //   },
+  //   [userData, colorScheme]
+  // );
 
   const renderItemBusiness = useCallback(
     ({ item }: any) => {
@@ -349,71 +437,137 @@ export default function App({ navigation, route }: any) {
             { backgroundColor: colorScheme === "dark" ? "#181818" : "white" },
           ]}
         >
-          <View style={styles.container}></View>
           <View style={styles.textContent}>
             <View
               style={{
                 display: "flex",
                 flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 10,
+                justifyContent: "space-between",
               }}
             >
+              <View>
+                <Text
+                  style={{ color: colorScheme === "dark" ? "white" : "black" }}
+                >
+                  {item.name}
+                </Text>
+              </View>
+            </View>
+            <View>
               <Text
-                numberOfLines={1}
                 style={[
-                  styles.cardtitle,
-                  {
-                    color: colorScheme === "dark" ? "white" : "black",
-                    width: 150,
-                  },
+                  styles.textSign,
+                  { color: colorScheme === "dark" ? "white" : "black" },
                 ]}
               >
-                {item.title}
+                {`${item.recyclingTypes[0]}, ${item.recyclingTypes[1]}, ${item.recyclingTypes[2]}  `}
+                <Touch>
+                  <AntDesign
+                    name="downcircle"
+                    size={16}
+                    color={colorScheme === "dark" ? "white" : "black"}
+                  />
+                </Touch>
               </Text>
+            </View>
+          </View>
+          <View style={{ flexDirection: "row" }}>
+            <View
+              style={{
+                backgroundColor: "white",
+                borderRadius: 17,
+                width: 34,
+                height: 34,
+                marginLeft: 5,
+              }}
+            >
               <Touch
-                style={{ marginLeft: "auto" }}
+                style={{
+                  alignSelf: "center",
+                  marginTop: "auto",
+                  marginBottom: "auto",
+                }}
+                onPress={() => {
+                  Linking.openURL(item.website);
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="search-web"
+                  size={20}
+                  color="black"
+                />
+              </Touch>
+            </View>
+            <View
+              style={{
+                backgroundColor: "white",
+                borderRadius: 17,
+                width: 34,
+                height: 34,
+                marginLeft: 5,
+              }}
+            >
+              <Touch
+                style={{
+                  alignSelf: "center",
+                  marginTop: "auto",
+                  marginBottom: "auto",
+                }}
+                onPress={() => {
+                  Linking.openURL(`tel:${item.phone}`);
+                }}
+              >
+                <Feather name="phone" size={20} color="black" />
+              </Touch>
+            </View>
+            <View
+              style={{
+                backgroundColor: "white",
+                borderRadius: 17,
+                width: 34,
+                height: 34,
+                marginLeft: 5,
+              }}
+            >
+              <Touch
+                style={{
+                  alignSelf: "center",
+                  marginTop: "auto",
+                  marginBottom: "auto",
+                }}
                 onPress={() => {
                   Linking.openURL(
-                    `https://www.google.com/maps/search/?api=1&query=${item.coordinates.latitude},${item.coordinates.longitude}`
+                    `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`
                   );
                 }}
               >
-                <View
-                  style={[
-                    styles.chipsItem,
-                    { backgroundColor: "white", width: 130 },
-                  ]}
-                >
-                  <Image
-                    source={{ uri: item.icon }}
-                    style={{ width: 20, height: 20, marginRight: 5 }}
-                  />
-                  <Text>{item.name}</Text>
-                </View>
+                <Entypo name="direction" size={20} color="black" />
               </Touch>
             </View>
-            <Text
-              style={[
-                styles.cardDescription,
-                { color: colorScheme === "dark" ? "white" : "black" },
-              ]}
+            <View
+              style={{
+                backgroundColor: "white",
+                borderRadius: 17,
+                width: 128,
+                height: 34,
+                marginLeft: 5,
+              }}
             >
-              {item.description}
-            </Text>
-
-            <Touch onPress={() => {}}>
-              <Feather
-                name="x-circle"
-                size={24}
-                color={colorScheme === "dark" ? "white" : "black"}
-              />
-            </Touch>
+              <Text
+                style={{
+                  alignSelf: "center",
+                  marginTop: "auto",
+                  marginBottom: "auto",
+                }}
+              >
+                {item.timeAvailability}
+              </Text>
+            </View>
           </View>
         </View>
       );
     },
-    [userData, colorScheme]
+    [userData, businessData, colorScheme]
   );
 
   const renderItem = useCallback(
@@ -623,8 +777,8 @@ export default function App({ navigation, route }: any) {
                   <Marker
                     key={index}
                     coordinate={{
-                      latitude: parseFloat(e.latitude),
-                      longitude: parseFloat(e.longitude),
+                      latitude: parseFloat(e.lat),
+                      longitude: parseFloat(e.lng),
                     }}
                     onPress={() => {
                       _scrollView?.current?.scrollToIndex({
@@ -782,7 +936,7 @@ export default function App({ navigation, route }: any) {
                             setMapPic: setMapPic,
                             uuid: uuidv4(),
                           });
-                          await fetchUserData()
+                          await fetchUserData();
                         }
                       } else {
                         setCatIndex(-1);
@@ -949,7 +1103,7 @@ export default function App({ navigation, route }: any) {
                           </View>
                         )}
                       </>
-                    )
+                    );
                   }}
                 ></FlatList>
               )}
@@ -1159,7 +1313,6 @@ const styles = StyleSheet.create({
   textSign: {
     fontSize: 14,
     fontWeight: "bold",
-    marginTop: 10,
   },
 
   panel: {

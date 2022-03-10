@@ -44,26 +44,23 @@ export const deletePic = async (image_id: string, authChange: boolean) => {
 
 export const fetchCategoryData = async () => {
   const MLRequest = await fetch(`${ifDev ? develop : prod}/mapData`, {
-    method: 'GET',
-  })
-  const MLdata = await MLRequest.json()
-  return MLdata.success
-}
+    method: "GET",
+  });
+  const MLdata = await MLRequest.json();
+  return MLdata.success;
+};
 
 export const predict = async (formBody: any) => {
-  const MLRequest = await fetch(
-    `${ifDev ? develop : prod}/predict`,
-    {
-      method: "POST",
-      body: formBody,
-      headers: {
-        "content-type": "multipart/form-data",
-      },
-    }
-  );
+  const MLRequest = await fetch(`${ifDev ? develop : prod}/predict`, {
+    method: "POST",
+    body: formBody,
+    headers: {
+      "content-type": "multipart/form-data",
+    },
+  });
 
   const MLdata = await MLRequest.json();
-  return MLdata
+  return MLdata;
 };
 
 export const getPic = async (image_id: string, authChange: boolean) => {
@@ -159,6 +156,47 @@ export const addImg = async (uniqueID: any, data: any, results: any) => {
   });
 };
 
+export const queryBusinessData = async (latitude:number, longitude:number) => {
+  let details = {
+    longitude: longitude,
+    latitude: latitude,
+  } as any;
+
+  const data = await fetch(
+    `${ifDev ? develop : prod}/database/queryBusiness`,
+    {
+      method: "POST",
+      body: formBody(details),
+      headers: {
+        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+    }
+  );
+
+  const json = data.json()
+  return json
+};
+
+export const getBusinessData = async (id:number) => {
+  let details = {
+    uid: id
+  } as any;
+
+  const data = await fetch(
+    `${ifDev ? develop : prod}/database/getBusinessData`,
+    {
+      method: "POST",
+      body: formBody(details),
+      headers: {
+        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+    }
+  );
+
+  const json = data.json()
+  return json
+}
+
 export const addTrashImg = async (props: any) => {
   const id_token = await currentUser().getIdToken();
   var today = new Date();
@@ -176,13 +214,16 @@ export const addTrashImg = async (props: any) => {
   } as any;
 
   props.setMapPic("");
-  const data = await fetch(`${ifDev ? develop : prod}/database/createTrashcanCoords`, {
-    method: "POST",
-    body: formBody(details),
-    headers: {
-      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-    },
-  });
+  const data = await fetch(
+    `${ifDev ? develop : prod}/database/createTrashcanCoords`,
+    {
+      method: "POST",
+      body: formBody(details),
+      headers: {
+        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+    }
+  );
 };
 
 export const getUserMarkers = async () => {
