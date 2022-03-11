@@ -155,19 +155,35 @@ export default function App({ navigation, route }: any) {
 
   useEffect(() => {
     if (canMap() && hasVal1Changed) {
-      _map?.current?.animateToRegion(
-        {
-          latitude: toggle
-            ? businessData[mapIndex].lat
-            : mapData.results[mapIndex].geometry.location.lat,
-          longitude: toggle
-            ? businessData[mapIndex].lng
-            : mapData.results[mapIndex].geometry.location.lng,
-          latitudeDelta: 0.007,
-          longitudeDelta: 0.005,
-        },
-        350
-      );
+      toggle &&
+        businessData[0].lat !== -10000 &&
+        _map?.current?.animateToRegion(
+          {
+            latitude: toggle
+              ? businessData[mapIndex].lat
+              : mapData.results[mapIndex].geometry.location.lat,
+            longitude: toggle
+              ? businessData[mapIndex].lng
+              : mapData.results[mapIndex].geometry.location.lng,
+            latitudeDelta: 0.007,
+            longitudeDelta: 0.005,
+          },
+          350
+        );
+      !toggle &&
+        _map?.current?.animateToRegion(
+          {
+            latitude: toggle
+              ? businessData[mapIndex].lat
+              : mapData.results[mapIndex].geometry.location.lat,
+            longitude: toggle
+              ? businessData[mapIndex].lng
+              : mapData.results[mapIndex].geometry.location.lng,
+            latitudeDelta: 0.007,
+            longitudeDelta: 0.005,
+          },
+          350
+        );
     }
   }, [mapIndex]);
 
@@ -257,7 +273,7 @@ export default function App({ navigation, route }: any) {
   }, [longitude]);
 
   useEffect(() => {
-    if (canMap() && userData.length > 0) {
+    if (canMap() && Object.keys(businessData).length !== 0) {
       _scrollView?.current?.scrollToIndex({
         index: 0,
         animated: true,
@@ -317,6 +333,8 @@ export default function App({ navigation, route }: any) {
 
       let ans = [];
 
+      console.log(queryBusiness.success)
+
       for (let i = 0; i < queryBusiness.success.length; i++) {
         let busData = await getBusinessData(queryBusiness.success[i]);
         ans.push(busData.success);
@@ -324,7 +342,13 @@ export default function App({ navigation, route }: any) {
 
       setIfHeightIncrease(false);
 
-      setBusinessData(ans);
+      if (ans.length === 0) {
+        setBusinessData([
+          { description: "no Business Data found", lat: -10000 },
+        ]);
+      } else {
+        setBusinessData(ans);
+      }
 
       setPartialUserData(data);
       setUserData(data);
@@ -398,26 +422,25 @@ export default function App({ navigation, route }: any) {
       3: "Wednesday",
       4: "Thursday",
       5: "Friday",
-      6: "Saturday"
-    } as any
+      6: "Saturday",
+    } as any;
 
-    let currentHours = ""
+    let currentHours = "";
 
     if ("timeAvailability" in item) {
-      const days = item.timeAvailability.split(";")
+      const days = item.timeAvailability.split(";");
 
       for (let i = 0; i < days.length; i++) {
-        const split = days[i].split(": ")
-        const name = split[0].trim()
-  
-        const date = new Date()
-        const currentDayOfTheWeek = daysOfTheWeek[date.getDay()]
-        
+        const split = days[i].split(": ");
+        const name = split[0].trim();
+
+        const date = new Date();
+        const currentDayOfTheWeek = daysOfTheWeek[date.getDay()];
+
         if (name === currentDayOfTheWeek) {
-          currentHours = split[1]
+          currentHours = split[1];
         }
       }
-
     }
 
     return (
@@ -499,13 +522,16 @@ export default function App({ navigation, route }: any) {
           </Touch>
         </View>
         {"timeAvailability" in item && (
-          <View
+          <Touch
             style={{
               backgroundColor: "white",
               borderRadius: 17,
               width: 128,
               height: 34,
               marginLeft: "auto",
+            }}
+            onPress={() => {
+              increase_height(EasingNode.ease);
             }}
           >
             <Text
@@ -517,7 +543,7 @@ export default function App({ navigation, route }: any) {
             >
               {currentHours}
             </Text>
-          </View>
+          </Touch>
         )}
       </View>
     );
@@ -529,71 +555,27 @@ export default function App({ navigation, route }: any) {
         inputRange: [1, 2],
         outputRange: [CARD_HEIGHT, height - flipPosition - CARD_HEIGHT],
       });
-
-      return (
-        <Animated.View
-          style={[
-            styles.card,
-            {
-              backgroundColor: colorScheme === "dark" ? "#181818" : "white",
-              padding: 13,
-              height: heightInterpolate,
-            },
-          ]}
-        >
-          {ifHeightIncrease ? (
-            <View style={styles.textContent}>
-              <View style={{ flexDirection: "row", justifyContent: 'space-between', marginBottom: 10 }}>
-                <Text
+      if (item.lat !== -10000) {
+        return (
+          <Animated.View
+            style={[
+              styles.card,
+              {
+                backgroundColor: colorScheme === "dark" ? "#181818" : "white",
+                padding: 13,
+                height: heightInterpolate,
+              },
+            ]}
+          >
+            {ifHeightIncrease ? (
+              <View style={styles.textContent}>
+                <View
                   style={{
-                    color: colorScheme === "dark" ? "white" : "black",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 10,
                   }}
                 >
-                  {item.name}
-                </Text>
-                <Touch
-                  onPress={() => {
-                    decrease_height(EasingNode.ease);
-                  }}
-                >
-                  <AntDesign
-                    name="closecircleo"
-                    size={24}
-                    color={colorScheme === "dark" ? "white" : "black"}
-                  />
-                </Touch>
-              </View>
-              <View>
-                <HorizontalScroll data={item.recyclingTypes.split(",")} numColumns={3} />
-                {
-                  item.timeAvailability.split(";").map((e:string)=>{
-                    const split = e.trim().split(": ")
-                    const day = split[0]
-                    const times = split[1]
-                    return (
-                      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                        <Text style={{color: colorScheme === "dark" ? "white":"black"}}>{day}</Text>
-                        <Text style={{color: colorScheme === "dark" ? "white":"black"}}>{times}</Text>
-                      </View>
-
-                    )
-                  })
-                  
-                }
-              </View>
-      
-            
-            </View>
-          ) : (
-            <View style={styles.textContent}>
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <View>
                   <Text
                     style={{
                       color: colorScheme === "dark" ? "white" : "black",
@@ -601,38 +583,119 @@ export default function App({ navigation, route }: any) {
                   >
                     {item.name}
                   </Text>
-                </View>
-              </View>
-              <View>
-                <View style={{ flexDirection: "row" }}>
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    style={[
-                      styles.textSign,
-                      { color: colorScheme === "dark" ? "white" : "black" },
-                    ]}
-                  >
-                    {`${item.recyclingTypes}`}
-                  </Text>
                   <Touch
                     onPress={() => {
-                      increase_height(EasingNode.ease);
+                      decrease_height(EasingNode.ease);
                     }}
                   >
                     <AntDesign
-                      name="downcircle"
-                      size={20}
+                      name="closecircleo"
+                      size={24}
                       color={colorScheme === "dark" ? "white" : "black"}
                     />
                   </Touch>
                 </View>
+                <View>
+                  <HorizontalScroll
+                    data={item.recyclingTypes.split(",")}
+                    numColumns={3}
+                  />
+                  {item.timeAvailability.split(";").map((e: string) => {
+                    const split = e.trim().split(": ");
+                    const day = split[0];
+                    const times = split[1];
+                    return (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: colorScheme === "dark" ? "white" : "black",
+                          }}
+                        >
+                          {day}
+                        </Text>
+                        <Text
+                          style={{
+                            color: colorScheme === "dark" ? "white" : "black",
+                          }}
+                        >
+                          {times}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
-            </View>
-          )}
-          <Contact item={item} />
-        </Animated.View>
-      );
+            ) : (
+              <View style={styles.textContent}>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <View>
+                    <Text
+                      style={{
+                        color: colorScheme === "dark" ? "white" : "black",
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+                  </View>
+                </View>
+                <View>
+                  <View style={{ flexDirection: "row" }}>
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      style={[
+                        styles.textSign,
+                        { color: colorScheme === "dark" ? "white" : "black" },
+                      ]}
+                    >
+                      {`${item.recyclingTypes}`}
+                    </Text>
+                    <Touch
+                      onPress={() => {
+                        increase_height(EasingNode.ease);
+                      }}
+                    >
+                      <AntDesign
+                        name="downcircle"
+                        size={20}
+                        color={colorScheme === "dark" ? "white" : "black"}
+                      />
+                    </Touch>
+                  </View>
+                </View>
+              </View>
+            )}
+            <Contact item={item} />
+          </Animated.View>
+        );
+      }
+      else {
+        return (
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: colorScheme === "dark" ? "#181818" : "white",
+                padding: 13,
+                height: CARD_HEIGHT,
+              },
+            ]}
+          >
+            <Text style={{textAlign: 'center', textAlignVertical: 'center', color: colorScheme === "dark" ? "white":"black"}}>{item.description}</Text>
+          </View>
+        )
+      }
     },
     [userData, businessData, colorScheme, ifHeightIncrease]
   );
@@ -839,6 +902,7 @@ export default function App({ navigation, route }: any) {
 
             {canMap() &&
               toggle &&
+              businessData[0].lat !== -10000 &&
               businessData.map((e: any, index: any) => {
                 return (
                   <Marker

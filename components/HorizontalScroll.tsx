@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 10,
     color: "black",
-    maxWidth: 150,
   },
 });
 
