@@ -119,8 +119,9 @@ export default function App({ navigation, route }: any) {
   const [categories, setCategories] = useState([] as any);
   const [mapPic, setMapPic] = useContext(ImageContext).mapPic;
   const [ifHeightIncrease, setIfHeightIncrease] = useState(false);
-  const cardHeight = useRef(new Animated.Value(1)).current;
-  let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
+  let cardHeight = useRef(new Animated.Value(1)).current;
+  let flipPosition: any =
+    osName === "Android" ? (StatusBar.currentHeight as number) : 30;
 
   const [catIndex, setCatIndex] = useState(-1);
   const viewConfigRef = useRef({
@@ -321,6 +322,8 @@ export default function App({ navigation, route }: any) {
         ans.push(busData.success);
       }
 
+      setIfHeightIncrease(false);
+
       setBusinessData(ans);
 
       setPartialUserData(data);
@@ -374,6 +377,15 @@ export default function App({ navigation, route }: any) {
       easing,
     }).start();
     setIfHeightIncrease(false);
+  };
+
+  const increase_height = async (easing: any) => {
+    await Animated.timing(cardHeight, {
+      toValue: 2,
+      duration: 250,
+      easing,
+    }).start();
+    setIfHeightIncrease(true);
   };
 
   const Contact = (data: any) => {
@@ -488,15 +500,6 @@ export default function App({ navigation, route }: any) {
         outputRange: [CARD_HEIGHT, height - flipPosition - CARD_HEIGHT],
       });
 
-      const increase_height = async (easing: any) => {
-        await Animated.timing(cardHeight, {
-          toValue: 2,
-          duration: 250,
-          easing,
-        }).start();
-        setIfHeightIncrease(true);
-      };
-
       return (
         <Animated.View
           style={[
@@ -509,11 +512,38 @@ export default function App({ navigation, route }: any) {
           ]}
         >
           {ifHeightIncrease ? (
-            <View style={{flexDirection: 'row'}}>
-              <HorizontalScroll data={item.recyclingTypes} />
-              <Touch onPress={()=>{decrease_height(EasingNode.ease)}}>
-                <AntDesign name="closecircleo" size={24} color={colorScheme === "dark" ? "white":"black"}/>
-              </Touch>
+            <View style={styles.textContent}>
+              <View style={{ flexDirection: "row", justifyContent: 'space-between', marginBottom: 10 }}>
+                <Text
+                  style={{
+                    color: colorScheme === "dark" ? "white" : "black",
+                  }}
+                >
+                  {item.name}
+                </Text>
+                <Touch
+                  onPress={() => {
+                    decrease_height(EasingNode.ease);
+                  }}
+                >
+                  <AntDesign
+                    name="closecircleo"
+                    size={24}
+                    color={colorScheme === "dark" ? "white" : "black"}
+                  />
+                </Touch>
+              </View>
+              <View>
+                <HorizontalScroll data={item.recyclingTypes} numColumns={3} />
+                {
+                  item.imageid === "None" &&
+                  <View style={{alignSelf: 'center', borderColor: colorScheme === "dark" ? "white":"black", borderWidth: 3, borderRadius: 30, marginTop: 10}}>
+                    <AntDesign name="camera" size={40} style={{padding: CARD_WIDTH / 2 - 50}} color={colorScheme === "dark" ? "white":"black"} />
+                  </View>
+                }
+              </View>
+      
+            
             </View>
           ) : (
             <View style={styles.textContent}>

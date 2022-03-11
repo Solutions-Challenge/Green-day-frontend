@@ -4,21 +4,27 @@ import { FlatList, ScrollView, Text, StyleSheet, View } from "react-native";
 const HorizontalScroll = ({ data, numColumns, maxWidth }: any) => {
   const keyExtractor = useCallback((item, index) => index.toString(), [data]);
   return (
-    <FlatList
-      data={data}
-      scrollEnabled={true}
-      keyExtractor={keyExtractor}
-      renderItem={({ item, index }: any) => {
-        return (
-          <View
-            key={index}
-            style={[styles.chipsItem, { backgroundColor: "#fff" }]}
-          >
-            <Text style={{flexShrink: 1}}>{item}</Text>
-          </View>
-        );
-      }}
-    />
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <FlatList
+        data={data}
+        numColumns={Math.round(data.length / numColumns)}
+        scrollEnabled={true}
+        keyExtractor={keyExtractor}
+        renderItem={({ item, index }: any) => {
+          return (
+            <Text
+              key={index}
+              style={[
+                styles.chipsItem,
+                { backgroundColor: "white", color: "black" },
+              ]}
+            >
+              <Text>{item}</Text>
+            </Text>
+          );
+        }}
+      />
+    </ScrollView>
   );
 };
 
@@ -26,6 +32,7 @@ const styles = StyleSheet.create({
   chipsItem: {
     borderRadius: 20,
     margin: 10,
+    overflow: 'hidden',
     paddingHorizontal: 20,
     paddingVertical: 10,
     shadowColor: "#ccc",
@@ -34,7 +41,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 10,
     color: "black",
-    maxWidth: 150
+    maxWidth: 150,
   },
 });
 
