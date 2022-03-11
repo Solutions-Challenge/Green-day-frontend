@@ -390,6 +390,36 @@ export default function App({ navigation, route }: any) {
 
   const Contact = (data: any) => {
     const item = data.item;
+
+    const daysOfTheWeek = {
+      0: "Sunday",
+      1: "Monday",
+      2: "Tuesday",
+      3: "Wednesday",
+      4: "Thursday",
+      5: "Friday",
+      6: "Saturday"
+    } as any
+
+    let currentHours = ""
+
+    if ("timeAvailability" in item) {
+      const days = item.timeAvailability.split(";")
+
+      for (let i = 0; i < days.length; i++) {
+        const split = days[i].split(": ")
+        const name = split[0].trim()
+  
+        const date = new Date()
+        const currentDayOfTheWeek = daysOfTheWeek[date.getDay()]
+        
+        if (name === currentDayOfTheWeek) {
+          currentHours = split[1]
+        }
+      }
+
+    }
+
     return (
       <View style={{ flexDirection: "row", marginTop: "auto" }}>
         {"website" in item && (
@@ -485,7 +515,7 @@ export default function App({ navigation, route }: any) {
                 marginBottom: "auto",
               }}
             >
-              {item.timeAvailability}
+              {currentHours}
             </Text>
           </View>
         )}
@@ -534,12 +564,21 @@ export default function App({ navigation, route }: any) {
                 </Touch>
               </View>
               <View>
-                <HorizontalScroll data={item.recyclingTypes} numColumns={3} />
+                <HorizontalScroll data={item.recyclingTypes.split(",")} numColumns={3} />
                 {
-                  item.imageid === "None" &&
-                  <View style={{alignSelf: 'center', borderColor: colorScheme === "dark" ? "white":"black", borderWidth: 3, borderRadius: 30, marginTop: 10}}>
-                    <AntDesign name="camera" size={40} style={{padding: CARD_WIDTH / 2 - 50}} color={colorScheme === "dark" ? "white":"black"} />
-                  </View>
+                  item.timeAvailability.split(";").map((e:string)=>{
+                    const split = e.trim().split(": ")
+                    const day = split[0]
+                    const times = split[1]
+                    return (
+                      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <Text style={{color: colorScheme === "dark" ? "white":"black"}}>{day}</Text>
+                        <Text style={{color: colorScheme === "dark" ? "white":"black"}}>{times}</Text>
+                      </View>
+
+                    )
+                  })
+                  
                 }
               </View>
       
