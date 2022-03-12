@@ -4,6 +4,10 @@ const develop = "http://100.64.60.179:8081";
 const prod = "https://multi-service-gkv32wdswa-ue.a.run.app";
 const ifDev = false;
 
+const ifGuest = () => {
+  return currentUser().isAnonymous
+}
+
 const formBody = (details: any) => {
   let formBody = [];
   for (let props in details) {
@@ -25,6 +29,9 @@ const formBody = (details: any) => {
 export const deletePic = async (image_id: string, authChange: boolean) => {
   if (authChange) {
     const id_token = await currentUser().getIdToken();
+    if (ifGuest()) {
+      return {"error": "must be signed in to use backend"}
+    }
 
     let details = {
       id_token: id_token,
@@ -67,6 +74,10 @@ export const getPic = async (image_id: string, authChange: boolean) => {
   if (authChange) {
     const id_token = await currentUser().getIdToken();
 
+    if (ifGuest()) {
+      return {"error": "must be signed in to use backend"}
+    }
+
     let details = {
       id_token: id_token,
       image_id: image_id,
@@ -102,6 +113,10 @@ export const getAllPics = async (authChange: boolean) => {
   if (authChange) {
     const id_token = await currentUser().getIdToken();
 
+    if (ifGuest()) {
+      return {"error": "must be signed in to use backend"}
+    }
+
     let details = {
       id_token: id_token,
     } as any;
@@ -123,6 +138,10 @@ export const getAllPics = async (authChange: boolean) => {
 export const deleteUser = async () => {
   const id_token = await currentUser().getIdToken();
 
+  if (ifGuest()) {
+    return {"error": "must be signed in to use backend"}
+  }
+
   let details = {
     id_token: id_token,
   } as any;
@@ -138,6 +157,11 @@ export const deleteUser = async () => {
 
 export const addImg = async (uniqueID: any, data: any, results: any) => {
   const id_token = await currentUser().getIdToken();
+
+  if (ifGuest()) {
+    return {"error": "must be signed in to use backend"}
+  }
+
   let details = {
     id_token: id_token,
     data: JSON.stringify({
@@ -198,6 +222,11 @@ export const getBusinessData = async (id:number) => {
 }
 
 export const addTrashImg = async (props: any) => {
+
+  if (ifGuest()) {
+    return {"error": "must be signed in to use backend"}
+  }
+
   const id_token = await currentUser().getIdToken();
   var today = new Date();
 
@@ -228,6 +257,11 @@ export const addTrashImg = async (props: any) => {
 
 export const getUserMarkers = async () => {
   const id_token = await currentUser().getIdToken();
+
+  if (ifGuest()) {
+    return {"error": "must be signed in to use backend"}
+  }
+
   let details = {
     id_token: id_token,
   } as any;
@@ -262,6 +296,7 @@ export const analyzeImg = async (formData: any) => {
 
 export const getUserTrashCans = async (trashCan: string) => {
   const id_token = await currentUser().getIdToken();
+
   let details = {
     id_token: id_token,
     image_ids: trashCan,
@@ -286,6 +321,11 @@ export const getUserTrashCans = async (trashCan: string) => {
 
 export const delete_trashcan = async (trashCan: any) => {
   const id_token = await currentUser().getIdToken();
+
+  if (ifGuest()) {
+    return {"error": "must be signed in to use backend"}
+  }
+
   let details = {
     id_token: id_token,
     image_id: trashCan,
@@ -338,6 +378,10 @@ export const getTrashCanImage = async (id: any) => {
 
 export const Register = async () => {
   const id_token = await currentUser().getIdToken();
+
+  if (ifGuest()) {
+    return {"error": "must be signed in to use backend"}
+  }
 
   let details = {
     id_token: id_token,

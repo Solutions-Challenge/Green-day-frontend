@@ -15,6 +15,7 @@ import {
 import { ScrollView } from "react-native-gesture-handler";
 import { ActivityIndicator } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { currentUser } from "../api/Auth";
 import {
   delete_trashcan,
   getTrashCanImage,
@@ -45,20 +46,25 @@ const MapMarkerScreen = () => {
       let ans = [];
       const data = await getUserMarkers();
 
-      const trashCans:any = await getUserTrashCans(data.success)
+      const trashCans: any = await getUserTrashCans(data.success);
 
-      let image_ids = []
-
-      for (let i = 0; i < trashCans.length; i++) {
-          image_ids.push(trashCans[i]["image_id"])
+      if (trashCans === "error") {
+        setLoad(false);
+        setData([]);
       }
 
-      const images:any = await getTrashCanImage(image_ids)
+      let image_ids = [];
+
+      for (let i = 0; i < trashCans.length; i++) {
+        image_ids.push(trashCans[i]["image_id"]);
+      }
+
+      const images: any = await getTrashCanImage(image_ids);
 
       for (let i = 0; i < trashCans.length; i++) {
         const copy = {
           image_url: images.success[i],
-          ...trashCans[i]
+          ...trashCans[i],
         };
         ans.push(copy);
       }
@@ -108,7 +114,9 @@ const MapMarkerScreen = () => {
             />
           </View>
           <Text style={{ color: textColor, fontSize: 30, textAlign: "center" }}>
-            No User Markers were Found
+            {currentUser().isAnonymous
+              ? "Sign In to Get Full Features"
+              : "No User Markers were Found"}
           </Text>
         </View>
       ) : (
@@ -137,7 +145,16 @@ const MapMarkerScreen = () => {
                   }}
                   source={{ uri: e["image_url"] }}
                 >
-                  <Text style={{ color: 'white', top: 120, left: 25, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderTopLeftRadius: 10, paddingLeft: 10 }}>
+                  <Text
+                    style={{
+                      color: "white",
+                      top: 120,
+                      left: 25,
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      borderTopLeftRadius: 10,
+                      paddingLeft: 10,
+                    }}
+                  >
                     {e["date_taken"]}
                   </Text>
                 </ImageBackground>
