@@ -333,7 +333,7 @@ export default function App({ navigation, route }: any) {
 
       let ans = [];
 
-      console.log(queryBusiness.success)
+      console.log(queryBusiness.success);
 
       for (let i = 0; i < queryBusiness.success.length; i++) {
         let busData = await getBusinessData(queryBusiness.success[i]);
@@ -600,6 +600,16 @@ export default function App({ navigation, route }: any) {
                     data={item.recyclingTypes.split(",")}
                     numColumns={3}
                   />
+                  {
+                    item.pictureURL !== "None" &&
+                    <Image
+                      style={{ width: CARD_WIDTH-50, height: CARD_HEIGHT, borderRadius: 10, overflow: 'hidden', marginBottom: 10 }}
+                      source={{
+                        uri: item.pictureURL,
+                      }}
+                      resizeMode={"cover"}
+                    />
+                  }
                   {item.timeAvailability.split(";").map((e: string) => {
                     const split = e.trim().split(": ");
                     const day = split[0];
@@ -679,8 +689,7 @@ export default function App({ navigation, route }: any) {
             <Contact item={item} />
           </Animated.View>
         );
-      }
-      else {
+      } else {
         return (
           <View
             style={[
@@ -692,9 +701,17 @@ export default function App({ navigation, route }: any) {
               },
             ]}
           >
-            <Text style={{textAlign: 'center', textAlignVertical: 'center', color: colorScheme === "dark" ? "white":"black"}}>{item.description}</Text>
+            <Text
+              style={{
+                textAlign: "center",
+                textAlignVertical: "center",
+                color: colorScheme === "dark" ? "white" : "black",
+              }}
+            >
+              {item.description}
+            </Text>
           </View>
-        )
+        );
       }
     },
     [userData, businessData, colorScheme, ifHeightIncrease]

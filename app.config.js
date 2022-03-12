@@ -31,6 +31,10 @@ export default {
       "backgroundColor": "#ffffff"
     },
     "config": {
+      "googleSignIn": {
+        "apiKey": "AIzaSyBbm-NJdj5KOF7vSkppra3JYivdDEWPsv8",
+        "certificateHash": "09:E1:53:06:ED:33:CC:3B:56:28:DC:20:99:DC:83:B6:6D:DD:F4:E1"
+      },
       "googleMaps": {
         "apiKey": 'AIzaSyCyQqM_iRJnLifrXK0l3v5ynKjsNwGLGPg'
       }

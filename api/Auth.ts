@@ -38,7 +38,7 @@ export const anonymousSignIn = async () => {
   }
 }
 
-export const handleGoogleSignIn = async (setUri: any) => {
+export const handleGoogleSignIn = async () => {
   let user = {} as any;
   let error = {} as any;
 
