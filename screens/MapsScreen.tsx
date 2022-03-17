@@ -327,16 +327,23 @@ export default function App({ navigation, route }: any) {
   const fetchUserData = async () => {
     if (latitude !== 0 && longitude !== 0) {
       const d = await queryTrashCanLocations(latitude, longitude);
-      const data = await getUserTrashCans(d["success"]);
+      console.log(d)
+
+      let data = []
+
+      if (d.success.length > 0) {
+        data = await getUserTrashCans(d["success"]);
+      }
+
+      console.log(data)
 
       const queryBusiness = await queryBusinessData(latitude, longitude);
 
       let ans = [];
 
-      console.log(queryBusiness.success);
-
       for (let i = 0; i < queryBusiness.success.length; i++) {
         let busData = await getBusinessData(queryBusiness.success[i]);
+        console.log(busData)
         ans.push(busData.success);
       }
 
@@ -1315,7 +1322,7 @@ export default function App({ navigation, route }: any) {
                   </View>
                 )}
               </Touch>
-              {Object.keys(partialUserData).length !== 0 && !ifHeightIncrease && (
+              {Object.keys(businessData).length !== 0 && !ifHeightIncrease && (
                 <Touch
                   style={{
                     position: "absolute",
