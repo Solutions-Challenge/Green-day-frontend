@@ -12,6 +12,8 @@ export default {
     "resizeMode": "contain",
     "backgroundColor": "#ffffff"
   },
+  "platforms": ["ios", "android", "web"],
+  "assetBundlePatterns": ["**/*"],
   "updates": {
     "fallbackToCacheTimeout": 0
   },
