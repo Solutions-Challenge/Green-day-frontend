@@ -55,6 +55,7 @@ import HorizontalScroll from "../components/HorizontalScroll";
 import Animated, { EasingNode } from "react-native-reanimated";
 import { osName } from "expo-device";
 import { showMessage } from "react-native-flash-message";
+import { currentUser } from "../api/Auth";
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -190,13 +191,6 @@ export default function App({ navigation, route }: any) {
 
   const [mapData, setmapData] = useState({} as any);
 
-  const findLink = (href: string) => {
-    let temp = href.split('"');
-    href = temp[1];
-
-    return href;
-  };
-
   useEffect(() => {
     (async () => {
       let { status } = await requestForegroundPermissionsAsync();
@@ -316,7 +310,7 @@ export default function App({ navigation, route }: any) {
       let filteredData = userData.filter((e: any) => {
         return e["recycling_types"][0] == categories[catIndex].icon;
       });
-      if (filteredData.length === 0) {
+      if (filteredData.length === 0 && Object.keys(addingMarker).length === 0) {
         showMessage({
           message: `No ${categories[catIndex].name} Type was Found`,
           type: "danger",
@@ -331,7 +325,6 @@ export default function App({ navigation, route }: any) {
   const fetchUserData = async () => {
     if (latitude !== 0 && longitude !== 0) {
       const d = await queryTrashCanLocations(latitude, longitude);
-      console.log(d);
 
       let data = [];
 
@@ -365,8 +358,6 @@ export default function App({ navigation, route }: any) {
       if (canMap() && material != "") {
         for (let i = 0; i < categories.length; i++) {
           if (categories[i].name === material) {
-            setCatIndex(i);
-            setToggle(true);
             _categoryView.current?.scrollToIndex({
               index: i,
               animated: true,
@@ -376,6 +367,9 @@ export default function App({ navigation, route }: any) {
             navigation.setParams({
               material: "",
             });
+
+            setCatIndex(i);
+            setToggle(true);
           }
         }
       }
@@ -390,6 +384,28 @@ export default function App({ navigation, route }: any) {
       setCategories(data);
     })();
   }, [isFocused, userData]);
+
+  useEffect(() => {
+    (async () => {
+      if (
+        Object.keys(addingMarker).length !== 0 &&
+        mapPic === "" &&
+        isFocused
+      ) {
+        setVisible(true);
+        setAddingMarker({});
+        setCatIndex(-1);
+        setMapPic("");
+        showMessage({
+          message: "No Map Picture Added",
+          type: "danger",
+          floating: true,
+          statusBarHeight: flipPosition,
+          duration: 3000
+        });
+      }
+    })();
+  }, [isFocused]);
 
   useEffect(() => {
     (async () => {
@@ -758,21 +774,8 @@ export default function App({ navigation, route }: any) {
                 />
               </View>
 
-              {"photos" in item && (
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: "#246EE9" }]}
-                  onPress={() => {
-                    Linking.openURL(
-                      findLink(item.photos[0].html_attributions[0])
-                    );
-                  }}
-                >
-                  <Text style={{ color: "white" }}>Details</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <View>
               <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#246EE9" }]}
                 onPress={() => {
                   Linking.openURL(
                     `https://maps.${
@@ -780,17 +783,19 @@ export default function App({ navigation, route }: any) {
                     }.com/?q=${item.vicinity}`
                   );
                 }}
-                style={styles.signIn}
               >
-                <Text
-                  style={[
-                    styles.textSign,
-                    { color: colorScheme === "dark" ? "white" : "black" },
-                  ]}
-                >
-                  {item.vicinity}
-                </Text>
+                <Text style={{ color: "white" }}>Go Here</Text>
               </TouchableOpacity>
+            </View>
+            <View style={{ marginTop: 10 }}>
+              <Text
+                style={[
+                  styles.textSign,
+                  { color: colorScheme === "dark" ? "white" : "black" },
+                ]}
+              >
+                {item.vicinity}
+              </Text>
             </View>
           </View>
         </View>
@@ -835,11 +840,12 @@ export default function App({ navigation, route }: any) {
                 });
             }}
             onLongPress={(e: any) => {
-              setAddingMarker({
-                latitude: e.nativeEvent.coordinate.latitude,
-                longitude: e.nativeEvent.coordinate.longitude,
-              });
-              setVisible(false);
+              if (mapPic !== "") {
+                setAddingMarker({
+                  latitude: e.nativeEvent.coordinate.latitude,
+                  longitude: e.nativeEvent.coordinate.longitude,
+                });
+              }
             }}
           >
             {canMap() && JSON.stringify(addingMarker) != "{}" && (
@@ -1048,6 +1054,7 @@ export default function App({ navigation, route }: any) {
                       setVisible(true);
                       setAddingMarker({});
                       setCatIndex(-1);
+                      setMapPic("");
                     }}
                   >
                     <View
@@ -1073,6 +1080,11 @@ export default function App({ navigation, route }: any) {
                   <TouchableOpacity
                     onPress={async () => {
                       if (catIndex !== -1) {
+                        var today = new Date();
+                        var date =
+                          today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+                        const id_token = await currentUser().getIdToken();
+                        const uuid = uuidv4()
                         setVisible(true);
                         //@ts-ignore
                         if (mapPic === "") {
@@ -1080,18 +1092,32 @@ export default function App({ navigation, route }: any) {
                           setAddingMarker({});
                           setCatIndex(-1);
                         } else {
-                          // write_data_hash(addingMarker.latitude, addingMarker.longitude, categories[catIndex - 1].icon, categories[catIndex - 1].name, mapPic, setMapPic);
                           setVisible(true);
                           setAddingMarker({});
                           await addTrashImg({
+                            id_token: id_token,
                             latitude: addingMarker.latitude,
                             longitude: addingMarker.longitude,
                             icon: categories[catIndex].icon,
                             base64: mapPic,
                             setMapPic: setMapPic,
-                            uuid: uuidv4(),
+                            date_taken: date,
+                            uuid: uuid,
                           });
-                          await fetchUserData();
+                          setMapPic("")
+                          let copy = userData
+                          copy.push({
+                            "date_taken": date,
+                            "image_id": uuid,
+                            "latitude": addingMarker.latitude,
+                            "longitude": addingMarker.longitude,
+                            "recycling_types": [
+                              categories[catIndex].icon
+                            ]
+                          })
+                          setUserData(copy)
+                          setPartialUserData(copy)
+                          setCatIndex(-1)
                         }
                       } else {
                         setCatIndex(-1);

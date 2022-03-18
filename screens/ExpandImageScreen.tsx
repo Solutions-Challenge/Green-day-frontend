@@ -2,8 +2,8 @@ import { useRoute } from '@react-navigation/native';
 import { osName } from 'expo-device';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Dimensions, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { Dimensions, StatusBar, Text, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
+import { FlatList, TouchableOpacity } from 'react-native-gesture-handler';
 import { predict } from '../api/Backend';
 import { GoBack } from '../components/goBack';
 import useColorScheme from '../hooks/useColorScheme';
@@ -167,7 +167,7 @@ const ExpandImageScreen = ({ navigation }: any) => {
     return (
         <View>
 
-            <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", display: 'flex', marginTop: flipPosition}}>
+            <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", display: 'flex', marginTop: flipPosition+100}}>
                 <FlatList
                     onViewableItemsChanged={onViewableItemsChanged.current}
                     viewabilityConfig={viewConfigRef.current}

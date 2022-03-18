@@ -47,11 +47,18 @@ const MapMarkerScreen = () => {
       let ans = [];
       const data = await getUserMarkers();
 
-      const trashCans: any = await getUserTrashCans(data.success);
+      let trashCans = []
+      if(data.success.length > 0) {
+        trashCans = await getUserTrashCans(data.success);
+      }
 
-      if (trashCans === "error") {
+      console.log(trashCans)
+
+
+      if (trashCans === "error" || trashCans.length === 0) {
         setLoad(false);
         setData([]);
+        return;
       }
 
       let image_ids = [];

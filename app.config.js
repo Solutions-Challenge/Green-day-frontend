@@ -29,7 +29,7 @@ export default {
   "android": {
     "versionCode": 10,
     "adaptiveIcon": {
-      "foregroundImage": "./assets/images/adaptive-icon.png",
+      "foregroundImage": "./assets/images/ecopal.png",
       "backgroundColor": "#ffffff"
     },
     "config": {

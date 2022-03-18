@@ -227,18 +227,13 @@ export const addTrashImg = async (props: any) => {
     return {"error": "must be signed in to use backend"}
   }
 
-  const id_token = await currentUser().getIdToken();
-  var today = new Date();
-
-  var date =
-    today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
   let details = {
-    id_token: id_token,
+    id_token: props.id_token,
     image_base64: props.base64,
     longitude: props.longitude,
     latitude: props.latitude,
     recycling_types: props.icon,
-    date_taken: date,
+    date_taken: props.date_taken,
     image_id: props.uuid,
   } as any;
 
