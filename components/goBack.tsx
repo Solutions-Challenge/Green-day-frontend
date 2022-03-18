@@ -16,7 +16,7 @@ export const GoBack = () => {
       style={{
         position: "absolute",
         top: flipPosition + 30,
-        left: 10,
+        left: 20,
         backgroundColor: "black",
         borderRadius: 60,
       }}

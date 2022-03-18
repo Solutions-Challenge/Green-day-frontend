@@ -94,11 +94,7 @@ function RootNavigator() {
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Drawer" component={DrawerTabs} />
-        <Stack.Screen
-          name="Pic"
-          component={CameraScreen}
-          initialParams={{ purpose: "" }}
-        />
+        <Stack.Screen name="Pic" component={CameraScreen} initialParams={{ purpose: "" }} />
         <Stack.Screen name="Details" component={ExpandImageScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
@@ -325,6 +321,7 @@ const HomeTabs = ({ navigation }: any) => {
                       navigation.navigate("Pic");
                     }}
                     style={{
+                      borderRadius: 30,
                       shadowColor: "#7F5DF0",
                       shadowOffset: { width: 0, height: 10 },
                       shadowOpacity: 0.25,
@@ -336,7 +333,7 @@ const HomeTabs = ({ navigation }: any) => {
                       style={{
                         width: 60,
                         height: 60,
-                        borderRadius: 35,
+                        borderRadius: 30,
                         backgroundColor: "#246EE9",
                       }}
                     >

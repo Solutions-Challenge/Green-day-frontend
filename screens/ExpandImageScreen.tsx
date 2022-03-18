@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Dimensions, StatusBar, Text, TouchableOpacity, View, Image, Animated, StyleSheet, ActivityIndicator, ListRenderItem } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { predict } from '../api/Backend';
+import { GoBack } from '../components/goBack';
 import useColorScheme from '../hooks/useColorScheme';
 
 
@@ -164,73 +165,77 @@ const ExpandImageScreen = ({ navigation }: any) => {
 
 
     return (
-        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", display: 'flex', marginTop: flipPosition}}>
-            <FlatList
-                onViewableItemsChanged={onViewableItemsChanged.current}
-                viewabilityConfig={viewConfigRef.current}
-                data={item.multi}
-                renderItem={renderItem}
-                keyExtractor={keyExtractor}
-                horizontal
-                pagingEnabled
-                scrollEnabled
-                snapToAlignment='center'
-                scrollEventThrottle={16}
-                decelerationRate={'fast'}
-                showsHorizontalScrollIndicator={false}
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                    { useNativeDriver: false }
-                )}
-            />
+        <View>
 
-            <View style={{ position: 'absolute', top: windowHeight / 4 + 20, alignSelf: 'center', flexDirection: 'row' }}>
-                {item.multi.map((_: any, i: any) => {
-                    let opacity = position.interpolate({
-                        inputRange: [i - 1, i, i + 1],
-                        outputRange: [0.3, 1, 0.3],
-                        extrapolate: 'clamp'
-                    })
+            <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", display: 'flex', marginTop: flipPosition}}>
+                <FlatList
+                    onViewableItemsChanged={onViewableItemsChanged.current}
+                    viewabilityConfig={viewConfigRef.current}
+                    data={item.multi}
+                    renderItem={renderItem}
+                    keyExtractor={keyExtractor}
+                    horizontal
+                    pagingEnabled
+                    scrollEnabled
+                    snapToAlignment='center'
+                    scrollEventThrottle={16}
+                    decelerationRate={'fast'}
+                    showsHorizontalScrollIndicator={false}
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                        { useNativeDriver: false }
+                    )}
+                />
 
-                    return (<>
-                        <Animated.View
-                            key={i}
-                            style={{ opacity, height: 10, width: 10, backgroundColor: '#595959', margin: 8, borderRadius: 5 }}
-                        />
-                    </>)
-                })}
+                <View style={{ position: 'absolute', top: windowHeight / 4 + 20, alignSelf: 'center', flexDirection: 'row' }}>
+                    {item.multi.map((_: any, i: any) => {
+                        let opacity = position.interpolate({
+                            inputRange: [i - 1, i, i + 1],
+                            outputRange: [0.3, 1, 0.3],
+                            extrapolate: 'clamp'
+                        })
+
+                        return (<>
+                            <Animated.View
+                                key={i}
+                                style={{ opacity, height: 10, width: 10, backgroundColor: '#595959', margin: 8, borderRadius: 5 }}
+                            />
+                        </>)
+                    })}
+                </View>
+
+                <View style={{ position: 'absolute', top: windowHeight / 4 + 40, flexDirection: 'row' }}>
+
+                    {ifMLData[index] ?
+                        <View>
+                            <FlatList
+                                horizontal
+                                ref={_scrollView}
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{
+                                    paddingRight: 20
+                                }}
+                                data={item.multi[index].mlData}
+                                renderItem={chipItem}
+                                keyExtractor={keyExtractor}
+                            />
+
+                            <TouchableOpacity
+                                onPress={() => {
+                                    goBack(item.multi[index].mlData[catIndex[index]].mapData.name)
+                                }}
+                                style={[styles.chipsItem, { backgroundColor: "white", marginTop: 20, height: 60, width: 200, marginLeft: windowWidth / 2 - 200 / 2, paddingLeft: 30 }]}>
+                                <Image source={{ uri: item.multi[index].mlData[catIndex[index]].mapData.icon }} style={{ width: 40, height: 40, marginRight: 15, marginTop: 'auto', marginBottom: 'auto' }} />
+                                <Text style={{ marginTop: 'auto', marginBottom: "auto", width: 130 }}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
+                            </TouchableOpacity>
+                        </View>
+                        :
+                        <ActivityIndicator style={{ marginLeft: windowWidth / 2 - 18, marginTop: 30 }} size="large" color="#246EE9" />
+
+                    }
+                </View >
             </View>
-
-            <View style={{ position: 'absolute', top: windowHeight / 4 + 40, flexDirection: 'row' }}>
-
-                {ifMLData[index] ?
-                    <View>
-                        <FlatList
-                            horizontal
-                            ref={_scrollView}
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{
-                                paddingRight: 20
-                            }}
-                            data={item.multi[index].mlData}
-                            renderItem={chipItem}
-                            keyExtractor={keyExtractor}
-                        />
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                goBack(item.multi[index].mlData[catIndex[index]].mapData.name)
-                            }}
-                            style={[styles.chipsItem, { backgroundColor: "white", marginTop: 20, height: 60, width: 200, marginLeft: windowWidth / 2 - 200 / 2, paddingLeft: 30 }]}>
-                            <Image source={{ uri: item.multi[index].mlData[catIndex[index]].mapData.icon }} style={{ width: 40, height: 40, marginRight: 15, marginTop: 'auto', marginBottom: 'auto' }} />
-                            <Text style={{ marginTop: 'auto', marginBottom: "auto", width: 130 }}>{item.multi[index].mlData[catIndex[index]].mapData.name}</Text>
-                        </TouchableOpacity>
-                    </View>
-                    :
-                    <ActivityIndicator style={{ marginLeft: windowWidth / 2 - 18, marginTop: 30 }} size="large" color="#246EE9" />
-
-                }
-            </View >
+            <GoBack />
         </View>
     )
 }
