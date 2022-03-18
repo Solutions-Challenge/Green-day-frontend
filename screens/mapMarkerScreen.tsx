@@ -22,6 +22,7 @@ import {
   getUserMarkers,
   getUserTrashCans,
 } from "../api/Backend";
+import { OpenDrawer } from "../components/openDrawer";
 import UserProfile from "../components/UserProfile";
 import getEnvVars from "../environment";
 import ImageContext from "../hooks/imageContext";
@@ -226,20 +227,7 @@ const MapMarkerScreen = () => {
         </View>
       )}
 
-      <TouchableOpacity
-        onPress={() => {
-          navigation.openDrawer();
-        }}
-        style={{ position: "absolute", top: flipPosition, left: 20 }}
-      >
-        <UserProfile
-          uri={profileUri}
-          navigation={navigation}
-          hideCameraEdit={true}
-          width={40}
-          height={40}
-        />
-      </TouchableOpacity>
+      <OpenDrawer showPic={true} />
     </SafeAreaView>
   );
 };

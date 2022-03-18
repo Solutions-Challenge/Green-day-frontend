@@ -17,6 +17,7 @@ const { CLOUDVISIONAPIKEY } = getEnvVars();
 import 'react-native-get-random-values'
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
+import { GoBack } from '../components/goBack';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -51,6 +52,7 @@ export default function CameraScreen({ navigation, route }: any) {
   const [, setUri] = useContext(ImageContext).uri
   const [cameraImage, setCameraImage] = useState("") as any
   const [, setMapPic] = useContext(ImageContext).mapPic
+  const [render, setRender] = useState(false)
 
 
   const isFocused = useIsFocused();
@@ -194,11 +196,14 @@ export default function CameraScreen({ navigation, route }: any) {
       if (status !== 'granted') {
         navigation.navigate('Drawer')
       }
+      else {
+        setRender(true)
+      }
     })();
   }, []);
 
   return (<>
-    {cameraImage !== "" ?
+    {render && cameraImage !== "" ?
       <CameraPreview photo={cameraImage} />
       :
       <PinchGestureHandler
@@ -278,11 +283,7 @@ export default function CameraScreen({ navigation, route }: any) {
       </PinchGestureHandler>
     }
 
-    <View style={{ position: 'absolute', top: flipPosition + 30, left: 10, backgroundColor: 'black', borderRadius: 60 }}>
-      <TouchableOpacity onPress={goBack}>
-        <Ionicons name="ios-arrow-back-sharp" size={30} color="white" />
-      </TouchableOpacity>
-    </View>
+    <GoBack />
 
   </>);
 }

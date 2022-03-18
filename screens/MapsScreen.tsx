@@ -52,8 +52,9 @@ import {
   queryTrashCanLocations,
 } from "../api/Backend";
 import HorizontalScroll from "../components/HorizontalScroll";
-import Animated, { Easing, EasingNode } from "react-native-reanimated";
+import Animated, { EasingNode } from "react-native-reanimated";
 import { osName } from "expo-device";
+import { showMessage } from "react-native-flash-message";
 
 const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = 130;
@@ -134,7 +135,7 @@ export default function App({ navigation, route }: any) {
 
   const canMap = () => {
     return (
-      JSON.stringify(mapData) !== "{}" && JSON.stringify(userData) !== "{}"
+      JSON.stringify(mapData) !== "{}" && JSON.stringify(businessData) !== "{}"
     );
   };
 
@@ -315,27 +316,28 @@ export default function App({ navigation, route }: any) {
       let filteredData = userData.filter((e: any) => {
         return e["recycling_types"][0] == categories[catIndex].icon;
       });
-
-      if (filteredData.length > 0) {
-        setPartialUserData(filteredData);
-      } else {
-        setPartialUserData(userData);
+      if (filteredData.length === 0) {
+        showMessage({
+          message: `No ${categories[catIndex].name} Type was Found`,
+          type: "danger",
+          floating: true,
+          statusBarHeight: flipPosition,
+        });
       }
+      setPartialUserData(filteredData);
     }
   }, [catIndex, userData]);
 
   const fetchUserData = async () => {
     if (latitude !== 0 && longitude !== 0) {
       const d = await queryTrashCanLocations(latitude, longitude);
-      console.log(d)
+      console.log(d);
 
-      let data = []
+      let data = [];
 
       if (d.success.length > 0) {
         data = await getUserTrashCans(d["success"]);
       }
-
-      console.log(data)
 
       const queryBusiness = await queryBusinessData(latitude, longitude);
 
@@ -343,7 +345,6 @@ export default function App({ navigation, route }: any) {
 
       for (let i = 0; i < queryBusiness.success.length; i++) {
         let busData = await getBusinessData(queryBusiness.success[i]);
-        console.log(busData)
         ans.push(busData.success);
       }
 
@@ -351,7 +352,7 @@ export default function App({ navigation, route }: any) {
 
       if (ans.length === 0) {
         setBusinessData([
-          { description: "no Business Data found", lat: -10000 },
+          { description: "No Business Data Found", lat: -10000 },
         ]);
       } else {
         setBusinessData(ans);
@@ -364,18 +365,13 @@ export default function App({ navigation, route }: any) {
       if (canMap() && material != "") {
         for (let i = 0; i < categories.length; i++) {
           if (categories[i].name === material) {
-            if (
-              partialUserData.length !== 0 &&
-              Object.keys(partialUserData).length !== 0
-            ) {
-              setCatIndex(i);
-              setToggle(true);
-              _categoryView.current?.scrollToIndex({
-                index: i,
-                animated: true,
-                viewPosition: 0.5,
-              });
-            }
+            setCatIndex(i);
+            setToggle(true);
+            _categoryView.current?.scrollToIndex({
+              index: i,
+              animated: true,
+              viewPosition: 0.5,
+            });
 
             navigation.setParams({
               material: "",
@@ -607,16 +603,21 @@ export default function App({ navigation, route }: any) {
                     data={item.recyclingTypes.split(",")}
                     numColumns={3}
                   />
-                  {
-                    item.pictureURL !== "None" &&
+                  {item.pictureURL !== "None" && (
                     <Image
-                      style={{ width: CARD_WIDTH-50, height: CARD_HEIGHT, borderRadius: 10, overflow: 'hidden', marginBottom: 10 }}
+                      style={{
+                        width: CARD_WIDTH - 50,
+                        height: CARD_HEIGHT,
+                        borderRadius: 10,
+                        overflow: "hidden",
+                        marginBottom: 10,
+                      }}
                       source={{
                         uri: item.pictureURL,
                       }}
                       resizeMode={"cover"}
                     />
-                  }
+                  )}
                   {item.timeAvailability.split(";").map((e: string) => {
                     const split = e.trim().split(": ");
                     const day = split[0];
@@ -988,7 +989,6 @@ export default function App({ navigation, route }: any) {
                   left: 20,
                   top: Platform.OS === "ios" ? 140 : 120,
                   width: width - 40,
-                  height: 300,
                   backgroundColor: "rgba(0, 0, 0, 0.5)",
                   padding: 10,
                   borderRadius: 10,
@@ -1201,7 +1201,7 @@ export default function App({ navigation, route }: any) {
           )}
           {visible && (
             <>
-              {Object.keys(partialUserData).length !== 0 && !ifHeightIncrease && (
+              {true && (
                 <FlatList
                   ref={_categoryView}
                   horizontal

@@ -1,3 +1,4 @@
+import { useRoute } from '@react-navigation/native';
 import { osName } from 'expo-device';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +12,11 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 
-const ExpandImageScreen = ({ navigation, item }: any) => {
+const ExpandImageScreen = ({ navigation }: any) => {
+    const route = useRoute()
+    let flipPosition: any = osName === "Android" ? StatusBar.currentHeight as number : 30
+
+    const {item}:any = route.params
     const colorScheme = useColorScheme()
 
     let copy = []
@@ -159,7 +164,7 @@ const ExpandImageScreen = ({ navigation, item }: any) => {
 
 
     return (
-        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", height: windowHeight, display: 'flex' }}>
+        <View style={{ backgroundColor: colorScheme === "dark" ? '#181818' : "white", display: 'flex', marginTop: flipPosition}}>
             <FlatList
                 onViewableItemsChanged={onViewableItemsChanged.current}
                 viewabilityConfig={viewConfigRef.current}

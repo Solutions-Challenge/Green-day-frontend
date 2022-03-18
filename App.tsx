@@ -7,6 +7,7 @@ import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import ImageContext from './hooks/imageContext';
 import Loading from './components/Loading';
+import FlashMessage from "react-native-flash-message";
 console.disableYellowBox = true;
 
 
@@ -80,6 +81,7 @@ export default function App() {
           <Loading />
           <Navigation colorScheme={colorScheme} />
           <StatusBar />
+          <FlashMessage position="top" />
         </SafeAreaProvider>
       </ImageContext.Provider>
     );

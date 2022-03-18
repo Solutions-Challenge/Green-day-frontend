@@ -6,6 +6,7 @@ import React, { useContext, useEffect, useState } from "react"
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
 import { currentUser, deleteMe, logout } from '../api/Auth';
 import { deleteUser } from '../api/Backend';
+import { OpenDrawer } from '../components/openDrawer';
 import UserProfile from "../components/UserProfile"
 import ImageContext from '../hooks/imageContext';
 import useColorScheme from '../hooks/useColorScheme';
@@ -58,11 +59,7 @@ const UserProfileScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ position: 'absolute', top: flipPosition + 20, left: 20, backgroundColor: ColorScheme === "dark" ? "black" : "white", borderRadius: 60, elevation: 5 }}>
-                <TouchableOpacity onPress={() => { navigation.openDrawer() }}>
-                    <Ionicons name="ios-arrow-back-sharp" size={30} color={ColorScheme === "dark" ? "white" : "black"} />
-                </TouchableOpacity>
-            </View>
+            <OpenDrawer showPic={false} />
         </View>
     )
 }
