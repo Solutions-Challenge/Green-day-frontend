@@ -3,6 +3,7 @@ import React from "react"
 import { Text, Dimensions, Linking, ImageBackground, View } from "react-native"
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GoBack } from "../components/goBack";
 
 const MapPicScreen = () => {
     const route = useRoute()
@@ -28,6 +29,7 @@ const MapPicScreen = () => {
                 </View>
 
             </ ImageBackground>
+            <GoBack />
         </SafeAreaView>
     )
 }

@@ -143,29 +143,37 @@ const MapMarkerScreen = () => {
                   },
                 ]}
               >
-                <ImageBackground
-                  style={{
-                    width: 120,
-                    height: 140,
-                    overflow: "hidden",
-                    borderTopLeftRadius: 10,
-                    borderBottomLeftRadius: 10,
-                  }}
-                  source={{ uri: e["image_url"] }}
-                >
-                  <Text
+                <TouchableOpacity onPress={()=>{
+                  navigation.navigate("MapPic", {
+                    pic: e["image_url"],
+                    lat: e["latitude"],
+                    lng: e["longitude"],
+                  });
+                }}>
+                  <ImageBackground
                     style={{
-                      color: "white",
-                      top: 120,
-                      left: 25,
-                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      width: 120,
+                      height: 140,
+                      overflow: "hidden",
                       borderTopLeftRadius: 10,
-                      paddingLeft: 10,
+                      borderBottomLeftRadius: 10,
                     }}
+                    source={{ uri: e["image_url"] }}
                   >
-                    {e["date_taken"]}
-                  </Text>
-                </ImageBackground>
+                    <Text
+                      style={{
+                        color: "white",
+                        top: 120,
+                        left: 25,
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        borderTopLeftRadius: 10,
+                        paddingLeft: 10,
+                      }}
+                    >
+                      {e["date_taken"]}
+                    </Text>
+                  </ImageBackground>
+                </TouchableOpacity>
                 <Image
                   style={{
                     width: 120,

@@ -1000,17 +1000,25 @@ export default function App({ navigation, route }: any) {
                   borderRadius: 10,
                 }}
               >
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 30,
-                    width: width - 40,
-                    paddingLeft: 40,
-                    paddingBottom: 10,
-                  }}
-                >
-                  Category
-                </Text>
+                <View style={{flexDirection: "row", justifyContent: 'space-between', width: width-60, marginBottom: 10, paddingHorizontal: 20}}>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 30,
+                    }}
+                  >
+                    Category
+                  </Text>
+                  <TouchableOpacity onPress={()=>{
+                    navigation.navigate("MapPic", {
+                      pic: "data:image/jpg;base64,"+mapPic,
+                      lat: addingMarker.latitude,
+                      lng: addingMarker.longitude,
+                    });
+                  }}>
+                    <Image source={{uri: "data:image/jpg;base64,"+mapPic}} style={{width: 50, height: 50, borderRadius: 10}} />
+                  </TouchableOpacity>
+                </View>
                 <View
                   style={{
                     flexDirection: "row",
