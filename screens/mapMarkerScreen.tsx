@@ -148,6 +148,7 @@ const MapMarkerScreen = () => {
                     pic: e["image_url"],
                     lat: e["latitude"],
                     lng: e["longitude"],
+                    id: e["image_id"]
                   });
                 }}>
                   <ImageBackground

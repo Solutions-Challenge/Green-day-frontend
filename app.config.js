@@ -1,7 +1,7 @@
 export default {
   "name": "RecycleMe",
   "slug": "RecycleMe",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "orientation": "portrait",
   "scheme": "myapp",
   "userInterfaceStyle": "automatic",
@@ -27,7 +27,7 @@ export default {
     }
   },
   "android": {
-    "versionCode": 10,
+    "versionCode": 11,
     "adaptiveIcon": {
       "foregroundImage": "./assets/images/ecopal.png",
       "backgroundColor": "#ffffff"

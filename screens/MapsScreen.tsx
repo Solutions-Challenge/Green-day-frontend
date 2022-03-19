@@ -904,6 +904,7 @@ export default function App({ navigation, route }: any) {
                           pic: pic.success[0],
                           lat: e.latitude,
                           lng: e.longitude,
+                          id: e["image_id"]
                         });
                       }}
                     >
@@ -1014,6 +1015,7 @@ export default function App({ navigation, route }: any) {
                       pic: "data:image/jpg;base64,"+mapPic,
                       lat: addingMarker.latitude,
                       lng: addingMarker.longitude,
+                      id: ""
                     });
                   }}>
                     <Image source={{uri: "data:image/jpg;base64,"+mapPic}} style={{width: 50, height: 50, borderRadius: 10}} />
@@ -1115,7 +1117,7 @@ export default function App({ navigation, route }: any) {
                           setUserData(copy)
                           setPartialUserData(copy)
                           setCatIndex(-1)
-                          
+
                           await addTrashImg({
                             id_token: id_token,
                             latitude: addingMarker.latitude,
