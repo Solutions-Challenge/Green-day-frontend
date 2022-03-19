@@ -1102,17 +1102,6 @@ export default function App({ navigation, route }: any) {
                         } else {
                           setVisible(true);
                           setAddingMarker({});
-                          await addTrashImg({
-                            id_token: id_token,
-                            latitude: addingMarker.latitude,
-                            longitude: addingMarker.longitude,
-                            icon: categories[catIndex].icon,
-                            base64: mapPic,
-                            setMapPic: setMapPic,
-                            date_taken: date,
-                            uuid: uuid,
-                          });
-                          setMapPic("")
                           let copy = userData
                           copy.push({
                             "date_taken": date,
@@ -1126,6 +1115,18 @@ export default function App({ navigation, route }: any) {
                           setUserData(copy)
                           setPartialUserData(copy)
                           setCatIndex(-1)
+                          
+                          await addTrashImg({
+                            id_token: id_token,
+                            latitude: addingMarker.latitude,
+                            longitude: addingMarker.longitude,
+                            icon: categories[catIndex].icon,
+                            base64: mapPic,
+                            setMapPic: setMapPic,
+                            date_taken: date,
+                            uuid: uuid,
+                          });
+                          setMapPic("")
                         }
                       } else {
                         setCatIndex(-1);
