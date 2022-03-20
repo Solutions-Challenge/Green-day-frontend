@@ -407,7 +407,7 @@ export default function HomeScreen({ navigation }: any) {
                 <RefreshControl
                   enabled={true}
                   refreshing={refreshing}
-                  onRefresh={React.useCallback(() => {
+                  onRefresh={useCallback(() => {
                     reload();
                   }, [])}
                 />

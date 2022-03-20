@@ -1,14 +1,14 @@
 export default {
   "name": "RecycleMe",
   "slug": "RecycleMe",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "orientation": "portrait",
   "scheme": "myapp",
   "userInterfaceStyle": "automatic",
   "privacy": "public",
-  "icon": "./assets/images/ecopal.png",
+  "icon": "./assets/images/ecopalOriginal.png",
   "splash": {
-    "image": "./assets/images/ecopal.png",
+    "image": "./assets/images/ecopalOriginal.png",
     "resizeMode": "contain",
     "backgroundColor": "#ffffff"
   },
@@ -27,7 +27,7 @@ export default {
     }
   },
   "android": {
-    "versionCode": 11,
+    "versionCode": 12,
     "adaptiveIcon": {
       "foregroundImage": "./assets/images/ecopal.png",
       "backgroundColor": "#ffffff"

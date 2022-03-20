@@ -20,7 +20,6 @@ const MapPicScreen = () => {
   const [ifUser, setIfUser] = useState("" as any);
 
   const fetchData = async () => {
-    console.log('testing...')
     const data = await getUserMarkers();
     for (let i = 0; i < data.success.length; i++) {
         if (id === data.success[i]) {

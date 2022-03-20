@@ -1238,7 +1238,7 @@ export default function App({ navigation, route }: any) {
           )}
           {visible && (
             <>
-              {true && (
+              {Object.keys(businessData).length !== 0 && !ifHeightIncrease && (
                 <FlatList
                   ref={_categoryView}
                   horizontal

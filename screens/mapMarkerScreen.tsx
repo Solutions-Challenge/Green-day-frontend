@@ -1,7 +1,7 @@
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { osName } from "expo-device";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,10 @@ import {
   Dimensions,
   TouchableOpacity,
   StatusBar,
+  RefreshControl,
+  FlatList,
+  ScrollView,
 } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
 import { ActivityIndicator } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { currentUser } from "../api/Auth";
@@ -23,116 +25,131 @@ import {
   getUserTrashCans,
 } from "../api/Backend";
 import { OpenDrawer } from "../components/openDrawer";
-import UserProfile from "../components/UserProfile";
 import getEnvVars from "../environment";
 import ImageContext from "../hooks/imageContext";
 import useColorScheme from "../hooks/useColorScheme";
 const { STATISMAPSAPIKEY } = getEnvVars();
 
 const MapMarkerScreen = () => {
-  const isFocused = useIsFocused();
   const colorScheme = useColorScheme();
   const [data, setData] = useState([] as any);
   const [load, setLoad] = useState(false);
   const textColor = colorScheme === "dark" ? "white" : "black";
-  const windowWidth = Dimensions.get("window").width;
-  const [profileUri, setProfileUri] = useContext(ImageContext).profileUri;
   let flipPosition: any =
     osName === "Android" ? (StatusBar.currentHeight as number) : 30;
   const navigation: any = useNavigation();
 
+  const keyExtractor = useCallback((item, index) => index.toString(), []);
+
+  const reload = async () => {
+    setLoad(true);
+    let ans = [];
+    const data = await getUserMarkers();
+
+    if ("error" in data) {
+      setLoad(false);
+      setData([]);
+      return;
+    }
+
+    let trashCans = [];
+    if (data.success.length > 0) {
+      trashCans = await getUserTrashCans(data.success);
+    }
+
+    if (trashCans === "error" || trashCans.length === 0) {
+      setLoad(false);
+      setData([]);
+      return;
+    }
+
+    let image_ids = [];
+
+    for (let i = 0; i < trashCans.length; i++) {
+      image_ids.push(trashCans[i]["image_id"]);
+    }
+
+    const images: any = await getTrashCanImage(image_ids);
+
+    for (let i = 0; i < trashCans.length; i++) {
+      const copy = {
+        image_url: images.success[i],
+        ...trashCans[i],
+      };
+      ans.push(copy);
+    }
+    setData(ans);
+    setLoad(false);
+  };
+
   useEffect(() => {
     (async () => {
-      setLoad(true);
-      let ans = [];
-      const data = await getUserMarkers();
-
-      let trashCans = []
-      if(data.success.length > 0) {
-        trashCans = await getUserTrashCans(data.success);
-      }
-
-      console.log(trashCans)
-
-
-      if (trashCans === "error" || trashCans.length === 0) {
-        setLoad(false);
-        setData([]);
-        return;
-      }
-
-      let image_ids = [];
-
-      for (let i = 0; i < trashCans.length; i++) {
-        image_ids.push(trashCans[i]["image_id"]);
-      }
-
-      const images: any = await getTrashCanImage(image_ids);
-
-      for (let i = 0; i < trashCans.length; i++) {
-        const copy = {
-          image_url: images.success[i],
-          ...trashCans[i],
-        };
-        ans.push(copy);
-      }
-      setData(ans);
-      setLoad(false);
+      await reload();
     })();
-  }, [isFocused]);
+  }, []);
+
   return (
     <SafeAreaView>
-      {load ? (
-        <ActivityIndicator
-          style={{
-            width: 120,
-            height: 140,
-            alignContent: "center",
-            alignSelf: "center",
-            justifyContent: "center",
-            marginTop: 120,
-          }}
-          size="large"
-          color="#246EE9"
-        />
-      ) : data.length == 0 ? (
-        <View
-          style={[
-            styles.container,
-            {
-              backgroundColor: colorScheme === "dark" ? "#181818" : "#ffffff",
-              height: 220,
-              flexDirection: "column",
-              marginTop: 120,
-            },
-          ]}
+      {data.length == 0 ? (
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              enabled={!currentUser().isAnonymous}
+              refreshing={!currentUser().isAnonymous ? load:false}
+              onRefresh={() => reload()}
+            />
+          }
         >
           <View
-            style={{
-              flexDirection: "row",
-              marginLeft: "auto",
-              marginRight: "auto",
-              marginTop: 20,
-            }}
+            style={[
+              styles.container,
+              {
+                backgroundColor: colorScheme === "dark" ? "#181818" : "#ffffff",
+                height: 220,
+                flexDirection: "column",
+                marginTop: 120,
+              },
+            ]}
           >
-            <MaterialCommunityIcons
-              name="map-marker-off"
-              size={80}
-              color={textColor}
-            />
+            <View
+              style={{
+                flexDirection: "row",
+                marginLeft: "auto",
+                marginRight: "auto",
+                marginTop: 20,
+              }}
+            >
+              <MaterialCommunityIcons
+                name="map-marker-off"
+                size={80}
+                color={textColor}
+              />
+            </View>
+            <Text
+              style={{ color: textColor, fontSize: 30, textAlign: "center" }}
+            >
+              {currentUser().isAnonymous
+                ? "Sign In to Get Full Features"
+                : "No User Markers were Found"}
+            </Text>
           </View>
-          <Text style={{ color: textColor, fontSize: 30, textAlign: "center" }}>
-            {currentUser().isAnonymous
-              ? "Sign In to Get Full Features"
-              : "No User Markers were Found"}
-          </Text>
-        </View>
+        </ScrollView>
       ) : (
-        <ScrollView style={{ marginTop: 120 }}>
-          {data.map((e: any, index: number) => {
+        <FlatList
+          style={{ marginTop: 70 }}
+          data={data}
+          refreshControl={
+            <RefreshControl
+              enabled={true}
+              refreshing={load}
+              onRefresh={() => reload()}
+            />
+          }
+          keyExtractor={keyExtractor}
+          renderItem={(item: any) => {
+            const e = item.item;
             return (
               <View
-                key={index}
                 style={[
                   styles.container,
                   {
@@ -143,14 +160,16 @@ const MapMarkerScreen = () => {
                   },
                 ]}
               >
-                <TouchableOpacity onPress={()=>{
-                  navigation.navigate("MapPic", {
-                    pic: e["image_url"],
-                    lat: e["latitude"],
-                    lng: e["longitude"],
-                    id: e["image_id"]
-                  });
-                }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("MapPic", {
+                      pic: e["image_url"],
+                      lat: e["latitude"],
+                      lng: e["longitude"],
+                      id: e["image_id"],
+                    });
+                  }}
+                >
                   <ImageBackground
                     style={{
                       width: 120,
@@ -224,8 +243,8 @@ const MapMarkerScreen = () => {
                 </View>
               </View>
             );
-          })}
-        </ScrollView>
+          }}
+        />
       )}
 
       {data.length !== 0 && (
