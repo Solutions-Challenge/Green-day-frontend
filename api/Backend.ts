@@ -1,8 +1,8 @@
 import { currentUser } from "./Auth";
 
-const develop = "http://100.64.60.179:8081";
+const develop = "http://10.0.0.102:8081";
 const prod = "https://multi-service-gkv32wdswa-ue.a.run.app";
-const ifDev = false;
+const ifDev = true;
 
 const ifGuest = () => {
   return currentUser().isAnonymous
@@ -39,7 +39,7 @@ export const deletePic = async (image_id: string, authChange: boolean) => {
       meta_flag: "true",
     } as any;
 
-    const data = await fetch(`${ifDev ? develop : prod}/database/deleteImg`, {
+    await fetch(`${ifDev ? develop : prod}/database/deleteImg`, {
       method: "DELETE",
       body: formBody(details),
       headers: {
@@ -67,6 +67,7 @@ export const predict = async (formBody: any) => {
   });
 
   const MLdata = await MLRequest.json();
+  console.log(MLdata)
   return MLdata;
 };
 
@@ -130,6 +131,8 @@ export const getAllPics = async (authChange: boolean) => {
     });
 
     const json = await data.json();
+
+    console.log(json)
 
     return json;
   }

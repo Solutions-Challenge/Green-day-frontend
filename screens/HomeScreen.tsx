@@ -199,47 +199,54 @@ export default function HomeScreen({ navigation }: any) {
                       });
                     }}
                   >
-                    <ImageBackground
-                      source={{ uri: item.image.uri }}
-                      style={{
-                        height: imageWidth,
-                        width: imageWidth,
-                      }}
-                      imageStyle={{ borderRadius: 10 }}
-                    >
-                      <Svg width={imageWidth} height={imageWidth}>
-                        {item.multi.map((e: any, index: number) => {
-                          return (
-                            <Rect
-                              key={index}
-                              rx={5}
-                              x={
-                                imageWidth *
-                                  e.boundingPoly.normalizedVertices[0].x || 0
-                              }
-                              y={
-                                imageWidth *
-                                  e.boundingPoly.normalizedVertices[0].y || 0
-                              }
-                              width={
-                                (imageWidth *
-                                  e.boundingPoly.normalizedVertices[2].x || 0) -
-                                (imageWidth *
-                                  e.boundingPoly.normalizedVertices[0].x || 0)
-                              }
-                              height={
-                                (imageWidth *
-                                  e.boundingPoly.normalizedVertices[2].y || 0) -
-                                (imageWidth *
-                                  e.boundingPoly.normalizedVertices[0].y || 0)
-                              }
-                              stroke="white"
-                              strokeWidth="1"
-                            />
-                          );
-                        })}
-                      </Svg>
-                    </ImageBackground>
+                    {!("imageObjectDetection" in item.multi[0]) ?
+                      deletePic(item.key, authChange)
+                      :
+                      <ImageBackground
+                        source={{ uri: item.image.uri }}
+                        style={{
+                          height: imageWidth,
+                          width: imageWidth,
+                        }}
+                        imageStyle={{ borderRadius: 10 }}
+                      >
+                        <Svg width={imageWidth} height={imageWidth}>
+                          {item.multi.map((e: any, index: number) => {
+                            
+                            
+                              return (
+                                <Rect
+                                  key={index}
+                                  rx={5}
+                                  x={
+                                    imageWidth *
+                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0
+                                  }
+                                  y={
+                                    imageWidth *
+                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0
+                                  }
+                                  width={
+                                    (imageWidth *
+                                      e.imageObjectDetection.boundingBox.normalizedVertices[1].x || 0) -
+                                    (imageWidth *
+                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0)
+                                  }
+                                  height={
+                                    (imageWidth *
+                                      e.imageObjectDetection.boundingBox.normalizedVertices[1].y || 0) -
+                                    (imageWidth *
+                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0)
+                                  }
+                                  stroke="white"
+                                  strokeWidth="1"
+                                />
+                              );
+                            
+                          })}
+                        </Svg>
+                      </ImageBackground>
+                    }
                   </TouchableOpacity>
                 </View>
               </View>
@@ -287,6 +294,7 @@ export default function HomeScreen({ navigation }: any) {
    * loads up the data from localstorage to state hook called "Data"
    */
   const load = async () => {
+    await AsyncStorage.removeItem("multi")
     let ImageClassify: any = await AsyncStorage.getItem("multi");
     if (ImageClassify === null) {
       await AsyncStorage.setItem("multi", JSON.stringify(data));
