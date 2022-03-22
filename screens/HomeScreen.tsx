@@ -37,6 +37,7 @@ import UserProfile from "../components/UserProfile";
 import { auth, currentUser, logout } from "../api/Auth";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { deletePic, getAllPics, getPic } from "../api/Backend";
+import { useIsFocused } from "@react-navigation/native";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -87,44 +88,18 @@ export default function HomeScreen({ navigation }: any) {
       const ids = await getAllPics(authChange);
       setRefreshing(true);
       setFireStorePics(ids.success);
-      let currentPhotos = [];
       if (fireStorePics !== []) {
-        for (let i = 0; i < data.length; i++) {
-          // @ts-ignore
-          currentPhotos.push(data[i].key);
-        }
 
-        const cloudPics = new Set(fireStorePics);
-        let localPics = new Set(currentPhotos);
-
-        let _difference = new Set(cloudPics);
-        for (let elem of localPics) {
-          // @ts-ignore
-          _difference.delete(elem);
-        }
-
-        // finds if new item in firestore and adds it to localstorage
         if (authChange) {
           let ans: any[] = [];
-          let check = false;
-          _difference.forEach(async (e) => {
-            await getPic(e, authChange).then((res) => {
-              if (res !== "error") {
-                ans.push(res);
-                currentPhotos.push(res);
-                if (ans.length === _difference.size) {
-                  ans.push(...data);
-                  check = true;
-                }
-              }
+          for (let i = 0; i < fireStorePics.length; i++) {
+            await getPic(fireStorePics[i], authChange).then((res) => {
+              ans.push(res);
             });
-
-            if (check) {
-              await AsyncStorage.setItem("multi", JSON.stringify(ans));
-              // @ts-ignore
-              setData(ans);
-            }
-          });
+          }
+          await AsyncStorage.setItem("multi", JSON.stringify(ans));
+          // @ts-ignore
+          setData(ans);
         }
 
         setRefreshing(false);
@@ -133,7 +108,7 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   useEffect(() => {
-    reload();
+      reload();
   }, [authChange]);
 
   /**
@@ -199,9 +174,9 @@ export default function HomeScreen({ navigation }: any) {
                       });
                     }}
                   >
-                    {!("imageObjectDetection" in item.multi[0]) ?
+                    {!("imageObjectDetection" in item.multi[0]) ? (
                       deletePic(item.key, authChange)
-                      :
+                    ) : (
                       <ImageBackground
                         source={{ uri: item.image.uri }}
                         style={{
@@ -212,41 +187,44 @@ export default function HomeScreen({ navigation }: any) {
                       >
                         <Svg width={imageWidth} height={imageWidth}>
                           {item.multi.map((e: any, index: number) => {
-                            
-                            
-                              return (
-                                <Rect
-                                  key={index}
-                                  rx={5}
-                                  x={
-                                    imageWidth *
-                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0
-                                  }
-                                  y={
-                                    imageWidth *
-                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0
-                                  }
-                                  width={
-                                    (imageWidth *
-                                      e.imageObjectDetection.boundingBox.normalizedVertices[1].x || 0) -
-                                    (imageWidth *
-                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0)
-                                  }
-                                  height={
-                                    (imageWidth *
-                                      e.imageObjectDetection.boundingBox.normalizedVertices[1].y || 0) -
-                                    (imageWidth *
-                                      e.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0)
-                                  }
-                                  stroke="white"
-                                  strokeWidth="1"
-                                />
-                              );
-                            
+                            return (
+                              <Rect
+                                key={index}
+                                rx={5}
+                                x={
+                                  imageWidth *
+                                    e.imageObjectDetection.boundingBox
+                                      .normalizedVertices[0].x || 0
+                                }
+                                y={
+                                  imageWidth *
+                                    e.imageObjectDetection.boundingBox
+                                      .normalizedVertices[0].y || 0
+                                }
+                                width={
+                                  (imageWidth *
+                                    e.imageObjectDetection.boundingBox
+                                      .normalizedVertices[1].x || 0) -
+                                  (imageWidth *
+                                    e.imageObjectDetection.boundingBox
+                                      .normalizedVertices[0].x || 0)
+                                }
+                                height={
+                                  (imageWidth *
+                                    e.imageObjectDetection.boundingBox
+                                      .normalizedVertices[1].y || 0) -
+                                  (imageWidth *
+                                    e.imageObjectDetection.boundingBox
+                                      .normalizedVertices[0].y || 0)
+                                }
+                                stroke="white"
+                                strokeWidth="1"
+                              />
+                            );
                           })}
                         </Svg>
                       </ImageBackground>
-                    }
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -294,7 +272,7 @@ export default function HomeScreen({ navigation }: any) {
    * loads up the data from localstorage to state hook called "Data"
    */
   const load = async () => {
-    await AsyncStorage.removeItem("multi")
+    await AsyncStorage.removeItem("multi");
     let ImageClassify: any = await AsyncStorage.getItem("multi");
     if (ImageClassify === null) {
       await AsyncStorage.setItem("multi", JSON.stringify(data));

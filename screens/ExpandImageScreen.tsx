@@ -28,7 +28,7 @@ const ExpandImageScreen = ({ navigation }: any) => {
   const { item }: any = route.params;
 
   const colorScheme = useColorScheme();
-  const [ifRender, setIfRender] = useState(false)
+  const [ifRender, setIfRender] = useState(false);
 
   const [index, setIndex] = useState(0);
 
@@ -54,6 +54,16 @@ const ExpandImageScreen = ({ navigation }: any) => {
       let object;
       for (let i = 0; i < item.multi.length; i++) {
         object = item.multi[i];
+
+        object.displayName = object.displayName.replace(/_/g, " ");
+
+        const words = object.displayName.split(" ");
+
+        for (let i = 0; i < words.length; i++) {
+          words[i] = words[i][0].toUpperCase() + words[i].substr(1);
+        }
+
+        object.displayName = words.join(" ");
 
         const croppedImage = await manipulateAsync(
           item.image.uri,
@@ -98,7 +108,7 @@ const ExpandImageScreen = ({ navigation }: any) => {
         );
         object.croppedImage = croppedImage.uri;
       }
-      setIfRender(true)
+      setIfRender(true);
     })();
   }, []);
 
@@ -128,7 +138,7 @@ const ExpandImageScreen = ({ navigation }: any) => {
           display: "flex",
           marginTop: flipPosition + 100,
           paddingBottom: 20,
-          borderRadius: 10
+          borderRadius: 10,
         }}
       >
         <FlatList
@@ -182,45 +192,65 @@ const ExpandImageScreen = ({ navigation }: any) => {
             );
           })}
         </View>
-        <View style={{alignItems: 'center', marginVertical: 40}}>
+        <View style={{ alignItems: "center", marginVertical: 40 }}>
           <View>
-              <TouchableOpacity
+            <TouchableOpacity
+              style={{
+                height: 40,
+                paddingHorizontal: 20,
+                borderRadius: 20,
+                backgroundColor: "white",
+                flexDirection: "row",
+              }}
+              onPress={() => {
+                goBack(item.multi[index].ml.name);
+              }}
+            >
+              <Image
                 style={{
-                    height: 40, 
-                    paddingHorizontal: 20,
-                    borderRadius: 20, 
-                    backgroundColor: 'white', 
-                    flexDirection: 'row'}}
-                onPress={()=>{
-                    goBack(item.multi[index].ml.name)
+                  width: 30,
+                  height: 30,
+                  marginRight: 5,
+                  marginTop: "auto",
+                  marginBottom: "auto",
+                }}
+                source={{
+                  uri: item.multi[index].ml.icon,
+                }}
+              />
+              <Text
+                style={{
+                  marginTop: "auto",
+                  marginBottom: "auto",
                 }}
               >
-                  <Image
-                    style={{
-                        width: 30, 
-                        height: 30,
-                        marginRight: 5,
-                        marginTop: 'auto',
-                        marginBottom: 'auto'
-                    }}
-                    source={{
-                        uri: item.multi[index].ml.icon,
-                    }} 
-                  />
-                  <Text style={{
-                      marginTop: 'auto',
-                      marginBottom: 'auto'
-                  }}>{item.multi[index].ml.name}</Text>
-              </TouchableOpacity>
+                {item.multi[index].ml.name}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-        {
-            "info" in item.multi[index].ml &&
-            <View style={{borderColor: "#246EE9", borderWidth: 2, borderRadius: 10, marginHorizontal: 10, padding: 20, flexDirection: 'column'}}>
-                <AntDesign name="infocirlceo" size={24} color="#245EE9" style={{marginBottom: 10}} />
-                <Text style={{color: colorScheme === "dark" ? "white":"black"}}>{item.multi[index].ml.info}</Text>
-            </View>
-        }
+        {"info" in item.multi[index].ml && (
+          <View
+            style={{
+              borderColor: "#246EE9",
+              borderWidth: 2,
+              borderRadius: 10,
+              marginHorizontal: 10,
+              padding: 20,
+              flexDirection: "column",
+            }}
+          >
+            <AntDesign
+              name="infocirlceo"
+              size={24}
+              color="#245EE9"
+              style={{ marginBottom: 10 }}
+            />
+            <Text style={{ color: colorScheme === "dark" ? "white" : "black" }}>
+              {item.multi[index].ml.info}
+            </Text>
+          </View>
+        )}
       </View>
       <GoBack />
     </View>
