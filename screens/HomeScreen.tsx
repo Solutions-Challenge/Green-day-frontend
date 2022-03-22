@@ -272,7 +272,6 @@ export default function HomeScreen({ navigation }: any) {
    * loads up the data from localstorage to state hook called "Data"
    */
   const load = async () => {
-    await AsyncStorage.removeItem("multi");
     let ImageClassify: any = await AsyncStorage.getItem("multi");
     if (ImageClassify === null) {
       await AsyncStorage.setItem("multi", JSON.stringify(data));

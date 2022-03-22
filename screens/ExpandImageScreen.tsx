@@ -1,7 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import { osName } from "expo-device";
-import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -12,8 +11,12 @@ import {
   Animated,
   StyleSheet,
   ListRenderItem,
+  ImageBackground,
+  TouchableOpacity,
+  ScrollView,
 } from "react-native";
-import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
+import { FlatList } from "react-native-gesture-handler";
+import Svg, { Rect } from "react-native-svg";
 import { GoBack } from "../components/goBack";
 import useColorScheme from "../hooks/useColorScheme";
 
@@ -26,6 +29,9 @@ const ExpandImageScreen = ({ navigation }: any) => {
     osName === "Android" ? (StatusBar.currentHeight as number) : 30;
 
   const { item }: any = route.params;
+
+  const uri = item.image.uri;
+  const multi = item.multi;
 
   const colorScheme = useColorScheme();
   const [ifRender, setIfRender] = useState(false);
@@ -42,6 +48,8 @@ const ExpandImageScreen = ({ navigation }: any) => {
 
   const scrollX = new Animated.Value(0);
   let position = Animated.divide(scrollX, windowWidth);
+
+  const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
   const goBack = (name: string) => {
     navigation.navigate("Maps", {
@@ -64,49 +72,6 @@ const ExpandImageScreen = ({ navigation }: any) => {
         }
 
         object.displayName = words.join(" ");
-
-        const croppedImage = await manipulateAsync(
-          item.image.uri,
-          [
-            {
-              resize: {
-                width: windowWidth,
-                height: windowWidth,
-              },
-            },
-            {
-              crop: {
-                originX:
-                  windowWidth *
-                    object.imageObjectDetection.boundingBox
-                      .normalizedVertices[0].x || 0,
-                originY:
-                  windowWidth *
-                    object.imageObjectDetection.boundingBox
-                      .normalizedVertices[0].y || 0,
-                width:
-                  (windowWidth *
-                    object.imageObjectDetection.boundingBox
-                      .normalizedVertices[1].x || 0) -
-                  (windowWidth *
-                    object.imageObjectDetection.boundingBox
-                      .normalizedVertices[0].x || 0),
-                height:
-                  (windowWidth *
-                    object.imageObjectDetection.boundingBox
-                      .normalizedVertices[1].y || 0) -
-                  (windowWidth *
-                    object.imageObjectDetection.boundingBox
-                      .normalizedVertices[0].y || 0),
-              },
-            },
-          ],
-          {
-            format: "jpeg" as SaveFormat,
-            compress: 1,
-          }
-        );
-        object.croppedImage = croppedImage.uri;
       }
       setIfRender(true);
     })();
@@ -118,20 +83,82 @@ const ExpandImageScreen = ({ navigation }: any) => {
     ({ item }) => {
       return (
         <View style={styles.cardView}>
-          {"croppedImage" in item && (
-            <Image style={styles.image} source={{ uri: item.croppedImage }} />
-          )}
           <View style={styles.textView}>
             <Text style={styles.itemTitle}>{item.displayName}</Text>
           </View>
+          <ImageBackground
+            source={{ uri: uri }}
+            style={{
+              height: imageWidth,
+              width: imageWidth,
+              alignSelf: "center",
+            }}
+            imageStyle={{ borderRadius: 10 }}
+          >
+            <Svg width={imageWidth} height={imageWidth}>
+              <Rect
+                key={index}
+                rx={5}
+                fill={"rgba(255, 255, 255, .4)"}
+                x={imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0}
+                y={imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0}
+                width={
+                  (imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[1].x || 0) -
+                  (imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0)
+                }
+                height={
+                  (imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[1].y || 0) -
+                  (imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0)
+                }
+                stroke="white"
+                strokeWidth={1}
+              >
+
+              </Rect>
+
+            </Svg>
+            {/* <Svg width={imageWidth} height={imageWidth}>
+              <Rect
+                key={index}
+                rx={5}
+                fill={"rgba(255, 255, 255, .4)"}
+                x={
+                  imageWidth *
+                    item.imageObjectDetection.boundingBox.normalizedVertices[0]
+                      .x || 0
+                }
+                y={
+                  imageWidth *
+                    item.imageObjectDetection.boundingBox.normalizedVertices[0]
+                      .y || 0
+                }
+                width={
+                  (imageWidth *
+                    item.imageObjectDetection.boundingBox.normalizedVertices[1].x || 0) -
+                  (imageWidth *
+                    item.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0)
+                }
+                height={
+                  (imageWidth *
+                    item.imageObjectDetection.boundingBox.normalizedVertices[1].y || 0) -
+                  (imageWidth *
+                    item.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0)
+                }
+                stroke="white"
+                strokeWidth="1"
+              />
+              );
+            </Svg> */}
+          </ImageBackground>
         </View>
       );
     },
     [ifRender]
   );
 
+  const imageWidth = windowWidth - 20;
   return (
-    <View>
+    <ScrollView>
       <View
         style={{
           backgroundColor: colorScheme === "dark" ? "#181818" : "white",
@@ -160,14 +187,7 @@ const ExpandImageScreen = ({ navigation }: any) => {
           )}
         />
 
-        <View
-          style={{
-            position: "absolute",
-            top: windowHeight / 4 + 20,
-            alignSelf: "center",
-            flexDirection: "row",
-          }}
-        >
+        <View style={{ flexDirection: "row", alignSelf: "center" }}>
           {item.multi.map((_: any, i: any) => {
             let opacity = position.interpolate({
               inputRange: [i - 1, i, i + 1],
@@ -253,7 +273,7 @@ const ExpandImageScreen = ({ navigation }: any) => {
         )}
       </View>
       <GoBack />
-    </View>
+    </ScrollView>
   );
 };
 
@@ -284,9 +304,6 @@ const styles = StyleSheet.create({
   },
   cardView: {
     flex: 1,
-    width: windowWidth - 20,
-    height: windowHeight / 4,
-    backgroundColor: "white",
     margin: 10,
     borderRadius: 10,
     shadowOffset: { width: 0.5, height: 0.5 },
