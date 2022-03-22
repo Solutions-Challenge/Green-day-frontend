@@ -2,7 +2,7 @@ import { currentUser } from "./Auth";
 
 const develop = "http://10.0.0.102:8081";
 const prod = "https://multi-service-gkv32wdswa-ue.a.run.app";
-const ifDev = true;
+const ifDev = false;
 
 const ifGuest = () => {
   return currentUser().isAnonymous
@@ -67,7 +67,6 @@ export const predict = async (formBody: any) => {
   });
 
   const MLdata = await MLRequest.json();
-  console.log(MLdata)
   return MLdata;
 };
 
@@ -131,8 +130,6 @@ export const getAllPics = async (authChange: boolean) => {
     });
 
     const json = await data.json();
-
-    console.log(json)
 
     return json;
   }
