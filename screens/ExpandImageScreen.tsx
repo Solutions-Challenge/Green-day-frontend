@@ -49,12 +49,17 @@ const ExpandImageScreen = ({ navigation }: any) => {
   const scrollX = new Animated.Value(0);
   let position = Animated.divide(scrollX, windowWidth);
 
-  const AnimatedRect = Animated.createAnimatedComponent(Rect);
-
   const goBack = (name: string) => {
     navigation.navigate("Maps", {
       material: name,
     });
+  };
+
+  const darkenRGBA = (str: string) => {
+    let temp = str.split(",")
+    temp[3] = "1)"
+    let ans = temp.join(",")
+    return ans
   };
 
   useEffect(() => {
@@ -99,7 +104,7 @@ const ExpandImageScreen = ({ navigation }: any) => {
               <Rect
                 key={index}
                 rx={5}
-                fill={"rgba(255, 255, 255, .4)"}
+                fill={item.ml.color || "rgba(255, 255, 255, .2)"}
                 x={imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0}
                 y={imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0}
                 width={
@@ -110,45 +115,13 @@ const ExpandImageScreen = ({ navigation }: any) => {
                   (imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[1].y || 0) -
                   (imageWidth * item.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0)
                 }
-                stroke="white"
+                stroke={darkenRGBA(item.ml.color || "rgba(255, 255, 255, .2)")}
                 strokeWidth={1}
               >
 
               </Rect>
 
             </Svg>
-            {/* <Svg width={imageWidth} height={imageWidth}>
-              <Rect
-                key={index}
-                rx={5}
-                fill={"rgba(255, 255, 255, .4)"}
-                x={
-                  imageWidth *
-                    item.imageObjectDetection.boundingBox.normalizedVertices[0]
-                      .x || 0
-                }
-                y={
-                  imageWidth *
-                    item.imageObjectDetection.boundingBox.normalizedVertices[0]
-                      .y || 0
-                }
-                width={
-                  (imageWidth *
-                    item.imageObjectDetection.boundingBox.normalizedVertices[1].x || 0) -
-                  (imageWidth *
-                    item.imageObjectDetection.boundingBox.normalizedVertices[0].x || 0)
-                }
-                height={
-                  (imageWidth *
-                    item.imageObjectDetection.boundingBox.normalizedVertices[1].y || 0) -
-                  (imageWidth *
-                    item.imageObjectDetection.boundingBox.normalizedVertices[0].y || 0)
-                }
-                stroke="white"
-                strokeWidth="1"
-              />
-              );
-            </Svg> */}
           </ImageBackground>
         </View>
       );

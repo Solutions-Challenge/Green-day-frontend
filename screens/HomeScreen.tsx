@@ -107,10 +107,6 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  useEffect(() => {
-      reload();
-  }, [authChange]);
-
   /**
    * Purpose:
    *
@@ -137,6 +133,13 @@ export default function HomeScreen({ navigation }: any) {
     })();
   }, []);
 
+  const darkenRGBA = (str: string) => {
+    let temp = str.split(",")
+    temp[3] = "1)"
+    let ans = temp.join(",")
+    return ans
+  };
+
   /**
    * Purpose:
    *
@@ -145,6 +148,14 @@ export default function HomeScreen({ navigation }: any) {
   const renderItem = useCallback(
     (data: any) => {
       const item = data.item;
+      console.log(item)
+      if (item == "error") {
+        setData([])
+        AsyncStorage.removeItem("multi")
+      }
+      if (item == "error" || !("imageObjectDetection" in item.multi[0])) {
+        deletePic(item.key, authChange)
+      }
       return (
         <>
           <View style={[styles.containerTitle2]}>
@@ -174,9 +185,7 @@ export default function HomeScreen({ navigation }: any) {
                       });
                     }}
                   >
-                    {!("imageObjectDetection" in item.multi[0]) ? (
-                      deletePic(item.key, authChange)
-                    ) : (
+                    {!(item == "error" || !("imageObjectDetection" in item.multi[0])) && (
                       <ImageBackground
                         source={{ uri: item.image.uri }}
                         style={{
@@ -191,6 +200,7 @@ export default function HomeScreen({ navigation }: any) {
                               <Rect
                                 key={index}
                                 rx={5}
+                                fill={e.ml.color || "rgba(255, 255, 255, .2)"}
                                 x={
                                   imageWidth *
                                     e.imageObjectDetection.boundingBox
@@ -217,7 +227,7 @@ export default function HomeScreen({ navigation }: any) {
                                     e.imageObjectDetection.boundingBox
                                       .normalizedVertices[0].y || 0)
                                 }
-                                stroke="white"
+                                stroke={darkenRGBA(e.ml.color || "rgba(255, 255, 255, .2)")}
                                 strokeWidth="1"
                               />
                             );
