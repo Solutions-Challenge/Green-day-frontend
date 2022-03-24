@@ -269,6 +269,7 @@ const HomeTabs = ({ navigation }: any) => {
   return (
     <>
       <BottomTab.Navigator
+        safeAreaInsets={{bottom: 0}}
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme].tint,
           tabBarShowLabel: false,
@@ -289,7 +290,7 @@ const HomeTabs = ({ navigation }: any) => {
           options={() => ({
             title: "Start",
             tabBarIcon: ({ focused }) => (
-              <View style={{ marginTop: Platform.OS === "ios" ? 12 : 0 }}>
+              <View>
                 <Ionicons
                   name="home-outline"
                   size={30}
@@ -315,7 +316,7 @@ const HomeTabs = ({ navigation }: any) => {
             title: "Pic",
             tabBarIcon: () => {
               return (
-                <View style={{ marginTop: Platform.OS === "ios" ? 12 : 0 }}>
+                <View>
                   <TouchableOpacity
                     onPress={() => {
                       navigation.navigate("Pic");
@@ -363,7 +364,7 @@ const HomeTabs = ({ navigation }: any) => {
             title: "Maps",
             tabBarIcon: ({ focused }) => {
               return (
-                <View style={{ marginTop: Platform.OS === "ios" ? 12 : 0 }}>
+                <View>
                   <MaterialCommunityIcons
                     name="google-maps"
                     size={30}

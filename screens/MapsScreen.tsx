@@ -8,6 +8,7 @@ import {
   Linking,
   FlatList,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { TouchableOpacity as Touch } from "react-native";
@@ -401,7 +402,7 @@ export default function App({ navigation, route }: any) {
           type: "danger",
           floating: true,
           statusBarHeight: flipPosition,
-          duration: 3000
+          duration: 3000,
         });
       }
     })();
@@ -545,7 +546,7 @@ export default function App({ navigation, route }: any) {
             style={{
               backgroundColor: "white",
               borderRadius: 17,
-              width: 128,
+              width: 120,
               height: 34,
               marginLeft: "auto",
             }}
@@ -572,7 +573,7 @@ export default function App({ navigation, route }: any) {
     ({ item }: any) => {
       const heightInterpolate = cardHeight.interpolate({
         inputRange: [1, 2],
-        outputRange: [CARD_HEIGHT, height - flipPosition - CARD_HEIGHT],
+        outputRange: [CARD_HEIGHT, CARD_HEIGHT + 450],
       });
       if (item.lat !== -10000) {
         return (
@@ -587,7 +588,7 @@ export default function App({ navigation, route }: any) {
             ]}
           >
             {ifHeightIncrease ? (
-              <View style={styles.textContent}>
+              <ScrollView style={styles.textContent}>
                 <View
                   style={{
                     flexDirection: "row",
@@ -614,7 +615,7 @@ export default function App({ navigation, route }: any) {
                     />
                   </Touch>
                 </View>
-                <View>
+                <View style={{marginBottom: 30}}>
                   <HorizontalScroll
                     data={item.recyclingTypes.split(",")}
                     numColumns={3}
@@ -663,7 +664,7 @@ export default function App({ navigation, route }: any) {
                     );
                   })}
                 </View>
-              </View>
+              </ScrollView>
             ) : (
               <View style={styles.textContent}>
                 <View
@@ -684,18 +685,19 @@ export default function App({ navigation, route }: any) {
                   </View>
                 </View>
                 <View>
-                  <View style={{ flexDirection: "row" }}>
+                  <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
                       style={[
                         styles.textSign,
-                        { color: colorScheme === "dark" ? "white" : "black" },
+                        { color: colorScheme === "dark" ? "white" : "black", width: CARD_WIDTH - 85 },
                       ]}
                     >
                       {`${item.recyclingTypes}`}
                     </Text>
                     <Touch
+                      style={{marginRight: 10}}
                       onPress={() => {
                         increase_height(EasingNode.ease);
                       }}
@@ -774,8 +776,20 @@ export default function App({ navigation, route }: any) {
                 />
               </View>
 
-              <TouchableOpacity
-                style={[styles.button, { backgroundColor: "#246EE9" }]}
+              <View
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 17,
+                  width: 34,
+                  height: 34
+                }}
+              >
+                <Touch
+                style={{
+                  alignSelf: "center",
+                  marginTop: "auto",
+                  marginBottom: "auto",
+                }}
                 onPress={() => {
                   Linking.openURL(
                     `https://maps.${
@@ -784,8 +798,9 @@ export default function App({ navigation, route }: any) {
                   );
                 }}
               >
-                <Text style={{ color: "white" }}>Go Here</Text>
-              </TouchableOpacity>
+                <Entypo name="direction" size={20} color="black" />
+              </Touch>
+              </View>
             </View>
             <View style={{ marginTop: 10 }}>
               <Text
@@ -904,7 +919,7 @@ export default function App({ navigation, route }: any) {
                           pic: pic.success[0],
                           lat: e.latitude,
                           lng: e.longitude,
-                          id: e["image_id"]
+                          id: e["image_id"],
                         });
                       }}
                     >
@@ -1001,7 +1016,15 @@ export default function App({ navigation, route }: any) {
                   borderRadius: 10,
                 }}
               >
-                <View style={{flexDirection: "row", justifyContent: 'space-between', width: width-60, marginBottom: 10, paddingHorizontal: 20}}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    width: width - 60,
+                    marginBottom: 10,
+                    paddingHorizontal: 20,
+                  }}
+                >
                   <Text
                     style={{
                       color: "white",
@@ -1010,15 +1033,20 @@ export default function App({ navigation, route }: any) {
                   >
                     Category
                   </Text>
-                  <TouchableOpacity onPress={()=>{
-                    navigation.navigate("MapPic", {
-                      pic: "data:image/jpg;base64,"+mapPic,
-                      lat: addingMarker.latitude,
-                      lng: addingMarker.longitude,
-                      id: ""
-                    });
-                  }}>
-                    <Image source={{uri: "data:image/jpg;base64,"+mapPic}} style={{width: 50, height: 50, borderRadius: 10}} />
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("MapPic", {
+                        pic: "data:image/jpg;base64," + mapPic,
+                        lat: addingMarker.latitude,
+                        lng: addingMarker.longitude,
+                        id: "",
+                      });
+                    }}
+                  >
+                    <Image
+                      source={{ uri: "data:image/jpg;base64," + mapPic }}
+                      style={{ width: 50, height: 50, borderRadius: 10 }}
+                    />
                   </TouchableOpacity>
                 </View>
                 <View
@@ -1092,9 +1120,13 @@ export default function App({ navigation, route }: any) {
                       if (catIndex !== -1) {
                         var today = new Date();
                         var date =
-                          today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+                          today.getFullYear() +
+                          "-" +
+                          (today.getMonth() + 1) +
+                          "-" +
+                          today.getDate();
                         const id_token = await currentUser().getIdToken();
-                        const uuid = uuidv4()
+                        const uuid = uuidv4();
                         setVisible(true);
                         //@ts-ignore
                         if (mapPic === "") {
@@ -1104,19 +1136,17 @@ export default function App({ navigation, route }: any) {
                         } else {
                           setVisible(true);
                           setAddingMarker({});
-                          let copy = userData
+                          let copy = userData;
                           copy.push({
-                            "date_taken": date,
-                            "image_id": uuid,
-                            "latitude": addingMarker.latitude,
-                            "longitude": addingMarker.longitude,
-                            "recycling_types": [
-                              categories[catIndex].icon
-                            ]
-                          })
-                          setUserData(copy)
-                          setPartialUserData(copy)
-                          setCatIndex(-1)
+                            date_taken: date,
+                            image_id: uuid,
+                            latitude: addingMarker.latitude,
+                            longitude: addingMarker.longitude,
+                            recycling_types: [categories[catIndex].icon],
+                          });
+                          setUserData(copy);
+                          setPartialUserData(copy);
+                          setCatIndex(-1);
 
                           await addTrashImg({
                             id_token: id_token,
@@ -1128,7 +1158,7 @@ export default function App({ navigation, route }: any) {
                             date_taken: date,
                             uuid: uuid,
                           });
-                          setMapPic("")
+                          setMapPic("");
                         }
                       } else {
                         setCatIndex(-1);

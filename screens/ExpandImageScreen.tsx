@@ -88,9 +88,6 @@ const ExpandImageScreen = ({ navigation }: any) => {
     ({ item }) => {
       return (
         <View style={styles.cardView}>
-          <View style={styles.textView}>
-            <Text style={styles.itemTitle}>{item.displayName}</Text>
-          </View>
           <ImageBackground
             source={{ uri: uri }}
             style={{
@@ -100,6 +97,9 @@ const ExpandImageScreen = ({ navigation }: any) => {
             }}
             imageStyle={{ borderRadius: 10 }}
           >
+            <View style={styles.textView}>
+              <Text style={styles.itemTitle}>{item.displayName}</Text>
+            </View>
             <Svg width={imageWidth} height={imageWidth}>
               <Rect
                 key={index}

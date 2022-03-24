@@ -49,6 +49,8 @@ export const handleGoogleSignIn = async () => {
       "15765189134-u5vlkk5ncmkl0lceg3pkd5t85rur7026.apps.googleusercontent.com",
     androidStandaloneAppClientId: 
       "15765189134-ims9odbajn23r1a4rspn2bfrms830jr4.apps.googleusercontent.com",
+    iosStandaloneAppClientId:
+      "15765189134-95danbaij05prgd321aoscb6igfpj8jt.apps.googleusercontent.com",
     scopes: ["profile", "email"],
   };
 

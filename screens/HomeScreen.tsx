@@ -148,7 +148,6 @@ export default function HomeScreen({ navigation }: any) {
   const renderItem = useCallback(
     (data: any) => {
       const item = data.item;
-      console.log(item)
       if (item == "error") {
         setData([])
         AsyncStorage.removeItem("multi")
