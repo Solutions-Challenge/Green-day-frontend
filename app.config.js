@@ -1,7 +1,7 @@
 export default {
   name: "RecycleMe",
   slug: "RecycleMe",
-  version: "0.0.17",
+  version: "0.0.20",
   orientation: "portrait",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
@@ -22,6 +22,7 @@ export default {
     icon: "./assets/images/ecopalOriginal.png",
     supportsTablet: true,
     bundleIdentifier: "com.aankur01.greendayfrontend",
+    usesAppleSignIn: true,
     infoPlist: {
       CFBundleAllowMixedLocalizations: true,
       NSCameraUsageDescription:
@@ -38,7 +39,7 @@ export default {
     associatedDomains: [],
   },
   android: {
-    versionCode: 17,
+    versionCode: 20,
     adaptiveIcon: {
       foregroundImage: "./assets/images/ecopal.png",
       backgroundColor: "#ffffff",

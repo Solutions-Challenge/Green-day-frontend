@@ -60,15 +60,12 @@ export const handleAppleSignIn = async () => {
 
     const creds = AppleProvider.credential({idToken: credential.identityToken, rawNonce: nonce})
     // host.exp.Exponent
+    // com.aankur01.greendayfrontend
     const data = await signInWithCredential(auth, creds)
+    console.log(data)
     return data;
   } catch (e: any) {
-    return e;
-    if (e.code === "ERR_CANCELED") {
-      // handle that the user canceled the sign-in flow
-    } else {
-      // handle other errors
-    }
+    return "error";
   }
 };
 

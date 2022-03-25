@@ -92,7 +92,6 @@ const AuthButton = ({ uri, text, funct, navigation }: any) => {
 
 const AuthButtons = ({ navigation, remember }: any) => {
   const [IsAppleLoginAvailabe, setIsAppleLoginAvailable] = useState(false);
-  const [test, setTest] = useState("")
 
   useEffect(() => {
     AppleAuthentication.isAvailableAsync().then(() =>
@@ -123,11 +122,24 @@ const AuthButtons = ({ navigation, remember }: any) => {
             }}
             onPress={async () => {
               const data = await handleAppleSignIn();
-              setTest(JSON.stringify(data))
+
+              if (data !== "error") {
+                await AsyncStorage.setItem(
+                  "remember",
+                  JSON.stringify({ remember: true })
+                );
+
+                await Register();
+
+                navigation.navigate("Drawer");
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "Drawer" }],
+                });
+              }
             }}
           />
         )}
-        <Text>{test}</Text>
         <AuthButton
           uri={"https://i.imgur.com/Fq9Jab5.jpg"}
           text={"Sign in with Google"}

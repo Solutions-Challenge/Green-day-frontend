@@ -86,10 +86,10 @@ export default function HomeScreen({ navigation }: any) {
   const reload = async () => {
     if (authChange) {
       const ids = await getAllPics(authChange);
+      console.log(ids)
       setRefreshing(true);
       setFireStorePics(ids.success);
-      if (fireStorePics !== []) {
-
+      if (fireStorePics !== [] && "success" in ids) {
         if (authChange) {
           let ans: any[] = [];
           for (let i = 0; i < fireStorePics.length; i++) {
@@ -101,9 +101,8 @@ export default function HomeScreen({ navigation }: any) {
           // @ts-ignore
           setData(ans);
         }
-
-        setRefreshing(false);
       }
+      setRefreshing(false)
     }
   };
 
@@ -121,9 +120,16 @@ export default function HomeScreen({ navigation }: any) {
       await onAuthStateChanged(auth, async (user) => {
         const d = await user?.getIdToken();
         setAuthChange(true);
+        console.log(user)
         if (user !== null && remember.remember) {
-          setProfileUri(user.photoURL || "Guest");
-          setFullName(user.displayName || "Guest");
+          if (user.isAnonymous) {
+            setProfileUri("Guest")
+            setFullName("Guest")
+          }
+          else {
+            setProfileUri(String(user.photoURL));
+            setFullName(String(user.displayName || ""));
+          }
         } else {
           setProfileUri("Guest");
           setFullName("");

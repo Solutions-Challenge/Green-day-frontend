@@ -15,7 +15,7 @@ const formBody = (details: any) => {
     let encodedVal = encodeURIComponent(details[props]);
     formBody.push(encodedKey + "=" + encodedVal);
   }
-  formBody = formBody.join("&") as any;
+  formBody = formBody.join("&");
 
   return formBody;
 };
