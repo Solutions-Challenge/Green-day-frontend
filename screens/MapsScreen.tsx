@@ -137,7 +137,7 @@ export default function App({ navigation, route }: any) {
 
   const canMap = () => {
     return (
-      JSON.stringify(mapData) !== "{}" && JSON.stringify(businessData) !== "{}"
+      JSON.stringify(mapData) !== "{}" && JSON.stringify(businessData) !== "{}" && categories.length !== 0
     );
   };
 

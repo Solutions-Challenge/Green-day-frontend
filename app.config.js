@@ -1,7 +1,7 @@
 export default {
   name: "RecycleMe",
   slug: "RecycleMe",
-  version: "0.0.15",
+  version: "0.0.17",
   orientation: "portrait",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
@@ -19,11 +19,15 @@ export default {
   },
   assetBundlePatterns: ["**/*"],
   ios: {
+    icon: "./assets/images/ecopalOriginal.png",
     supportsTablet: true,
     bundleIdentifier: "com.aankur01.greendayfrontend",
     infoPlist: {
+      CFBundleAllowMixedLocalizations: true,
       NSCameraUsageDescription:
         "This app uses the camera to determine if a certain item is recyclable.",
+      NSLocationWhenInUseUsageDescription:
+        "This app uses location data to find the nearest recycling centers from your current location."
     },
     config: {
       googleSignIn: {
@@ -31,9 +35,10 @@ export default {
       },
       googleMapsApiKey: "AIzaSyD53F4b8-LEb3Q4w7jYE95E_3JnHhr8nyE",
     },
+    associatedDomains: [],
   },
   android: {
-    versionCode: 15,
+    versionCode: 17,
     adaptiveIcon: {
       foregroundImage: "./assets/images/ecopal.png",
       backgroundColor: "#ffffff",

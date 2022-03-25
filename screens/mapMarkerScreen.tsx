@@ -57,6 +57,7 @@ const MapMarkerScreen = () => {
       trashCans = await getUserTrashCans(data.success);
     }
 
+    // @ts-ignore
     if (trashCans === "error" || trashCans.length === 0) {
       setLoad(false);
       setData([]);

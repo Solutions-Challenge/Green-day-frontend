@@ -13,9 +13,11 @@ import {
   User,
   signInWithCredential,
   signInAnonymously,
-  setPersistence,
-  browserLocalPersistence,
+  OAuthProvider,
 } from "firebase/auth";
+
+import * as AppleAuthentication from "expo-apple-authentication";
+import * as Crypto from 'expo-crypto';
 
 import app from "./config/firebase-service";
 
@@ -26,17 +28,49 @@ export const anonymousSignIn = async () => {
   let error = {} as any;
 
   await signInAnonymously(auth)
-  .then((res)=>{
-      user = res.user
-  })
-  .catch((err)=>{
-    error = err
-  })
+    .then((res) => {
+      user = res.user;
+    })
+    .catch((err) => {
+      error = err;
+    });
   return {
     user,
-    error
+    error,
+  };
+};
+
+export const handleAppleSignIn = async () => {
+  try {
+    const nonce = Math.random().toString(36).substring(2, 10);
+
+    const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce)
+
+    const credential = await AppleAuthentication.signInAsync({
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      ],
+      nonce: hashedNonce
+    });
+    // signed in
+    const AppleProvider = new OAuthProvider("apple.com")
+    AppleProvider.addScope("name")
+    AppleProvider.addScope("email")
+
+    const creds = AppleProvider.credential({idToken: credential.identityToken, rawNonce: nonce})
+    // host.exp.Exponent
+    const data = await signInWithCredential(auth, creds)
+    return data;
+  } catch (e: any) {
+    return e;
+    if (e.code === "ERR_CANCELED") {
+      // handle that the user canceled the sign-in flow
+    } else {
+      // handle other errors
+    }
   }
-}
+};
 
 export const handleGoogleSignIn = async () => {
   let user = {} as any;
@@ -47,7 +81,7 @@ export const handleGoogleSignIn = async () => {
       "15765189134-2uvjibunbcdje9ehscg1fcqi0k3j0v43.apps.googleusercontent.com",
     iosClientId:
       "15765189134-u5vlkk5ncmkl0lceg3pkd5t85rur7026.apps.googleusercontent.com",
-    androidStandaloneAppClientId: 
+    androidStandaloneAppClientId:
       "15765189134-ims9odbajn23r1a4rspn2bfrms830jr4.apps.googleusercontent.com",
     iosStandaloneAppClientId:
       "15765189134-95danbaij05prgd321aoscb6igfpj8jt.apps.googleusercontent.com",
@@ -75,10 +109,7 @@ export const handleGoogleSignIn = async () => {
   };
 };
 
-export const login = async (
-  email: string,
-  password: string,
-) => {
+export const login = async (email: string, password: string) => {
   let user = {} as any;
   let error = {} as any;
 
@@ -204,7 +235,7 @@ export const updateName = async (name: string) => {
   await updateProfile(currentUser(), {
     displayName: name,
   });
-}
+};
 
 export function checkAuth(user: JSON) {
   onAuthStateChanged(auth, (user) => {
