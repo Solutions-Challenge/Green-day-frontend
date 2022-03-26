@@ -107,7 +107,7 @@ const AuthButtons = ({ navigation, remember }: any) => {
               AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
             }
             buttonStyle={
-              AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+              AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
             }
             cornerRadius={10}
             style={{

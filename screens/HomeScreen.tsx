@@ -37,7 +37,7 @@ import UserProfile from "../components/UserProfile";
 import { auth, currentUser, logout } from "../api/Auth";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { deletePic, getAllPics, getPic } from "../api/Backend";
-import { useIsFocused } from "@react-navigation/native";
+import * as LottieView from "lottie-react-native"
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -86,7 +86,7 @@ export default function HomeScreen({ navigation }: any) {
   const reload = async () => {
     if (authChange) {
       const ids = await getAllPics(authChange);
-      console.log(ids)
+      console.log(ids);
       setRefreshing(true);
       setFireStorePics(ids.success);
       if (fireStorePics !== [] && "success" in ids) {
@@ -102,7 +102,7 @@ export default function HomeScreen({ navigation }: any) {
           setData(ans);
         }
       }
-      setRefreshing(false)
+      setRefreshing(false);
     }
   };
 
@@ -120,13 +120,12 @@ export default function HomeScreen({ navigation }: any) {
       await onAuthStateChanged(auth, async (user) => {
         const d = await user?.getIdToken();
         setAuthChange(true);
-        console.log(user)
+        console.log(user);
         if (user !== null && remember.remember) {
           if (user.isAnonymous) {
-            setProfileUri("Guest")
-            setFullName("Guest")
-          }
-          else {
+            setProfileUri("Guest");
+            setFullName("Guest");
+          } else {
             setProfileUri(String(user.photoURL));
             setFullName(String(user.displayName || ""));
           }
@@ -140,10 +139,10 @@ export default function HomeScreen({ navigation }: any) {
   }, []);
 
   const darkenRGBA = (str: string) => {
-    let temp = str.split(",")
-    temp[3] = "1)"
-    let ans = temp.join(",")
-    return ans
+    let temp = str.split(",");
+    temp[3] = "1)";
+    let ans = temp.join(",");
+    return ans;
   };
 
   /**
@@ -155,11 +154,11 @@ export default function HomeScreen({ navigation }: any) {
     (data: any) => {
       const item = data.item;
       if (item == "error") {
-        setData([])
-        AsyncStorage.removeItem("multi")
+        setData([]);
+        AsyncStorage.removeItem("multi");
       }
       if (item == "error" || !("imageObjectDetection" in item.multi[0])) {
-        deletePic(item.key, authChange)
+        deletePic(item.key, authChange);
       }
       return (
         <>
@@ -190,7 +189,10 @@ export default function HomeScreen({ navigation }: any) {
                       });
                     }}
                   >
-                    {!(item == "error" || !("imageObjectDetection" in item.multi[0])) && (
+                    {!(
+                      item == "error" ||
+                      !("imageObjectDetection" in item.multi[0])
+                    ) && (
                       <ImageBackground
                         source={{ uri: item.image.uri }}
                         style={{
@@ -232,7 +234,9 @@ export default function HomeScreen({ navigation }: any) {
                                     e.imageObjectDetection.boundingBox
                                       .normalizedVertices[0].y || 0)
                                 }
-                                stroke={darkenRGBA(e.ml.color || "rgba(255, 255, 255, .2)")}
+                                stroke={darkenRGBA(
+                                  e.ml.color || "rgba(255, 255, 255, .2)"
+                                )}
                                 strokeWidth="1"
                               />
                             );
@@ -376,7 +380,15 @@ export default function HomeScreen({ navigation }: any) {
                 >
                   No Picture Taken
                 </Text>
-                <Image source={require("../assets/images/empty.png")} />
+                <LottieView.default
+                  style={{
+                    width: 300,
+                    height: 300,
+                    alignSelf: "center",
+                  }}
+                  autoPlay
+                  source={require("../assets/lottie/empty.json")}
+                />
                 <Text
                   style={{
                     fontSize: 20,
