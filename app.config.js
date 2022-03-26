@@ -1,14 +1,14 @@
 export default {
   name: "RecycleMe",
   slug: "RecycleMe",
-  version: "0.0.20",
+  version: "0.0.21",
   orientation: "portrait",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
   privacy: "public",
-  icon: "./assets/images/ecopalOriginal.png",
+  icon: "./assets/images/RecycleMeOriginal.png",
   splash: {
-    image: "./assets/images/ecopalOriginal.png",
+    image: "./assets/images/RecycleMeOriginal.png",
     resizeMode: "contain",
     backgroundColor: "#ffffff",
   },
@@ -19,7 +19,7 @@ export default {
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    icon: "./assets/images/ecopalOriginal.png",
+    icon: "./assets/images/RecycleMeOriginal.png",
     supportsTablet: true,
     bundleIdentifier: "com.aankur01.greendayfrontend",
     usesAppleSignIn: true,
@@ -39,9 +39,9 @@ export default {
     associatedDomains: [],
   },
   android: {
-    versionCode: 20,
+    versionCode: 21,
     adaptiveIcon: {
-      foregroundImage: "./assets/images/ecopal.png",
+      foregroundImage: "./assets/images/RecycleMe.png",
       backgroundColor: "#ffffff",
     },
     config: {
@@ -57,7 +57,7 @@ export default {
     package: "com.aankur01.greendayfrontend",
   },
   web: {
-    favicon: "./assets/images/favicon.png",
+    favicon: "./assets/images/RecycleMe.png",
   },
   description: "",
   githubUrl: "https://github.com/Ankur-0429",
