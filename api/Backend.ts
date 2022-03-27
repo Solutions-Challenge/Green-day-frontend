@@ -9,13 +9,14 @@ const ifGuest = () => {
 }
 
 const formBody = (details: any) => {
-  let formBody = [];
+  let formBody:BodyInit;
+  let temp = []
   for (let props in details) {
     let encodedKey = encodeURIComponent(props);
     let encodedVal = encodeURIComponent(details[props]);
-    formBody.push(encodedKey + "=" + encodedVal);
+    temp.push(encodedKey + "=" + encodedVal);
   }
-  formBody = formBody.join("&");
+  formBody = temp.join("&");
 
   return formBody;
 };
@@ -382,16 +383,9 @@ export const Register = async () => {
     id_token: id_token,
   } as any;
 
-  let formBody = [];
-  for (let props in details) {
-    let encodedKey = encodeURIComponent(props);
-    let encodedVal = encodeURIComponent(details[props]);
-    formBody.push(encodedKey + "=" + encodedVal);
-  }
-  formBody = formBody.join("&") as any;
   const data = await fetch(`${ifDev ? develop : prod}/database/createUser`, {
     method: "POST",
-    body: formBody,
+    body: formBody(details),
     headers: {
       "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
     },

@@ -84,7 +84,6 @@ export default function CameraScreen({ navigation, route }: any) {
   const save = async (data: any, results: ImageResult) => {
     let items: any = [];
     const uniqueID = uuidv4();
-    console.log(uniqueID);
     await AsyncStorage.getItem("multi").then((res) => {
       items = JSON.parse(res as string);
 
@@ -176,6 +175,7 @@ export default function CameraScreen({ navigation, route }: any) {
 
 
       if ("payload" in MLdata.success) {
+        console.log(MLdata.success.payload)
         save(MLdata.success.payload, manipImage);
         setIsLoading(false);
         setUri(manipImage.uri);
