@@ -46,4 +46,7 @@ Clone this repo and then:
 
 You should see the app in your expo app under the **RECENTLY IN DEVELOPMENT** section
 
+## 📧 Contact Us
+Contact us at nextchart.beachrock@gmail.com for anything!
+
 Happy Coding!
