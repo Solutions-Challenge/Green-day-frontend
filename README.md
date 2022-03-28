@@ -1,9 +1,3 @@
-<style>
-    img {
-        border-radius: 4%;
-    }
-</style>
-
 # RecycleMe
 
 
