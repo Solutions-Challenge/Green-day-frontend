@@ -40,7 +40,7 @@ Clone this repo and then:
 4. Register or sign into an account from both your phone and your computer. 
     * `expo login` or `expo register`
 
-5. Finally start up the environment
+5. Fill in all API keys in environment.js file (currently this repository is private, so we kept the keys inside it to ease your testing)
 
     * `npm run start`
 
