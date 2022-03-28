@@ -17,6 +17,13 @@ RecycleMe is a trash categorization tool used to make recycling more quick and c
     <img src="./assets/images/README/MapDark.png" alt="drawing" width="150"/>
 </div>
 
+## 💻 What it does
+RecycleMe allows users to locate the nearest trash cans through 3 types of data:
+- the nearest recycling centers via the google maps api
+- user-generated data of trash cans nearby and what materials it recycles
+- local businesses which provides more specific types of data that they specifically could recycle
+
+Happy Coding!
 # SETUP
 
 Clone this repo and then:
@@ -39,13 +46,3 @@ Clone this repo and then:
     * `npm run start`
 
 You should see the app in your expo app under the **RECENTLY IN DEVELOPMENT** section
-
-
-
-## 💻 What it does
-RecycleMe allows users to locate the nearest trash cans through 3 types of data:
-- the nearest recycling centers via the google maps api
-- user-generated data of trash cans nearby and what materials it recycles
-- local businesses which provides more specific types of data that they specifically could recycle
-
-Happy Coding!
