@@ -21,7 +21,7 @@ RecycleMe is a trash categorization tool used to make recycling more quick and c
 RecycleMe allows users to locate the nearest trash cans through 3 types of data:
 - the nearest recycling centers via the google maps api
 - user-generated data of trash cans nearby and what materials it recycles
-- local businesses which provides more specific types of data that they specifically could recycle
+- local businesses provide more specific types of data that they could recycle
 
 # SETUP
 

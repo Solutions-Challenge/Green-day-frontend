@@ -68,7 +68,7 @@ export const predict = async (formBody: any) => {
   });
 
   const MLdata = await MLRequest.json();
-  return MLdata;
+  return MLdata
 };
 
 export const getPic = async (image_id: string, authChange: boolean) => {

@@ -171,11 +171,9 @@ export default function CameraScreen({ navigation, route }: any) {
 
       const MLdata:any = await predict(formData)
 
-      console.log(MLdata)
 
 
       if ("payload" in MLdata.success) {
-        console.log(MLdata.success.payload)
         save(MLdata.success.payload, manipImage);
         setIsLoading(false);
         setUri(manipImage.uri);
