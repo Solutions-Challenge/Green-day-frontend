@@ -29,11 +29,12 @@ Clone this repo and then:
 
 1. Install the necessary dependencies
 
-    * `npm install` or `yarn install`
+    * `npm install --global yarn` 
+    * `yarn install`
 
 2. Install the expo cli
 
-    * `npm install --global expo-cli` or `yarn install --global expo-cli`
+    * `yarn install --global expo-cli`
 
 3. Install the expo go app either on google play or the app store
 
