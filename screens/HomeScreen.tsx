@@ -86,7 +86,6 @@ export default function HomeScreen({ navigation }: any) {
   const reload = async () => {
     if (authChange) {
       const ids = await getAllPics(authChange);
-      console.log(ids);
       setRefreshing(true);
       setFireStorePics(ids.success);
       if (fireStorePics !== [] && "success" in ids) {
@@ -119,8 +118,8 @@ export default function HomeScreen({ navigation }: any) {
       const remember = JSON.parse(data) as any;
       await onAuthStateChanged(auth, async (user) => {
         const d = await user?.getIdToken();
+        console.log(d);
         setAuthChange(true);
-        console.log(user);
         if (user !== null && remember.remember) {
           if (user.isAnonymous) {
             setProfileUri("Guest");
@@ -160,7 +159,6 @@ export default function HomeScreen({ navigation }: any) {
       if (item == "error" || !("imageObjectDetection" in item.multi[0])) {
         deletePic(item.key, authChange);
       }
-      console.log(item.multi)
       return (
         <>
           <View style={[styles.containerTitle2]}>
